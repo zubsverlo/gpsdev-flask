@@ -1,0 +1,422 @@
+* {
+  margin: 0;
+  font-family: "Raleway", Arial, sans-serif;
+}
+body {
+  height: 1000px;
+  background-color: rgb(220, 220, 220);
+}
+
+@media screen and (min-width: 1030px) {
+  #header {
+    z-index: 99999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+
+    height: 44px;
+    padding: 4px 10px 4px 10px;
+    font-size: 18px;
+    background-color: rgb(59, 132, 120);
+    transition: all 0.08s;
+  }
+
+  #logoContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 50px;
+    transition: margin-right 0.2s;
+    cursor: pointer;
+  }
+
+  #logoImg {
+    margin-right: 8px;
+    width: 44px;
+    opacity: 0.7;
+    transition: width 0.2s;
+  }
+
+  #logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: rgb(54, 54, 54);
+    transition: font-size 0.2s;
+  }
+
+  #middle {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 1;
+  }
+
+  #mainPart {
+    display: flex;
+    justify-content: flex-start;
+    align-items: start;
+    vertical-align: middle;
+
+    color: rgb(226, 226, 226);
+  }
+
+  .page {
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+    flex-basis: 60px;
+
+    white-space: nowrap;
+    padding-left: 15px;
+
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .page:hover {
+    background-color: rgb(46, 153, 140);
+    color: rgb(74, 74, 74);
+
+    transition: all 0.5s;
+  }
+
+  .page:active {
+    background-color: rgb(207, 190, 130);
+    transition: all 0.15s;
+  }
+
+  .page::after {
+    display: inline-block;
+    content: "";
+    width: 1px;
+    height: 52px;
+    margin-left: 15px;
+    background-color: rgba(72, 72, 72, 0.5);
+    transition: height 0.08s;
+  }
+
+  #menuContainer {
+    display: none;
+  }
+
+  #openMenuContainer {
+    display: none;
+  }
+
+  #exitContainer {
+    margin-left: 30px;
+    margin-right: 20px;
+    transition: margin-left 0.2s;
+  }
+  #exitBtn {
+    height: 38px;
+    opacity: 0.65;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  #exitBtn:hover {
+    background-color: rgba(218, 200, 134, 0.7);
+    border-radius: 10px;
+    opacity: 0.8;
+    transition: all 0.4s;
+  }
+
+  #exitBtn:active {
+    background-color: rgba(27, 172, 141, 0.7);
+    border-radius: 10px;
+    opacity: 1;
+    transform: scale(1.2);
+    transition: all 0.4s;
+  }
+
+  #contentBlock {
+    margin-top: 50px;
+    padding: 22px;
+    transition: all 0.15s;
+  }
+}
+
+@media screen and (max-width: 1030px) and (min-width: 900px) {
+  #header {
+    z-index: 999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+
+    height: 38px;
+    padding: 4px 10px 4px 10px;
+    font-size: 16px;
+    background-color: rgb(59, 132, 120);
+    transition: height font-size 0.08s;
+  }
+
+  #logoContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 10px;
+    transition: margin-right 0.2s;
+    cursor: pointer;
+  }
+
+  #logoImg {
+    margin-right: 8px;
+    width: 38px;
+    opacity: 0.7;
+    transition: width 0.2s;
+  }
+
+  #logo {
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(54, 54, 54);
+    transition: font-size 0.2s;
+  }
+
+  #middle {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 1;
+  }
+
+  #mainPart {
+    display: flex;
+    justify-content: flex-start;
+    align-items: start;
+    vertical-align: middle;
+
+    color: rgb(226, 226, 226);
+
+    transition: display 0.08s;
+  }
+
+  .page {
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+    flex-basis: 60px;
+
+    white-space: nowrap;
+    padding-left: 15px;
+
+    cursor: pointer;
+    transition: all 0.5s;
+  }
+
+  .page:hover {
+    background-color: rgb(46, 153, 140);
+    color: rgb(74, 74, 74);
+  }
+
+  .page:active {
+    background-color: rgb(207, 190, 130);
+    transition: all 0.15s;
+  }
+
+  .page::after {
+    display: inline-block;
+    content: "";
+    width: 1px;
+    height: 46px;
+    margin-left: 15px;
+    background-color: rgba(72, 72, 72, 0.5);
+    transition: height 0.08s;
+  }
+
+  #menuContainer {
+    display: none;
+  }
+
+  #openMenuContainer {
+    display: none;
+  }
+
+  #exitContainer {
+    margin-right: 20px;
+    transition: margin-left 0.2s;
+  }
+  #exitBtn {
+    height: 30px;
+    opacity: 0.65;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  #exitBtn:hover {
+    background-color: rgba(218, 200, 134, 0.7);
+    border-radius: 10px;
+    opacity: 0.8;
+    transition: all 0.4s;
+  }
+
+  #exitBtn:active {
+    background-color: rgba(27, 172, 141, 0.7);
+    border-radius: 10px;
+    opacity: 1;
+    transform: scale(1.2);
+    transition: all 0.4s;
+  }
+
+  #contentBlock {
+    margin-top: 44px;
+    padding: 20px;
+    transition: all 0.15s;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  #header {
+    z-index: 999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+
+    height: 38px;
+    padding: 4px 10px 4px 10px;
+    font-size: 18px;
+    background-color: rgb(59, 132, 120);
+    transition: all 0.2s;
+    min-width: 250px;
+  }
+
+  #logoContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80px;
+    margin-right: 50px;
+    transition: all 0.2s;
+  }
+
+  #logoImg {
+    margin-right: 8px;
+    width: 38px;
+    opacity: 0.7;
+    transition: all 0.2s;
+  }
+
+  #logo {
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(54, 54, 54);
+    transition: all 0.2s;
+  }
+
+  #mainPart {
+    display: none;
+    transition: all 0.2s;
+  }
+
+  #menuContainer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 1;
+    margin-right: 40px;
+  }
+
+  #menuBtn {
+    width: 24px;
+    padding: 3px;
+    opacity: 0.5;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  #menuBtn:hover {
+    background-color: rgba(218, 200, 134, 0.7);
+    border-radius: 8px;
+    opacity: 0.8;
+    transition: all 0.4s;
+  }
+
+  #menuBtn:active {
+    background-color: rgba(27, 172, 141, 0.7);
+    border-radius: 8px;
+    opacity: 1;
+    transform: rotate(180deg) scale(1.2);
+    transition: all 0.4s;
+  }
+
+  #openMenuContainer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in;
+
+    position: absolute;
+    top: 46px;
+    left: 0;
+    width: 100%;
+    min-width: 270px;
+  }
+
+  #openMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 0px 20px 20px;
+
+    background-color: rgb(59, 132, 120);
+    color: rgb(226, 226, 226);
+  }
+
+  .page {
+    padding: 5px 80px 5px 5px;
+    border-bottom: solid 1px rgba(79, 79, 79, 0.5);
+    transition: all 0.5s;
+    cursor: pointer;
+  }
+
+  .page:hover {
+    background-color: rgb(46, 153, 140);
+    color: rgb(74, 74, 74);
+  }
+
+  .page:active {
+    background-color: rgb(207, 190, 130);
+    transition: all 0.15s;
+  }
+
+  #exitContainer {
+    margin-right: 20px;
+  }
+
+  #exitBtn {
+    vertical-align: middle;
+    height: 30px;
+    opacity: 0.65;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  #exitBtn:hover {
+    background-color: rgba(218, 200, 134, 0.7);
+    border-radius: 10px;
+    opacity: 0.8;
+    transition: all 0.4s;
+  }
+
+  #exitBtn:active {
+    background-color: rgba(27, 172, 141, 0.7);
+    border-radius: 10px;
+    opacity: 1;
+    transform: scale(1.2);
+    transition: all 0.4s;
+  }
+
+  #contentBlock {
+    margin-top: 44px;
+    padding: 20px;
+  }
+}

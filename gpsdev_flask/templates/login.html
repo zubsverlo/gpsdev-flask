@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700&family=Raleway:wght@400;500;700&family=Roboto+Mono&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{url_for('static', filename='loginPage/login.css')}}"
+    />
+    <title>Страница входа</title>
+  </head>
+  <body>
+    <div id="loginPage">
+      <div id="bgImage">
+        <form id="loginContainer">
+          <div id="pageName">Вход</div>
+          <div id="inputsContainer">
+            <label for="pNumber" id="numberlable">Номер телефона</label>
+            <br />
+            <input
+              type="text"
+              id="pNumber"
+              autofocus
+              maxlength="11"
+              title="Формат нормера: 79991231122"
+              required
+              pattern="^[7][0-9]{10}"
+            />
+            <br />
+            <label id="passwordlable" for="password">Пароль</label>
+            <br />
+            <input type="password" id="password" required />
+            <img
+              id="hideShow"
+              src="{{url_for('static', filename='loginPage/show.png')}}"
+            />
+          </div>
+          <div id="btnContainer">
+            <button id="loginBtn" type="submit">Вход</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="{{url_for('static', filename='loginPage/login.js')}}"></script>
+  </body>
+</html>

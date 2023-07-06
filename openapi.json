@@ -1,0 +1,2158 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "GPSDEV API",
+    "description": "Описание взаимодействия с API для формирования отчетов о перемещениях сотрудников и посещениях ими подопечных.",
+    "version": "1.0."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "http://127.0.0.1:8000/api",
+      "description": "Development server with gunicorn"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logs in and returns the authentication  cookie",
+        "requestBody": {
+          "required": true,
+          "description": "A JSON object containing the login and password.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "example": "79999999999"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "pass123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successfully authenticated. The session ID is returned in a cookie named `session`. You need to include this cookie in subsequent requests.\n",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "session=abcde12345; HttpOnly; Path=/;"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Wrong or missing password or phone number.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logs out",
+        "responses": {
+          "200": {
+            "description": "Successfully logged out.\n"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Получить список всех пользователей",
+        "description": "Список всех пользователей сайта, для просмотра и редактирования.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Создать нового пользователя",
+        "description": "## Создать нового пользователя.  \n`phone` используется для входа на сайт; требования к телефону - строка из 11 символов, в формате '79997776655'.<br>  \n`access_set` определяет доступ сотрудника к подразделениям; можно указывать номер подразделения или полное название строками, см. пример ниже <br>  \n`rang_id` определяет права пользователя, они выстроены в порядке убывания, от 1 до 3, где:  \n1 - Администратор (доступно создание новых пользователей сайта, подтверждение служебных записок, просмотр Журнала)  \n2 - Руководитель (доступно подтверждение служебных записок)  \n3 - Куратор (доступно все остальное)\n",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "user_id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Уникальный ID пользователя"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Получить пользователя",
+        "description": "Получить пользователя по user_id",
+        "responses": {
+          "200": {
+            "description": "A JSON with user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Изменить пользователя",
+        "description": "## Изменение свойств пользователя сайта  \nИзменение любого свойства пользователя по отдельности или вместе, можно передать новый список `access_set` или `rang_id` пользователя, пароль и т.д.\n",
+        "requestBody": {
+          "description": "Схема доступных свойств для изменения",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete a User",
+        "description": "Удалить пользователя",
+        "responses": {
+          "204": {
+            "description": "User deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees": {
+      "get": {
+        "tags": [
+          "Employees"
+        ],
+        "summary": "Returns a list of employees.",
+        "description": "Список всех сотрудников, доступных текущему пользователю",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Employee"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Employees"
+        ],
+        "summary": "Создать нового сотрудника",
+        "description": "## Создать нового пользователя\n\n| Параметр    |  Описание    |\n| ----------- | ------------ |\n| `name`      | ФИО сотрудника  |\n| `phone`     | Номер телефона для связи с сотрудником |\n| `division`  | id подразделения, к которому относится сотрудник |\n| `hire_date` | Дата приема на работу |\n| `quit_date` | Дата увольнения (сотрудник добавляется в список на отключение от отслеживания) |\n| `schedule`  | Должность сотрудника. 1 - \"Соцработник\", 2 - \"Ванщик\" |\n",
+        "requestBody": {
+          "description": "JSON по схеме сотрудника",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Employee"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/employees/{name_id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "name_id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Employee's name_id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Employees"
+        ],
+        "summary": "Получить сотрудника",
+        "description": "Получить сотрудника",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Employees"
+        ],
+        "summary": "Изменить сотрудника",
+        "description": "## Изменение свойств сотрудника\n\n| Параметр    |  Описание    |\n| ----------- | ------------ |\n| `name`      | ФИО сотрудника  |\n| `phone`     | Номер телефона для связи с сотрудником |\n| `division`  | id подразделения, к которому относится сотрудник |\n| `hire_date` | Дата приема на работу |\n| `quit_date` | Дата увольнения (сотрудник добавляется в список на отключение от отслеживания) |\n| `schedule`  | Должность сотрудника. 1 - \"Соцработник\", 2 - \"Ванщик\" |\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Employee"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Employees"
+        ],
+        "summary": "Удалить сотрудника",
+        "description": "Удалить сотрудника",
+        "responses": {
+          "204": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotAllowedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/objects": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "active",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Только активные подопечные"
+          }
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Список подопечных",
+        "description": "Список всех доступных пользователю подопечных. Если добавлен параметр `active=true`, то возвращается список абсолютно всех подопечных, у кого параметр active = true (в том числе из недоступных учреждений), но с ограниченной информацией. Это реализовано для возможности добавлять к себе в таблицу подопечных на обслуживание из других подразделений (например, один ванщик на два подразделения). Подробнее - см. схему ниже.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/Object"
+                      },
+                      {
+                        "$ref": "#/components/schemas/ActiveObject"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Добавить нового подопечного",
+        "description": "Добавить нового подопечного",
+        "requestBody": {
+          "description": "## Добавить нового подопечного\n| Параметр | Описание |\n| -------- | -------- |\n| `name`   | ФИО подопечного |\n| `division` | Номер подразделения, к которому относится подопечный |\n| `latitude`, `longitude` | Координаты нахождения дома подопечного |\n| `address` | Адрес |\n| `no_payments` | Если подопечный обслуживается на частично платной основе, но не доплачивает |\n| `active` | Отображать ли подопечного в списке при добавлении в таблицу в выходов |\n| `phone` | Строка до 200 символов, для хранения любой контактной информации |\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/objects/{object_id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "object_id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Object's name_id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Получить подопечного",
+        "description": "Получение подопечного по object_id",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Изменение подопечного",
+        "description": "## Изменение свойств подопечного\n| Параметр | Описание |\n| -------- | -------- |\n| `name`   | ФИО подопечного |\n| `division` | Номер подразделения, к которому относится подопечный |\n| `latitude`, `longitude` | Координаты нахождения дома подопечного |\n| `address` | Адрес |\n| `no_payments` | Если подопечный обслуживается на частично платной основе, но не доплачивает |\n| `active` | Отображать ли подопечного в списке при добавлении в таблицу в выходов |\n| `phone` | Строка до 200 символов, для хранения любой контактной информации |\n",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Удаление подопечного",
+        "description": "Удалить подопечного по name_id",
+        "responses": {
+          "204": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotAllowedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/journal": {
+      "get": {
+        "tags": [
+          "Journal"
+        ],
+        "summary": "Список всех записей журнала",
+        "description": "Список всех записей журнала",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Journal"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotAllowedError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/journal/{row_id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "row_id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Journal row id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Journal"
+        ],
+        "summary": "Получить запись журнала",
+        "description": "## Получить запись журнала владения телефоном\n| Свойство | Описание |\n| -------- | -------- |\n| `period_init` | Начало действия периода |\n| `period_end` | Конец действия периода |\n| `subscriberID` | subscriberID от МТС |\n| `name_id` | name_id сотрудника |\n| `name` | Имя сотрудника | \n| `division_name` | Название подразделения |\n",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Journal"
+        ],
+        "summary": "Изменение записи журнала",
+        "description": "Изменение записи журнала владения устройством",
+        "requestBody": {
+          "description": "## Изменение записи журнала владения телефоном\n| Свойство | Описание |\n| -------- | -------- |\n| `period_init` | Начало действия периода |\n| `period_end` | Конец действия периода |\n| `subscriberID` | subscriberID от МТС |\n| `name_id` | name_id сотрудника |\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Journal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Journal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Journal"
+        ],
+        "summary": "Удаление записи журнала",
+        "description": "Удалить запись журнала",
+        "responses": {
+          "204": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not Allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotAllowedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/serves": {
+      "post": {
+        "tags": [
+          "Serves"
+        ],
+        "summary": "Добавить служебные записки",
+        "description": "## Добавление новых служебных записок\n| Параметр | Описание |\n| -------- | -------- |\n| `name_id`| name_id сотрудника, по которому добавляется служебная записка |\n| `object_id` | object_id подопечного |\n| `date` | Дата служебной записки |\n| `comment` | Комментарий к записке |\n| `approval` | Статус служебной записки (1 - подтверждено, 3 - на проверку). Необязательный параметр, при его отсутствии по умолчанию проставится 3. Статус 1 разрешено отправлять только для руководителя или администратора. |\n",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Serves"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Employee created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Serves"
+        ],
+        "summary": "Подтверждение служебных записок",
+        "description": "## Подтверждение служебных записок\nДля подтверждения служебных записок требуется указать минимальные параметры, чтобы найти служебную записку в базе данных. Единственный доступный параметр для изменения - `approval`.\n  | Параметр | Описание |\n  | -------- | -------- |\n  | `date` | Дата служебной записки |\n  | `name_id`| name_id сотрудника, по которому добавляется служебная записка |\n  | `object_id` | object_id подопечного |\n  | `approval` | Статус служебной записки (1 - подтверждено, 3 - на проверку). Подтвердить служебку может только администратор или руководитель. |\n",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "object_id": {
+                      "type": "integer"
+                    },
+                    "name_id": {
+                      "type": "integer"
+                    },
+                    "approval": {
+                      "type": "integer",
+                      "default": 3,
+                      "enum": [
+                        1,
+                        3
+                      ]
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "name_id",
+                    "object_id",
+                    "approval"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/serves/get": {
+      "post": {
+        "tags": [
+          "Serves"
+        ],
+        "summary": "Запрос служебных записок",
+        "description": "Позволяет получить служебные записки со всеми параметрами (комментарий, адрес, статус), но для их запроса потребуется минимальный набор параметров: `name_id`, `object_id`, `date`.\n",
+        "requestBody": {
+          "description": "Список служебных записок, которые нужно получить",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "object_id": {
+                      "type": "integer"
+                    },
+                    "name_id": {
+                      "type": "integer"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "name_id",
+                    "object_id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A JSON array of employees",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Serves"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotAllowedError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/serves/delete": {
+      "post": {
+        "tags": [
+          "Serves"
+        ],
+        "summary": "Удаление служебных записок",
+        "description": "Удаление списка служебных записок. Необходимо передать `object_id`, `name_id` и `date` по каждой служебной записке.",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "object_id": {
+                      "type": "integer"
+                    },
+                    "name_id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "name_id",
+                    "object_id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/serves/with-coordinates": {
+      "post": {
+        "tags": [
+          "Serves"
+        ],
+        "summary": "Служебная записка с проверкой нахождения по адресу",
+        "description": "## Проверка нахождения по адресу перед добавлением служебки\nНекоторые служебные записки подразумевают нахождение сотрудника по делам подопечного по определенному адресу. В таком случае происходит автоматическое подтверждение нахождения сотрудника по адресу, иначе служебную записку добавить не получится.\n| Параметр | Описание |\n| -------- | -------- |\n| `name_id`| name_id сотрудника, по которому добавляется служебная записка |\n| `object_id` | object_id подопечного |\n| `division` | Номер подразделения, в по которому проверять служебку |\n| `date` | Дата служебной записки |\n| `latitude`, `longitude` | Координаты нахождения сотрудника для проверки |\n| `comment` | Комментарий к записке |\n| `address` |  |\n",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ServesWithCoordinates"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Служебная записка была подтверждена и добавлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "\"Validation error\" или \"Report error\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/statements": {
+      "post": {
+        "tags": [
+          "Statements"
+        ],
+        "summary": "Выходы сотрудников к подопечным",
+        "description": "## Выходы\nДля того, чтобы могла сформироваться таблица посещений, куратор подразделения заполняет таблицу выходов сотрудников к подопечным. Исходя из этих данных формируется отчет о посещениях.\n| Параметр | Описание |\n| -------- | -------- |\n| `division` | Номер подразделения |\n| `name_id` | name_id сотрудника |\n| `object_id` | object_id подопечного |\n| `date` | Дата выхода |\n| `value` | Значение. Должно быть одно из значений: В/Б/О/У/Н/\"\"<br>В(ыход), <br>Б(ольничный),<br> О(тпуск),<br> У(вольнение),<br> Н(евыход),<br> \"\"(пустое значение - значит удалить)<br>Б, О, У, Н - вне зависимости от передаваемого object_id, эти значения будут проставлены \"служебному объекту\" - \"БОЛЬНИЧНЫЙ/ОТПУСК/УВОЛ.\". Его `object_id` - 1. \n",
+        "requestBody": {
+          "description": "Список из сформировавшихся заполненных выходов",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Statements"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Запросить отчет о посещениях",
+        "description": "## Отчет о посещениях\nОтчет, формирующийся на основании данных о посещениях и служебных записках и данных о передвижениях сотрудников.\n| Параметр | Описание |\n| -------- | -------- |\n| `date_from` | Начальная дата отчета |\n| `date_to` | Конечная дата отчета, можно указывать дату наперед, тогда будущие выходы будут отображаться как \"В\" |\n| `division` | Подразделение. Можно указать как division_id, так и полное название подразделение строкой, например \"ПВТ9,ПНИ25\". Подразделение должно быть доступно пользователю. |\n| `counts` | Тип отображения отчета? *'true'* - будет отображаться кол-во выходов, *'false'* - сумма длительности. По умолчанию *'false'*. |\n| `name_ids`, `object_ids` | Альтернативный способ формирования отчета по id сотрудников и подопечных, можно указать вместо или вместе с `division`. Можно указать только `name_ids` или только `object_ids`. |\n",
+        "requestBody": {
+          "description": "Запрос на формирование отчета",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Report"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "## Отчет\nПараметры отчета - см. схему.  \n`duplicated_attends` - данные о дублирующихся выходах, то есть когда к одному подопечному одновременно выходило 2 и более сотрудников в один день.\n`horizontal_report` - состоит из списка столбцов `columns` и данных `data`, которые являются списком со значениями для каждого столбца.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "horizontal_report": {
+                      "type": "object",
+                      "properties": {
+                        "columns": {
+                          "type": "object",
+                          "example": [
+                            "name",
+                            "name_id",
+                            "object",
+                            "object_id",
+                            "2023-07-03",
+                            "2023-07-04",
+                            "..."
+                          ]
+                        },
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ReportDataRow"
+                          }
+                        }
+                      }
+                    },
+                    "duplicated_attends": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReportDuplicatedAttends"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "\"Validation error\" или \"Report error\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/download": {
+      "post": {
+        "tags": [
+          "Report"
+        ],
+        "summary": "Сформировать и скачать отчет в формате xlsx",
+        "description": "Создать нового пользователя",
+        "requestBody": {
+          "description": "## Отчет о посещениях\nОтчет, формирующийся на основании данных о посещениях и служебных записках и данных о передвижениях сотрудников в файле, в формате .xlsx\n| Параметр | Описание |\n| -------- | -------- |\n| `date_from` | Начальная дата отчета |\n| `date_to` | Конечная дата отчета, можно указывать дату наперед, тогда будущие выходы будут отображаться как \"В\" |\n| `division` | Подразделение. Можно указать как division_id, так и полное название подразделение строкой, например \"ПВТ9,ПНИ25\". Подразделение должно быть доступно пользователю. |\n| `counts` | Тип отображения отчета? *'true'* - будет отображаться кол-во выходов, *'false'* - сумма длительности. По умолчанию *'false'*. |\n| `name_ids`, `object_ids` | Альтернативный способ формирования отчета по id сотрудников и подопечных, можно указать вместо или вместе с `division`. Можно указать только `name_ids` или только `object_ids`. |\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Report"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.ms-excel": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "\"Validation error\" или \"Report error\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/one-employee-report": {
+      "post": {
+        "tags": [
+          "OneEmployeeReport"
+        ],
+        "summary": "Карта, отчет о посещениях, аналитика",
+        "description": "## Карта, отчет о посещениях, аналитика\n| Параметр | Описание |\n| -------- | -------- |\n| `name_id` | id сотрудника |\n| `division` | Подразделение. Можно указать как division_id, так и полное название подразделение строкой, например \"ПВТ9,ПНИ25\". Подразделение должно быть доступно пользователю. |\n| `date` | Дата для формирования отчета |\n",
+        "requestBody": {
+          "description": "Запрос отчета по схеме",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OneEmployee"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "## Отчет\n| Параметр | Описание |\n| -------- | -------- |\n| `map` | Строка с html кодом для отображения интерактивной карты перемещений сотрудника |\n| `recommended_for_checkout` | Индикатор проблем с локациями. Если значение *true*, то сотруднику рекомендуется связаться с менеджером для устранения возможных проблем с приложением |\n| `report` | Подробный отчет о посещениях (см. схему) |\n| `analytics` | Анализ состояния приложения/телефона, объединенный в периоды. `status` *true* означает, что телефон включен, *false* - что выключен. |\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "map": {
+                      "type": "string"
+                    },
+                    "recommended_for_checkout": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "report": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OneEmployeeReport"
+                      }
+                    },
+                    "analytics": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OneEmployeeAnalytics"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "\"Validation error\" или \"Report error\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mts/subscriber/{subscriber}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "subscriber",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "subscriberID"
+        }
+      ],
+      "patch": {
+        "tags": [
+          "mts"
+        ],
+        "summary": "Изменить имя по subscriberID",
+        "description": "Изменение имени сотрудника в сервисе Мобильные сотрудники. Нужно передать объект с параметром `name`, который и будет новым именем. Вызов этого метода должен применяться при переименовании сотрудника на сайте.",
+        "requestBody": {
+          "description": "Объект с новым именем",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Петрова Ангелина Николаевна"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "\"Validation error\" или \"Mts error\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MtsError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "mts"
+        ],
+        "summary": "Удалить сотрудника из услуги Мобильные сотрудники",
+        "description": "Удаление из услуги должно инициироваться вручную.",
+        "responses": {
+          "204": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "\"Validation error\" или \"Mts error\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MtsError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/address-lookup/{address}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "address",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Адрес для поиска"
+        }
+      ],
+      "patch": {
+        "tags": [
+          "AddressLookup"
+        ],
+        "summary": "Поиск адресов по nominatim.openstreetmap.org",
+        "description": "Чтобы получить точные координаты адреса (при добавлении подопечного или проверке служебной записки по адресу), мы обращаемся к сервису nominatim.openstreetmap.org. Он выдаёт список полных названий адресов и точных координат по запросу.",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressLookupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "422"
+          },
+          "title": {
+            "type": "string",
+            "example": "validation error"
+          },
+          "details": {
+            "type": "object",
+            "example": {}
+          }
+        }
+      },
+      "NotFoundError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "404"
+          },
+          "title": {
+            "type": "string",
+            "example": "not found"
+          },
+          "details": {
+            "type": "object",
+            "example": {}
+          }
+        }
+      },
+      "NotAllowedError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "403"
+          },
+          "title": {
+            "type": "string",
+            "example": "not allowed"
+          },
+          "details": {
+            "type": "object",
+            "example": {}
+          }
+        }
+      },
+      "ReportError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "422"
+          },
+          "title": {
+            "type": "string",
+            "example": "report error"
+          },
+          "details": {
+            "type": "object",
+            "example": {}
+          }
+        }
+      },
+      "MtsError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "422"
+          },
+          "title": {
+            "type": "string",
+            "example": "mts error"
+          },
+          "details": {
+            "type": "object",
+            "example": {}
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "writeOnly": true,
+            "maxLength": 60
+          },
+          "rang": {
+            "readOnly": true,
+            "type": "string",
+            "example": "Куратор"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 11,
+            "example": 79265554714
+          },
+          "id": {
+            "type": "integer",
+            "readOnly": true,
+            "example": 3
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 50,
+            "example": "Иванов Егор Иванович"
+          },
+          "access": {
+            "type": "array",
+            "readOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/AccessObject"
+            }
+          },
+          "rang_id": {
+            "type": "integer",
+            "example": 3
+          },
+          "access_set": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {},
+            "example": [
+              "Коньково",
+              1,
+              2
+            ]
+          }
+        },
+        "required": [
+          "access_set",
+          "name",
+          "password",
+          "phone",
+          "rang_id"
+        ]
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "name_id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 11,
+            "example": 79265554714
+          },
+          "division": {
+            "type": "integer"
+          },
+          "hire_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "address": {
+            "type": "string"
+          },
+          "division_name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "schedule_name": {
+            "readOnly": true,
+            "type": "string",
+            "example": "Соцработник"
+          },
+          "schedule": {
+            "type": "integer",
+            "default": 1
+          },
+          "quit_date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "division"
+        ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {
+          "object_id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Иванов Иван Петрович"
+          },
+          "division": {
+            "type": "integer",
+            "example": 7
+          },
+          "latitude": {
+            "type": "number",
+            "example": 55.846497
+          },
+          "longitude": {
+            "type": "number",
+            "example": 37.448375
+          },
+          "address": {
+            "type": "string",
+            "example": "Россия, Москва, Парусный проезд, 11"
+          },
+          "no_payments": {
+            "type": "boolean",
+            "default": false
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 200,
+            "example": "Дочь: 79999888776, соседка: 79874743384 (Зоя Николаевна)"
+          },
+          "division_name": {
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "address",
+          "division",
+          "latitude",
+          "longitude",
+          "name"
+        ]
+      },
+      "ActiveObject": {
+        "type": "object",
+        "properties": {
+          "object_id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "address": {
+            "type": "string"
+          },
+          "division": {
+            "type": "integer"
+          },
+          "division_name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          }
+        }
+      },
+      "AccessObject": {
+        "type": "object",
+        "properties": {
+          "division": {
+            "type": "string",
+            "example": "Коньково"
+          },
+          "division_id": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "Journal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "period_init": {
+            "type": "string",
+            "format": "date"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date"
+          },
+          "subscriberID": {
+            "type": "integer"
+          },
+          "name_id": {
+            "type": "integer"
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "division_name": {
+            "readOnly": true,
+            "type": "string"
+          }
+        }
+      },
+      "Serves": {
+        "type": "object",
+        "properties": {
+          "name_id": {
+            "type": "integer"
+          },
+          "object_id": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "approval": {
+            "type": "integer",
+            "default": 3,
+            "enum": [
+              1,
+              3
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "object": {
+            "readOnly": true,
+            "type": "string",
+            "maxLength": 100
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "comment",
+          "date",
+          "name_id",
+          "object_id"
+        ]
+      },
+      "ServesWithCoordinates": {
+        "type": "object",
+        "properties": {
+          "name_id": {
+            "type": "integer"
+          },
+          "object_id": {
+            "type": "integer"
+          },
+          "division": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "comment",
+          "date",
+          "division",
+          "latitude",
+          "longitude",
+          "name_id",
+          "object_id"
+        ]
+      },
+      "Statements": {
+        "type": "object",
+        "properties": {
+          "division": {
+            "type": "integer"
+          },
+          "name_id": {
+            "type": "integer"
+          },
+          "object_id": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "value": {
+            "type": "string",
+            "enum": [
+              "В",
+              "Б",
+              "О",
+              "У",
+              "Н",
+              "\"\""
+            ]
+          }
+        },
+        "required": [
+          "division",
+          "name_id",
+          "object_id",
+          "date",
+          "value"
+        ]
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "date_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date"
+          },
+          "division": {
+            "type": "object",
+            "example": 3
+          },
+          "counts": {
+            "type": "boolean",
+            "example": false
+          },
+          "name_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "object_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": [
+          "date_from",
+          "date_to",
+          "division"
+        ]
+      },
+      "ReportDataRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Бегликова Мария Ивановна"
+          },
+          "name_id": {
+            "type": "integer",
+            "example": 14
+          },
+          "object": {
+            "type": "string",
+            "example": "Иванов Иван Петрович"
+          },
+          "object_id": {
+            "type": "integer",
+            "example": 12
+          },
+          "date1": {
+            "type": "string",
+            "example": "В"
+          },
+          "date2": {
+            "type": "string",
+            "example": "01:15:44"
+          }
+        }
+      },
+      "ReportDuplicatedAttends": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "Иванов Иван Петрович"
+          },
+          "date": {
+            "type": "string",
+            "example": "2023-07-03"
+          },
+          "duration": {
+            "type": "integer",
+            "example": 2
+          },
+          "name": {
+            "type": "string",
+            "example": "Свиридова Мария Ивановна, Петрова Зинаида Геннадьевна"
+          }
+        }
+      },
+      "OneEmployee": {
+        "type": "object",
+        "properties": {
+          "name_id": {
+            "type": "integer"
+          },
+          "division": {
+            "type": "object",
+            "example": 3
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "date",
+          "division",
+          "name_id"
+        ]
+      },
+      "OneEmployeeReport": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "Иванов Иван Петрович"
+          },
+          "attend_number": {
+            "type": "integer",
+            "example": 1
+          },
+          "time": {
+            "type": "string",
+            "example": "07:55:06"
+          },
+          "duration": {
+            "type": "string",
+            "example": "01:25:17"
+          }
+        }
+      },
+      "OneEmployeeAnalytics": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "example": "06:00:09"
+          },
+          "end": {
+            "type": "string",
+            "example": "08:05:04"
+          },
+          "duration": {
+            "type": "string",
+            "example": "02:04:55"
+          },
+          "status": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "AddressLookupResponse": {
+        "type": "object",
+        "properties": {
+          "display_name": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "string"
+          },
+          "lon": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    }
+  },
+  "security": [
+    {
+      "cookieAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Аутентификация пользователей"
+    },
+    {
+      "name": "Users",
+      "description": "Работа с пользователями сайта (только для администратора). Все CRUD-операции."
+    },
+    {
+      "name": "Employees",
+      "description": "Сотрудники"
+    },
+    {
+      "name": "Objects",
+      "description": "Подопечные"
+    },
+    {
+      "name": "Journal",
+      "description": "Журнал использования телефона (только админ)"
+    },
+    {
+      "name": "Serves",
+      "description": "Служебные записки"
+    },
+    {
+      "name": "Statements",
+      "description": "Заявленные выходы сотрудников к подопечным"
+    },
+    {
+      "name": "Report",
+      "description": "Отчет посещений"
+    },
+    {
+      "name": "OneEmployeeReport",
+      "description": "Индивидуальные карта перемещений и отчет посещений"
+    },
+    {
+      "name": "mts",
+      "description": "Взаимодействие с \"Мобильными сотрудниками\""
+    },
+    {
+      "name": "AddressLookup",
+      "description": "Поиск адресов"
+    }
+  ]
+}

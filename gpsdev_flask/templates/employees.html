@@ -1,0 +1,47 @@
+{% extends 'header.html' %} {% block content %}
+
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<script
+  src="https://code.jquery.com/jquery-3.7.0.min.js"
+  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+  crossorigin="anonymous"
+></script>
+
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+
+<div>
+  <table id="myTable" class="display">
+    <thead>
+      <tr>
+        <th>Подразделение</th>
+        <th>Имя</th>
+        <th>Id</th>
+      </tr>
+    </thead>
+  </table>
+</div>
+
+<script>
+  $.ajax({
+    url: "/api/employees",
+    method: "GET",
+    contentType: "application/json",
+  }).done(function (data) {
+    $("#myTable").dataTable({
+      aaData: data,
+      scrollY: "600px",
+      scrollCollapse: true,
+      paging: false,
+      columns: [
+        { data: "division_name" },
+        { data: "name" },
+        { data: "name_id" },
+      ],
+    });
+  });
+</script>
+
+{% endblock content %}
