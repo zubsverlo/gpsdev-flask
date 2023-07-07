@@ -18,7 +18,7 @@ def login():
     return jsonify({}), 200
 
 
-@auth_bp.route('/logout', methods=['GET'])
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     logout_user()
     # todo: redirect to login page
