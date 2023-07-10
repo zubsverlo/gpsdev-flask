@@ -25,15 +25,32 @@ loginBtn.addEventListener("mouseout", () => {
 
 loginBtn.addEventListener("click", login);
 
-async function login() {
-  const response = await fetch("/api/auth/login", {
+async function login(e) {
+  let pswd = document.getElementById("password").value;
+  let phone = document.getElementById("pNumber").value;
+  let credentials = { password: pswd, phone: phone };
+
+  fetch("api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      phone: 79999774705,
-      password: "testicles737",
-    }),
-  });
+    body: JSON.stringify(credentials),
+  })
+    .then((response) => {
+      if (response.status == 422) {
+        throw new Error("Неверный логин или пароль!");
+      }
+      if (response.ok) {
+        location.search
+          ? (location.href = location.search.split("?next=")[1])
+          : (location.href = "/home");
+      }
+      response.json;
+    })
+    .catch((error) => {
+      const container = document.getElementById("errorContainer");
+      container.innerText = "Неверный логин или пароль!";
+      container.style.display = "flex";
+    });
 }
