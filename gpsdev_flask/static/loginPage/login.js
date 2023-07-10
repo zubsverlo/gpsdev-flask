@@ -22,18 +22,3 @@ loginBtn.addEventListener("mouseout", () => {
   let bgImage = document.getElementById("bgImage");
   bgImage.style.backgroundSize = "150%";
 });
-
-loginBtn.addEventListener("click", login);
-
-async function login() {
-  const response = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      phone: 79999774705,
-      password: "testicles737",
-    }),
-  });
-}
