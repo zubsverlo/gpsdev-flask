@@ -18,7 +18,7 @@
   <body>
     <div id="loginPage">
       <div id="bgImage">
-        <form id="loginContainer">
+        <form id="loginContainer" onsubmit="return false">
           <div id="pageName">Вход</div>
           <div id="inputsContainer">
             <label for="pNumber" id="numberlable">Номер телефона</label>
@@ -44,6 +44,7 @@
           <div id="btnContainer">
             <button id="loginBtn" type="submit">Вход</button>
           </div>
+          <div id="errorContainer">Неверный логин или пароль!</div>
         </form>
       </div>
     </div>
