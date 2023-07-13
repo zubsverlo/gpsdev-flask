@@ -1489,6 +1489,39 @@
           }
         }
       }
+    },
+    "/divisions/accessed": {
+      "get": {
+        "tags": [
+          "Divisions"
+        ],
+        "summary": "Список доступных пользователю подразделений",
+        "description": "Получить список подразделений, доступных пользователю.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "example": 3
+                      },
+                      "division": {
+                        "type": "string",
+                        "example": "Коньково"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2145,6 +2178,10 @@
     {
       "name": "OneEmployeeReport",
       "description": "Индивидуальные карта перемещений и отчет посещений"
+    },
+    {
+      "name": "Divisions",
+      "description": "Подразделения"
     },
     {
       "name": "mts",
