@@ -47,6 +47,13 @@
         "responses": {
           "200": {
             "description": "Successfully authenticated. The session ID is returned in a cookie named `session`. You need to include this cookie in subsequent requests.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
             "headers": {
               "Set-Cookie": {
                 "schema": {
