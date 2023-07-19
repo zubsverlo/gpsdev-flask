@@ -1,7 +1,14 @@
 * {
   margin: 0;
-  font-family: "Raleway", Arial, sans-serif;
+  font-family: "Custom Numbers", "Raleway", Arial, sans-serif;
 }
+
+@font-face {
+  font-family: "Custom Numbers";
+  src: url("./Manrope/Manrope-VariableFont_wght.ttf");
+  unicode-range: U+0030-0039;
+}
+
 body {
   height: 1000px;
   background-color: rgb(220, 220, 220);
@@ -9,7 +16,7 @@ body {
 
 @media screen and (min-width: 1030px) {
   #header {
-    z-index: 99999;
+    z-index: 900;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -135,14 +142,14 @@ body {
 
   #contentBlock {
     margin-top: 50px;
-    padding: 22px;
+    padding: 12px;
     transition: all 0.15s;
   }
 }
 
 @media screen and (max-width: 1030px) and (min-width: 900px) {
   #header {
-    z-index: 999;
+    z-index: 900;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -267,14 +274,14 @@ body {
 
   #contentBlock {
     margin-top: 44px;
-    padding: 20px;
+    padding: 12px;
     transition: all 0.15s;
   }
 }
 
 @media screen and (max-width: 900px) {
   #header {
-    z-index: 999;
+    z-index: 900;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -417,6 +424,6 @@ body {
 
   #contentBlock {
     margin-top: 44px;
-    padding: 20px;
+    padding: 12px;
   }
 }

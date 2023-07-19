@@ -46,7 +46,7 @@ async function login(e) {
           ? (location.href = location.search.split("?next=")[1])
           : (location.href = "/home");
       }
-      response.json;
+      response.json();
     })
     .catch((error) => {
       const container = document.getElementById("errorContainer");
