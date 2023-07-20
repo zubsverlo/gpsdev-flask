@@ -32,7 +32,7 @@ def route_main():
                 date=serv['date'],
             ).first()
             if exists:
-                return validation_error_422(f"{serv} already exists")
+                return validation_error_422("Служебная записка уже добавлена")
             db_session.add(Serves(**serv))
 
         db_session.commit()
@@ -52,7 +52,7 @@ def route_main():
                 date=serv['date'],
             ).first()
             if not exists:
-                return validation_error_422(f"{serv} doesn't exist")
+                return validation_error_422(f"Служебная записка отсутствует")
             db_session.execute(
                 update(Serves)
                 .filter_by(
@@ -127,7 +127,7 @@ def check_coordinates():
             date=new_s['date'],
         ).first()
         if exists:
-            return validation_error_422(f"this serve already exists")
+            return validation_error_422(f"Служебная записка уже существует")
         db_session.add(Serves(name_id=new_s['name_id'],
                               object_id=new_s['object_id'],
                               date=new_s['date'],
@@ -137,4 +137,4 @@ def check_coordinates():
 
         db_session.commit()
         return jsonify({}), 201
-    return validation_error_422('not approved')
+    return validation_error_422('Не подтверждено')
