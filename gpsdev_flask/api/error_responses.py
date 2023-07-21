@@ -1,6 +1,16 @@
 from flask import jsonify
 
 
+def parse_ma_errors(e: dict) -> list:
+    """Парсинг словаря с ошибками валидации схемы в список строк по типу:
+    'Название поля: Ошибка'"""
+    e_list = []
+    for field, descriptions in e.items():
+        for description in descriptions:
+            e_list.append(f"{field}: {description}")
+    return e_list
+
+
 def not_found_404(detail: str | None = None):
     object_not_exists = {
         'status': '404',
@@ -10,11 +20,13 @@ def not_found_404(detail: str | None = None):
     return object_not_exists, 404
 
 
-def validation_error_422(detail: str):
+def validation_error_422(detail: dict | str):
+    if isinstance(detail, dict):
+        detail = parse_ma_errors(detail)
     error = {
         'status': '422',
         'title': 'validation error',
-        'detail': detail
+        'detail': [detail]
     }
     return jsonify(error), 422
 

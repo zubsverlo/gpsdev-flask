@@ -1545,8 +1545,10 @@
             "example": "validation error"
           },
           "details": {
-            "type": "object",
-            "example": {}
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
