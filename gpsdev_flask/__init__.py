@@ -18,6 +18,7 @@ bcrypt = Bcrypt()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(config)
+    app.url_map.strict_slashes = False
     # Чтобы json выдавал не выдавал кириллицу в формате \u9437 - нужно
     # отключить ensure_ascii
     json.provider.DefaultJSONProvider.ensure_ascii = False
