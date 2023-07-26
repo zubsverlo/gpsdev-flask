@@ -23,10 +23,12 @@ def not_found_404(detail: str | None = None):
 def validation_error_422(detail: dict | str):
     if isinstance(detail, dict):
         detail = parse_ma_errors(detail)
+    else:
+        detail = [detail]
     error = {
         'status': '422',
         'title': 'validation error',
-        'detail': [detail]
+        'detail': detail
     }
     return jsonify(error), 422
 
