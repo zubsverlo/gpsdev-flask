@@ -69,7 +69,8 @@ def employees_many(name_id):
             .values(**employee)
         )
         db_session.commit()
-        return jsonify(**employee)
+        updated_employee = db_session.get(Employees, name_id)
+        return jsonify(schema.dump(updated_employee))
 
     if request.method == "DELETE":
         emp = db_session.get(Employees, name_id)
