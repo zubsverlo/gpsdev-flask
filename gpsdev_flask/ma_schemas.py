@@ -63,11 +63,11 @@ class EmployeesSchema(Schema):
                 .filter_by(name=name) \
                 .filter(Employees.name_id != g.name_id) \
                 .first():
-            raise ValidationError(f"Имя {name} уже существует")
+            raise ValidationError(f"{name} уже существует")
         if not g.get('name_id') and db_session.query(Employees)\
                 .filter_by(name=name)\
                 .first():
-            raise ValidationError(f"Имя {name} уже существует")
+            raise ValidationError(f"{name} уже существует")
 
     @validates('division')
     def validate_division(self, division):
@@ -123,7 +123,7 @@ class ObjectSchema(Schema):
                 .all()
             if existing_objects:
                 raise ValidationError(
-                    "Это имя уже используется в указанном подразделении"
+                    "Уже используется в указанном подразделении"
                 )
             return None
         if data.get('division') and data.get('name'):
@@ -143,7 +143,7 @@ class ObjectSchema(Schema):
                 .all()
         if existing_objects:
             raise ValidationError(
-                "Это имя уже используется в указанном подразделении"
+                "Уже используется в указанном подразделении"
             )
 
 
