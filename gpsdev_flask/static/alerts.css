@@ -1,0 +1,83 @@
+.alert-message {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  padding: 20px 30px 20px 20px;
+  border-radius: 5px;
+  border: 1px solid;
+
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.svg-size {
+  width: 18px;
+  height: 18px;
+
+  margin-right: 10px;
+}
+
+.danger {
+  background-color: rgba(212, 177, 177, 0.95);
+  border-color: rgba(166, 76, 76, 0.95);
+  color: rgb(117, 35, 35);
+}
+
+.warning {
+  background-color: rgba(212, 212, 177, 0.95);
+  border-color: rgba(166, 166, 76, 0.95);
+  color: rgb(117, 117, 35);
+}
+
+.info {
+  background-color: rgba(201, 195, 225, 0.95);
+  border-color: rgba(133, 122, 179, 0.95);
+  color: rgb(73, 55, 147);
+}
+
+.success {
+  background-color: rgba(177, 212, 204, 0.95);
+  border-color: rgba(76, 166, 133, 0.95);
+  color: rgb(35, 117, 66);
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in;
+  opacity: 1;
+}
+
+.fade-out {
+  animation: fadeOut 2s ease-in;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .alert-container {
+    position: fixed;
+    z-index: 999;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    display: none;
+  }
+}
