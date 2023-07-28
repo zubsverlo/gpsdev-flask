@@ -5,13 +5,28 @@
 
 @font-face {
   font-family: "Custom Numbers";
-  src: url("./Manrope/Manrope-VariableFont_wght.ttf");
+  src: url("./fonts/Manrope/Manrope-VariableFont_wght.ttf");
   unicode-range: U+0030-0039;
 }
 
 body {
   height: 1000px;
   background-color: rgb(220, 220, 220);
+}
+
+.alert-container {
+  position: fixed;
+  z-index: 999;
+  bottom: 30px;
+  right: 10px;
+
+  display: none;
+  flex-direction: column;
+}
+
+.current-page {
+  background-color: rgb(215, 202, 153);
+  color: rgb(74, 74, 74);
 }
 
 @media screen and (min-width: 1030px) {
@@ -70,6 +85,11 @@ body {
     color: rgb(226, 226, 226);
   }
 
+  .page-link {
+    text-decoration: none;
+    color: rgb(226, 226, 226);
+  }
+
   .page {
     display: flex;
     align-items: center;
@@ -92,6 +112,7 @@ body {
 
   .page:active {
     background-color: rgb(207, 190, 130);
+    color: rgb(74, 74, 74);
     transition: all 0.15s;
   }
 
@@ -203,6 +224,11 @@ body {
     color: rgb(226, 226, 226);
 
     transition: display 0.08s;
+  }
+
+  .page-link {
+    text-decoration: none;
+    color: rgb(226, 226, 226);
   }
 
   .page {
@@ -375,6 +401,11 @@ body {
     padding: 10px 0px 20px 20px;
 
     background-color: rgb(59, 132, 120);
+    color: rgb(226, 226, 226);
+  }
+
+  .page-link {
+    text-decoration: none;
     color: rgb(226, 226, 226);
   }
 

@@ -3,10 +3,10 @@ const eyeBtn = document.getElementById("hideShow");
 eyeBtn.addEventListener("click", () => {
   const passField = document.getElementById("password");
   if (passField.type === "password") {
-    eyeBtn.src = "/static/loginPage/hide.png";
+    eyeBtn.src = "/static/icons/hide.png";
     passField.type = "text";
   } else {
-    eyeBtn.src = "/static/loginPage/show.png";
+    eyeBtn.src = "/static/icons/show.png";
     passField.type = "password";
   }
 });
@@ -46,7 +46,18 @@ async function login(e) {
           ? (location.href = location.search.split("?next=")[1])
           : (location.href = "/home");
       }
-      response.json();
+      return response.json();
+    })
+    .then((data) => {
+      localStorage.clear();
+      let access = JSON.stringify(data.access);
+
+      localStorage.setItem("access", access);
+      localStorage.setItem("id", data.id);
+      localStorage.setItem("name", data.name);
+      localStorage.setItem("phone", data.phone);
+      localStorage.setItem("rang", data.rang);
+      localStorage.setItem("rang-id", data.rang_id);
     })
     .catch((error) => {
       const container = document.getElementById("errorContainer");

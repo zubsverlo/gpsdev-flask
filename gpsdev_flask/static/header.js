@@ -25,3 +25,11 @@ function logOut() {
     })
     .catch((error) => console.log(error));
 }
+
+let pagesLink = document.querySelectorAll(".page-link");
+// let pages = document.querySelectorAll(".page");
+pagesLink.forEach((page) => {
+  window.location.href == page.href
+    ? (page.childNodes[1].className = "page current-page")
+    : null;
+});
