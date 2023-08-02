@@ -21,6 +21,7 @@ function logOut() {
       if (!response.ok) {
         throw new Error("Выход не осуществлен. Попробуйте еще раз!");
       }
+      localStorage.clear();
       location.href = "/login";
     })
     .catch((error) => console.log(error));
