@@ -1,9 +1,22 @@
-export function alertsToggle(text, className, time) {
+export function alertsToggle(text, className, time = 2500) {
+  // new alertContainer
+  let newContainer = document.createElement("div");
+  newContainer.id = "alertContainer";
+  newContainer.className = "alert-container";
+  newContainer.style =
+    "position: fixed; z-index: 999; bottom: 30px; right: 10px; flex-direction: column;";
+  // get alertContainer if it exist
   let alertContainer = document.getElementById("alertContainer");
+
+  // if the container is not found, add a new container to the body
+  if (!alertContainer) {
+    alertContainer = newContainer;
+    document.body.append(alertContainer);
+  }
   let newAlert = document.createElement("div");
   let newAlertText = document.createElement("div");
 
-  alertContainer.className = "alert-container ";
+  alertContainer.className = "alert-container";
   newAlert.className = `alert-message ${className} fade-in`;
   newAlert.id = "alertMessage";
   newAlertText.innerText = text;
