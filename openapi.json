@@ -1477,7 +1477,7 @@
           "description": "Адрес для поиска"
         }
       ],
-      "patch": {
+      "get": {
         "tags": [
           "AddressLookup"
         ],
