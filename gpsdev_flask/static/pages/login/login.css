@@ -160,23 +160,6 @@ body {
     height: 20px;
     cursor: pointer;
   }
-
-  #errorContainer {
-    z-index: 800;
-    position: absolute;
-    left: 35px;
-    bottom: -30px;
-
-    display: none;
-    flex-direction: row;
-    justify-content: center;
-    white-space: nowrap;
-
-    padding: 10px 20px;
-    background-color: rgba(255, 138, 138, 0.75);
-    color: rgb(255, 255, 255);
-    font-weight: 600;
-  }
 }
 
 @media screen and (max-width: 500px) {
@@ -320,23 +303,5 @@ body {
     vertical-align: middle;
     height: 20px;
     cursor: pointer;
-  }
-
-  #errorContainer {
-    z-index: 800;
-    position: absolute;
-    left: 30px;
-    bottom: -30px;
-
-    display: none;
-    flex-direction: row;
-    justify-content: center;
-    white-space: nowrap;
-
-    padding: 10px 20px;
-    background-color: rgba(255, 138, 138, 0.75);
-    color: rgb(255, 255, 255);
-    font-weight: 600;
-    font-size: 14px;
   }
 }

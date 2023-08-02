@@ -13,6 +13,7 @@
       rel="stylesheet"
       href="{{url_for('static', filename='pages/login/login.css')}}"
     />
+    <link rel="stylesheet" href="../static/alerts.css" />
     <title>Страница входа</title>
   </head>
   <body>
@@ -41,11 +42,14 @@
           <div id="btnContainer">
             <button id="loginBtn" type="submit">Вход</button>
           </div>
-          <div id="errorContainer">Неверный логин или пароль!</div>
         </form>
       </div>
     </div>
 
-    <script src="{{url_for('static', filename='pages/login/login.js')}}"></script>
+    <script
+      type="module"
+      src="{{url_for('static', filename='pages/login/login.js')}}"
+    ></script>
+    <script type="module" src="../static/check_pattern.js"></script>
   </body>
 </html>

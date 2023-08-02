@@ -1,3 +1,6 @@
+import { alertsToggle } from "../../alerts.js";
+import { checkPattern } from "../../check_pattern.js";
+
 const eyeBtn = document.getElementById("hideShow");
 
 eyeBtn.addEventListener("click", () => {
@@ -25,9 +28,15 @@ loginBtn.addEventListener("mouseout", () => {
 
 loginBtn.addEventListener("click", login);
 
-async function login(e) {
+function login(e) {
   let pswd = document.getElementById("password").value;
   let phone = document.getElementById("pNumber").value;
+  if (pswd == "" || phone == "") {
+    return;
+  }
+  if (!checkPattern("pNumber")) {
+    return alertsToggle("Введите номер в формате: 79991231122", "danger", 3000);
+  }
   let credentials = { password: pswd, phone: phone };
 
   fetch("api/auth/login", {
@@ -38,18 +47,12 @@ async function login(e) {
     body: JSON.stringify(credentials),
   })
     .then((response) => {
-      if (response.status == 422) {
-        throw new Error("Неверный логин или пароль!");
-      }
       if (response.ok) {
-        location.search
-          ? (location.href = location.search.split("?next=")[1])
-          : (location.href = "/home");
+        return response.json();
       }
-      return response.json();
+      return Promise.reject(response);
     })
     .then((data) => {
-      localStorage.clear();
       let access = JSON.stringify(data.access);
 
       localStorage.setItem("access", access);
@@ -58,10 +61,16 @@ async function login(e) {
       localStorage.setItem("phone", data.phone);
       localStorage.setItem("rang", data.rang);
       localStorage.setItem("rang-id", data.rang_id);
+
+      location.search
+        ? (location.href = location.search.split("?next=")[1])
+        : (location.href = "/home");
     })
-    .catch((error) => {
-      const container = document.getElementById("errorContainer");
-      container.innerText = "Неверный логин или пароль!";
-      container.style.display = "flex";
+    .catch((response) => {
+      if (response.status == 422) {
+        response.json().then((error) => {
+          alertsToggle("Неверный логин или пароль!", "danger", 3000);
+        });
+      }
     });
 }
