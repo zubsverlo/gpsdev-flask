@@ -19,7 +19,35 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 
 <div id="preLoadContainer">
-  <img src="../static/icons/ezgif.com-gif-maker (1).gif" id="preLoadImg" />
+  <img src="../static/icons/pre_load_location.gif" id="preLoadImg" />
+</div>
+
+<div id="modalContainer">
+  <div id="modalContent">
+    <div id="modalTitleContainer">
+      <div id="modalTitle"></div>
+      <div id="closeModal">X</div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div id="tableContainer">
+  <table
+    id="objectTable"
+    style="overflow-x: auto; width: 100%"
+    class="stripe row-border hover"
+  >
+    <thead>
+      <tr>
+        <th>Подразделение</th>
+        <th>Имя</th>
+        <th>Адрес</th>
+        <th>Номер телефона</th>
+        <th>Изменить</th>
+      </tr>
+    </thead>
+  </table>
 </div>
 
 <script type="module" src="../static/pages/objects/objects.js"></script>
