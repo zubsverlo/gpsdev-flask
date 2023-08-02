@@ -1,6 +1,8 @@
 import { alertsToggle } from "../../alerts.js";
 import { dictionary } from "../../translation_dict.js";
+import { checkPattern } from "../../check_pattern.js";
 
+let employeeTable;
 let currentRowOfTable;
 
 // creating table
@@ -9,10 +11,11 @@ $.ajax({
   method: "GET",
   contentType: "application/json",
 }).done(function (data) {
-  let myTable = new DataTable("#myTable", {
+  let windowHeight = window.innerHeight - 220;
+  employeeTable = new DataTable("#employeeTable", {
     aaData: data,
-    scrollY: "600px",
     scrollX: "100%",
+    scrollY: windowHeight,
     scrollCollapse: true,
     paging: false,
     language: {
@@ -68,9 +71,9 @@ $.ajax({
 
   // When change button is clicked, create modal,
   // add delete button in form, fill form with api data
-  myTable.on("click", "button", function (e) {
+  employeeTable.on("click", "button", function (e) {
     currentRowOfTable = e.target.closest("tr");
-    let data = myTable.row(e.target.closest("tr")).data();
+    let data = employeeTable.row(e.target.closest("tr")).data();
 
     modal.style.display = "flex";
     modalTitle.innerText = `Изменить сотрудника  ${
@@ -247,10 +250,11 @@ function createForm() {
 
   return modalForm;
 }
+
 // collect new employee fields data
 function createEmployee(e) {
   let name = document.getElementById("nameField").value;
-  let phone = document.getElementById("phoneField").value;
+  let phone = document.getElementById("phoneField");
 
   let options = document.getElementById("divisionField");
   let divisionId =
@@ -262,10 +266,18 @@ function createEmployee(e) {
 
   let scheduleCheck = document.getElementById("scheduleCheck").checked;
 
-  if (name == "" || phone == "" || phone.length != 11 || hireDate == "") return;
+  if (
+    name == "" ||
+    phone.value == "" ||
+    !checkPattern("phoneField") ||
+    phone.value.length != 11 ||
+    hireDate == ""
+  ) {
+    return;
+  }
   let parameters = {
     name: name,
-    phone: phone,
+    phone: phone.value,
     division: divisionId,
     hire_date: hireDate,
   };
@@ -288,14 +300,14 @@ async function sendNewEmployee(parameters) {
   })
     .then((response) => {
       if (response.status === 201) {
-        hideModal();
-        alertsToggle("Сотрудник добавлен!", "success", 2500);
         return response.json();
       }
       return Promise.reject(response);
     })
     .then((data) => {
-      $("#myTable").DataTable().row.add(data).draw();
+      hideModal();
+      alertsToggle("Сотрудник добавлен!", "success", 2500);
+      $("#employeeTable").DataTable().row.add(data).draw();
     })
 
     .catch((response) => {
@@ -330,7 +342,14 @@ function changeEmployee() {
 
   let scheduleCheck = document.getElementById("scheduleCheck").checked;
 
-  if (name == "" || phone == "" || phone.length != 11 || hireDate == "") return;
+  if (
+    name == "" ||
+    phone == "" ||
+    !checkPattern("phoneField") ||
+    phone.length != 11 ||
+    hireDate == ""
+  )
+    return;
 
   let parameters = {
     name: name,
@@ -356,15 +375,15 @@ function sendEditEmployee(parameters) {
   })
     .then((response) => {
       if (response.status === 200) {
-        hideModal();
-        alertsToggle("Сотрудник изменен!", "success", 2500);
         return response.json();
       }
 
       return Promise.reject(response);
     })
     .then((data) => {
-      $("#myTable").DataTable().row(currentRowOfTable).data(data).draw();
+      hideModal();
+      alertsToggle("Сотрудник изменен!", "success", 2500);
+      $("#employeeTable").DataTable().row(currentRowOfTable).data(data).draw();
       currentRowOfTable = null;
     })
     .catch((response) => {
@@ -399,7 +418,7 @@ function deleteEmployee() {
   })
     .then((response) => {
       if (response.status === 204) {
-        $("#myTable").DataTable().row(currentRowOfTable).remove().draw();
+        $("#employeeTable").DataTable().row(currentRowOfTable).remove().draw();
         currentRowOfTable = null;
         hideModal();
         alertsToggle("Сотрудник удален!", "success", 2500);
