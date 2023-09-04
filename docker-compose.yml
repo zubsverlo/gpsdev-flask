@@ -10,8 +10,8 @@ services:
       - redis
     network_mode: "host"
     restart: always
-    environment:
-      - ENV=production
+#    environment:
+#      - ENV=production
 
   redis:
     image: redis
