@@ -75,7 +75,7 @@
   }
 
   #modalContainer {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
 
@@ -158,6 +158,14 @@
     margin-bottom: 10px;
   }
 
+  #phoneFieldContainer {
+    width: 364px;
+  }
+
+  #addressFieldContainer {
+    margin: 0;
+  }
+
   #modalForm input {
     font-size: 14px;
     width: 350px;
@@ -190,6 +198,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    margin-top: 5px;
   }
 
   #activeField input,
@@ -208,39 +218,138 @@
     margin-top: 5px;
   }
 
+  #addressOuterContainer {
+    z-index: 900;
+    position: absolute;
+    background-color: field;
+
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 2px;
+  }
+
+  #addressContainer {
+    overflow-y: auto;
+    max-height: 180px;
+    max-width: 600px;
+  }
+
+  .address-options {
+    border: none;
+    overflow: hidden;
+    background-color: field;
+    border-bottom: solid 1px rgba(155, 155, 155, 0.7);
+    padding: 3px 5px;
+    cursor: pointer;
+  }
+
   #btnsContainer {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 
-    width: 138%;
+    width: 137.8%;
     padding: 20px 0px;
     margin-top: 20px;
     border-top: solid 1px rgb(189, 189, 189);
   }
 
   #btnsContainer button {
-    margin: 0 30px 0 30px;
     font-size: 15px;
     font-weight: 500;
     padding: 10px 14px;
     border-radius: 5px;
     border: none;
+
+    cursor: pointer;
   }
 
   #cancelBtn {
     background-color: rgba(83, 83, 83, 0.751);
     color: rgb(247, 237, 237);
+    margin-left: 30px;
+  }
 
-    cursor: pointer;
+  #deleteBtn {
+    margin: 0px;
+
+    background-color: rgba(231, 88, 88, 0.684);
+    color: rgb(247, 237, 237);
   }
 
   #saveBtn {
     background-color: rgba(223, 220, 168, 0.899);
     color: rgb(46, 46, 46);
+    margin-right: 30px;
+  }
+
+  #switchAddressContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+  }
+
+  #switchAddressLabelName {
+    font-size: 14px;
+    margin-right: 14px;
+  }
+
+  #switchAddressLabel {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+
+    margin-top: 10px;
+  }
+
+  #switchAddressLabel input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  #switchAddressSpan {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(65, 156, 153);
+    border-radius: 34px;
+    transition: 0.4s;
 
     cursor: pointer;
+  }
+
+  #switchAddressSpan::before {
+    position: absolute;
+    content: "1";
+    left: 4px;
+    bottom: 3px;
+    background-color: white;
+
+    padding: 3px 6px 3px 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+
+    border-radius: 50%;
+    transition: 0.4s;
+  }
+
+  #switchAddressLabel input:checked + #switchAddressSpan {
+    background-color: rgb(211, 212, 152);
+  }
+
+  #switchAddressLabel input:focus + #switchAddressSpan {
+    box-shadow: 0 0 1px rgb(211, 212, 152);
+  }
+
+  #switchAddressLabel input:checked + #switchAddressSpan::before {
+    transform: translateX(25px);
+    content: "2";
   }
 }
 
@@ -277,7 +386,7 @@
 
   .new-obj-btn {
     font-size: 16px;
-    padding: 6px 9px;
+    padding: 5px 8px;
     background-color: rgba(45, 137, 129, 0.5);
     color: rgb(245, 237, 237);
     border: solid 1px gray;
@@ -314,5 +423,282 @@
     padding: 10px 15px;
 
     cursor: pointer;
+  }
+
+  #modalContainer {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 900;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  #modalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: rgb(236, 236, 230);
+    border-radius: 8px;
+    box-shadow: 0 0 100px 10px rgba(28, 155, 134, 0.5);
+  }
+
+  #modalTitleContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    font-size: 20px;
+    width: 100%;
+    padding: 20px 0px;
+    margin-bottom: 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom: solid 1px rgb(189, 189, 189);
+  }
+
+  #modalTitle {
+    margin-left: 20px;
+  }
+
+  #closeModal {
+    font-family: "Montserrat";
+    font-size: 18px;
+
+    margin-right: 20px;
+
+    cursor: pointer;
+  }
+
+  #modalBody {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin: 0px;
+  }
+
+  #modalForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    /* padding: 0 50px; */
+  }
+
+  #nameFieldContainer,
+  #phoneFieldContainer,
+  #addressFieldContainer,
+  #divisionFieldContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  #phoneFieldContainer {
+    width: 320px;
+  }
+
+  #addressFieldContainer {
+    margin: 0;
+  }
+
+  #modalForm input {
+    font-size: 14px;
+    width: 304px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #divisionField {
+    width: 320px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #restFields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    font-size: 15px;
+    width: 82%;
+
+    margin: 0px 0px 20px 5px;
+  }
+
+  #activeField,
+  #noPaymentField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    margin-top: 5px;
+  }
+
+  #activeField input,
+  #noPaymentField input {
+    width: 20px;
+    margin: 0;
+    margin-right: 10px;
+  }
+
+  #addressSelect {
+    width: 368px;
+    min-height: 100px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #addressOuterContainer {
+    z-index: 900;
+    position: absolute;
+    background-color: field;
+
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 2px;
+  }
+
+  #addressContainer {
+    overflow-y: auto;
+    max-height: 180px;
+    max-width: 600px;
+  }
+
+  .address-options {
+    border: none;
+    overflow: hidden;
+    background-color: field;
+    border-bottom: solid 1px rgba(155, 155, 155, 0.7);
+    padding: 3px 5px;
+    cursor: pointer;
+  }
+
+  #btnsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 99.8%;
+    padding: 20px 0px;
+    margin-top: 20px;
+    border-top: solid 1px rgb(189, 189, 189);
+  }
+
+  #btnsContainer button {
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+
+    cursor: pointer;
+  }
+
+  #cancelBtn {
+    background-color: rgba(83, 83, 83, 0.751);
+    color: rgb(247, 237, 237);
+    margin-left: 15px;
+  }
+
+  #deleteBtn {
+    margin: 0px;
+
+    background-color: rgba(231, 88, 88, 0.684);
+    color: rgb(247, 237, 237);
+  }
+
+  #saveBtn {
+    background-color: rgba(223, 220, 168, 0.899);
+    color: rgb(46, 46, 46);
+    margin-right: 15px;
+  }
+
+  #switchAddressContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+  }
+
+  #switchAddressLabelName {
+    font-size: 14px;
+    margin-right: 14px;
+  }
+
+  #switchAddressLabel {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+
+    margin-top: 10px;
+  }
+
+  #switchAddressLabel input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  #switchAddressSpan {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(65, 156, 153);
+    border-radius: 34px;
+    transition: 0.4s;
+
+    cursor: pointer;
+  }
+
+  #switchAddressSpan::before {
+    position: absolute;
+    content: "1";
+    left: 4px;
+    bottom: 3px;
+    background-color: white;
+
+    padding: 3px 6px 3px 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+
+    border-radius: 50%;
+    transition: 0.4s;
+  }
+
+  #switchAddressLabel input:checked + #switchAddressSpan {
+    background-color: rgb(211, 212, 152);
+  }
+
+  #switchAddressLabel input:focus + #switchAddressSpan {
+    box-shadow: 0 0 1px rgb(211, 212, 152);
+  }
+
+  #switchAddressLabel input:checked + #switchAddressSpan::before {
+    transform: translateX(25px);
+    content: "2";
   }
 }
