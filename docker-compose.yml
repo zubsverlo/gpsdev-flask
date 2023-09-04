@@ -17,3 +17,15 @@ services:
     image: redis
     network_mode: "host"
     restart: always
+
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    network_mode: "host"
+    restart: always
+
