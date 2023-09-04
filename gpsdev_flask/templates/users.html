@@ -7,9 +7,7 @@
 <link
   href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css"
 />
-
 <link rel="stylesheet" href="../static/pages/users/users.css" />
-
 <script
   src="https://code.jquery.com/jquery-3.7.0.min.js"
   integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
@@ -20,5 +18,29 @@
 
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 
-<p>Hi there!</p>
+<div id="preLoadContainer">
+  <img src="../static/icons/inheritance users.gif" id="preLoadImg" />
+</div>
+
+<div id="tableContainer">
+  <table
+    id="usersTable"
+    style="overflow-x: auto; width: 100%"
+    class="stripe row-border hover"
+  >
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Имя</th>
+        <th>Номер телефона</th>
+        <th>Подразделения</th>
+        <th>Изменить</th>
+      </tr>
+    </thead>
+  </table>
+</div>
+
+<script src="../static/pages/users/users.js"></script>
+<!-- <script type="module" src="../static/alerts.js"></script> -->
+<!-- <script type="module" src="../static/translation_dict.js"></script> -->
 {% endblock content %}
