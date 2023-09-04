@@ -5,7 +5,7 @@ from flask_login import LoginManager
 from flask import json
 from gpsdev_flask.models import User
 from gpsdev_flask.query_handler import BackgroundQueriesHandler, TASKS_QUEUE
-import os
+from redis import Redis
 from config import get_config
 
 
@@ -13,6 +13,7 @@ config = get_config()
 db_session = create_db_session(config)
 login_manager = LoginManager()
 bcrypt = Bcrypt()
+redis_session = Redis()
 
 
 def create_app():
@@ -39,13 +40,5 @@ def create_app():
     # Прокинуть все routes:
     from gpsdev_flask.routes import register_blueprints
     register_blueprints(app)
-
-    queries_handler = BackgroundQueriesHandler(db_session, daemon=True)
-    # if os.getenv('CONFIG_TYPE') != 'config.TestingConfig':
-    if not os.getenv('NO_BQH'):
-        if not (app.debug or os.environ.get('FLASK_ENV') == 'development')\
-                or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-            queries_handler.start()
-            print('queries_handler has been started')
 
     return app

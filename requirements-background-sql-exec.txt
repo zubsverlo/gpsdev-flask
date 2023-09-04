@@ -1,0 +1,4 @@
+python-dotenv
+redis==4.5.4
+mysql-connector-python==8.0.33
+sqlalchemy==2.0.12

@@ -1,0 +1,5 @@
+FROM python:3.10
+WORKDIR /app
+COPY ./requirements-background-sql-exec.txt requirements.txt
+RUN pip install -r requirements.txt
+CMD ["python3", "background_sql_executor.py"]

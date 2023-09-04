@@ -1,0 +1,31 @@
+version: "3.3"
+services:
+  background:
+    build:
+      context: .
+      dockerfile: Dockerfile-background-executor
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    network_mode: "host"
+    restart: always
+#    environment:
+#      - ENV=production
+
+  redis:
+    image: redis
+    network_mode: "host"
+    restart: always
+
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    network_mode: "host"
+    restart: always
+
