@@ -14,6 +14,10 @@ from gpsdev_flask.models import ObjectsSite, Employees, Division, User
 from flask import g
 from sqlalchemy import text, or_
 
+fields.Field.default_error_messages["required"] = "Обязательное поле"
+fields.Field.default_error_messages["null"] = "Поле не может быть null"
+fields.Field.default_error_messages["validator_failed"] = "Некорретное значение"
+
 
 class PhoneNumber(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
@@ -36,9 +40,12 @@ class DivisionSchema(Schema):
 
 class EmployeesSchema(Schema):
     name_id = fields.Integer(dump_only=True)
-    name = fields.String(required=True, validate=validate.Length(max=100))
+    name = fields.String(required=True, validate=validate.Length(
+        max=100,
+        error="Имя должно быть в пределах 100 символов")
+    )
     hire_date = fields.Date(load_default=dt.date.today())
-    quit_date = fields.Date()
+    quit_date = fields.Date(allow_none=True)
     division_name = fields.Pluck(
         DivisionSchema, 'division', attribute='division_ref', dump_only=True
     )
@@ -56,28 +63,27 @@ class EmployeesSchema(Schema):
                 .filter_by(name=name) \
                 .filter(Employees.name_id != g.name_id) \
                 .first():
-            raise ValidationError(f"{name} already exists")
+            raise ValidationError(f"{name} уже существует")
         if not g.get('name_id') and db_session.query(Employees)\
                 .filter_by(name=name)\
                 .first():
-            raise ValidationError(f"{name} already exists")
+            raise ValidationError(f"{name} уже существует")
 
     @validates('division')
     def validate_division(self, division):
         if division not in current_user.access_list:
             raise ValidationError(
-                "You are not allowed to add to this division")
+                "Вы не можете использовать указанное подразделение")
 
     @validates('schedule')
     def validate_schedule(self, schedule):
         if schedule not in (1, 2):
-            raise ValidationError('Schedule should be 1 or 2')
+            raise ValidationError('Должность должна быть 1 или 2')
 
     @validates('phone')
     def validate_phone(self, phone):
         if len(phone) != 11:
-            raise ValidationError(f'Phone number should be exactly 11 digits, '
-                                  f'you provided {phone} ({len(phone)})')
+            raise ValidationError('Номер не должен превышать 11 символов')
 
     @pre_load
     def load_phone(self, data, **kwargs):
@@ -88,12 +94,14 @@ class EmployeesSchema(Schema):
 
 class ObjectSchema(Schema):
     object_id = fields.Integer(dump_only=True)
-    name = fields.String(required=True, validate=validate.Length(max=100))
+    name = fields.String(required=True, validate=validate.Length(
+        max=100, error="Имя должно быть в пределах 100 символов"))
     address = fields.String(required=True)
     latitude = fields.Float(required=True)
     longitude = fields.Float(required=True)
     division = fields.Integer(required=True)
-    phone = fields.String(validate=validate.Length(max=200))
+    phone = fields.String(validate=validate.Length(
+        max=200, error="Контактные данные должны быть в пределах 200 символов"))
     no_payments = fields.Boolean(load_default=False)
     active = fields.Boolean(load_default=True)
     division_name = fields.Pluck(
@@ -103,7 +111,8 @@ class ObjectSchema(Schema):
     @validates('division')
     def validate_division(self, value):
         if value not in current_user.access_list:
-            raise ValidationError("You are not allowed to use this division")
+            raise ValidationError("Вы не можете использовать "
+                                  "указанное подразделение")
 
     @validates_schema
     def validate_unique_name(self, data, **kwargs):
@@ -114,7 +123,7 @@ class ObjectSchema(Schema):
                 .all()
             if existing_objects:
                 raise ValidationError(
-                    "Duplicated names in the same group are not allowed"
+                    "Уже используется в указанном подразделении"
                 )
             return None
         if data.get('division') and data.get('name'):
@@ -134,7 +143,7 @@ class ObjectSchema(Schema):
                 .all()
         if existing_objects:
             raise ValidationError(
-                "Duplicated names in the same group are not allowed"
+                "Уже используется в указанном подразделении"
             )
 
 
@@ -157,7 +166,7 @@ class JournalSchema(Schema):
         init = data.get('period_init', g.record.period_init)
         end = data.get('period_end', g.record.period_end)
         if init > end:
-            raise ValidationError("period_init can't be more than period_end")
+            raise ValidationError("period_init не может быть позже period_end")
         sel = text(
             f"select * from journal_site where "
             f"subscriberID = {subscriber} and "
@@ -220,7 +229,9 @@ class ServesSchema(Schema):
     name_id = fields.Integer(required=True)
     object_id = fields.Integer(required=True)
     date = fields.Date(required=True)
-    comment = fields.String(validate=validate.Length(max=200), required=True)
+    comment = fields.String(validate=validate.Length(
+        max=200, error="Комментарий не должен превышать 200 символов"),
+                            required=True)
     approval = fields.Integer(load_default=3, validate=validate.OneOf([1, 3]))
     name = fields.Pluck(
         EmployeesSchema(only=['name']),
@@ -234,7 +245,7 @@ class ServesSchema(Schema):
     @post_load
     def post_load(self, data, **kwargs):
         if current_user.rang_id not in (1, 2) and data.get('approval') == 1:
-            raise ValidationError('You are not allowed to approve serves!')
+            raise ValidationError('Вы не можете подтверждать служебки!')
         return data
 
 
@@ -279,15 +290,15 @@ class ReportSchema(Schema):
     @validates_schema
     def validate_dates(self, data, **kwargs):
         if data['date_from'] > data['date_to']:
-            raise ValidationError('date_to must be higher than date_from, '
-                                  'or they must be equal')
+            raise ValidationError("Конечная дата должна быть больше начальной "
+                                  "даты, или они должны быть идентичны.")
 
     @validates_schema
     def validate_params(self, data, **kwargs):
         if data.get('division') and \
                 (data.get('name_ids') or data.get('object_ids')):
-            raise ValidationError('You can not provide division with '
-                                  'name_ids or object_ids. ')
+            raise ValidationError("Указывая список сотрудников или объектов, "
+                                  "вы не можете указать подразделение.")
 
 
 class MapMovementsSchema(Schema):
@@ -305,7 +316,8 @@ class MapMovementsSchema(Schema):
     @validates('date')
     def validate_date(self, value):
         if value > dt.date.today():
-            raise ValidationError("future date cannot be processed")
+            raise ValidationError("Вы пытаетесь запросить отчет за день, "
+                                  "который ещё не наступил.")
 
 
 class ServesWithCoordinatesSchema(Schema):
@@ -315,8 +327,11 @@ class ServesWithCoordinatesSchema(Schema):
     division = fields.Integer(required=True)
     longitude = fields.Float(required=True)
     latitude = fields.Float(required=True)
-    comment = fields.String(validate=validate.Length(max=200), required=True)
-    address = fields.String(validate=validate.Length(max=200))
+    comment = fields.String(validate=validate.Length(
+        max=200, error="Комментарий не должен превышать 200 символов"
+    ), required=True)
+    address = fields.String(validate=validate.Length(
+        max=200, error="Комментарий не должен превышать 200 символов"))
 
 
 class LoginSchema(Schema):
@@ -328,8 +343,8 @@ class LoginSchema(Schema):
     def check_password_and_login(self, data, **kwargs):
         user = db_session.query(User).filter_by(phone=data['phone']).first()
         if not user:
-            raise ValidationError('wrong phone number or password')
+            raise ValidationError('Неправильный номер или пароль')
         if not bcrypt.check_password_hash(user.password, data['password']):
-            raise ValidationError('wrong phone number or password')
+            raise ValidationError('Неправильный номер или пароль')
         login_user(user, remember=data.get('remember', False))
         return data

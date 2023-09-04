@@ -9,9 +9,9 @@ from gpsdev_flask.api.serves import serves
 from gpsdev_flask.api.address_lookup import address_lookup
 from gpsdev_flask.api.mts import mts
 from gpsdev_flask.api.statements import statements
+from gpsdev_flask.api.divisions import divisions
 from gpsdev_flask.pages import pages
 from flask_swagger_ui import get_swaggerui_blueprint
-from flask_login import login_required
 
 
 def register_blueprints(app):
@@ -29,6 +29,7 @@ def register_blueprints(app):
     app.register_blueprint(statements, url_prefix='/api/statements')
     app.register_blueprint(pages, url_prefix='/')
     app.register_blueprint(register_swagger(app))
+    app.register_blueprint(divisions, url_prefix='/api/divisions')
 
 
 def register_swagger(app):

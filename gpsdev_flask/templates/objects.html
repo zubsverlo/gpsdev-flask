@@ -1,3 +1,57 @@
 {% extends 'header.html' %} {% block content %}
-<p>Hi there!</p>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<link
+  href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css"
+/>
+<link rel="stylesheet" href="../static/pages/objects/objects.css" />
+<script
+  src="https://code.jquery.com/jquery-3.7.0.min.js"
+  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+  crossorigin="anonymous"
+></script>
+
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+
+<div id="preLoadContainer">
+  <img src="../static/icons/pre_load_location.gif" id="preLoadImg" />
+</div>
+
+<div id="modalContainer">
+  <div id="modalContent">
+    <div id="modalTitleContainer">
+      <div id="modalTitle"></div>
+      <div id="closeModal">X</div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div id="tableContainer">
+  <table
+    id="objectTable"
+    style="overflow-x: auto; width: 100%"
+    class="stripe row-border hover"
+  >
+    <thead>
+      <tr>
+        <th>Подразделение</th>
+        <th>Имя</th>
+        <th>Адрес</th>
+        <th>Номер телефона</th>
+        <th>Изменить</th>
+      </tr>
+    </thead>
+  </table>
+</div>
+
+<script type="module" src="../static/pages/objects/objects.js"></script>
+<script type="module" src="../static/alerts.js"></script>
+<script type="module" src="../static/translation_dict.js"></script>
+
 {% endblock content %}

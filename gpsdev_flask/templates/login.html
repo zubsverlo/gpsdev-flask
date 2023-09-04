@@ -11,14 +11,15 @@
     />
     <link
       rel="stylesheet"
-      href="{{url_for('static', filename='loginPage/login.css')}}"
+      href="{{url_for('static', filename='pages/login/login.css')}}"
     />
+    <link rel="stylesheet" href="../static/alerts.css" />
     <title>Страница входа</title>
   </head>
   <body>
     <div id="loginPage">
       <div id="bgImage">
-        <form id="loginContainer">
+        <form id="loginContainer" onsubmit="return false">
           <div id="pageName">Вход</div>
           <div id="inputsContainer">
             <label for="pNumber" id="numberlable">Номер телефона</label>
@@ -28,7 +29,7 @@
               id="pNumber"
               autofocus
               maxlength="11"
-              title="Формат нормера: 79991231122"
+              title="Формат номера: 79991231122"
               required
               pattern="^[7][0-9]{10}"
             />
@@ -36,10 +37,7 @@
             <label id="passwordlable" for="password">Пароль</label>
             <br />
             <input type="password" id="password" required />
-            <img
-              id="hideShow"
-              src="{{url_for('static', filename='loginPage/show.png')}}"
-            />
+            <img id="hideShow" src="../static/icons/show.png" />
           </div>
           <div id="btnContainer">
             <button id="loginBtn" type="submit">Вход</button>
@@ -48,6 +46,10 @@
       </div>
     </div>
 
-    <script src="{{url_for('static', filename='loginPage/login.js')}}"></script>
+    <script
+      type="module"
+      src="{{url_for('static', filename='pages/login/login.js')}}"
+    ></script>
+    <script type="module" src="../static/check_pattern.js"></script>
   </body>
 </html>

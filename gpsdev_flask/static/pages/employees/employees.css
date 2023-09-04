@@ -1,0 +1,500 @@
+@media screen and (min-width: 900px) {
+  #preLoadContainer {
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 200px;
+  }
+
+  #tableContainer {
+    opacity: 0;
+    transition: all 0.8s;
+  }
+
+  .pre-table-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .new-emp-container {
+    display: inline-block;
+  }
+
+  .new-emp-btn {
+    font-size: 16px;
+    padding: 5px 8px;
+    background-color: rgb(228, 228, 206);
+    border: solid 1px gray;
+    border-radius: 3px;
+
+    cursor: pointer;
+  }
+
+  tr {
+    background-color: rgba(49, 132, 115, 0.551);
+    color: rgb(236, 230, 230);
+  }
+
+  td {
+    color: black;
+
+    font-family: "Manrope", sans-serif;
+    font-weight: 300;
+  }
+
+  tr.odd {
+    background-color: rgba(218, 217, 193, 0.1) !important;
+  }
+
+  tr.even {
+    background-color: rgba(244, 242, 177, 0.1) !important;
+  }
+
+  .change-btn {
+    background-color: rgb(228, 228, 206);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+
+    cursor: pointer;
+  }
+
+  #modalContainer {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 900;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  #modalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: rgb(236, 236, 230);
+    /* padding: 20px 20px; */
+    border-radius: 10px;
+    box-shadow: 0 0 100px 10px rgba(28, 155, 134, 0.5);
+  }
+
+  #modalTitleContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    font-size: 20px;
+    width: 100%;
+    padding: 20px 0px;
+    margin-bottom: 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom: solid 1px rgb(189, 189, 189);
+  }
+
+  #modalTitle {
+    margin-left: 20px;
+  }
+
+  #closeModal {
+    font-family: "Montserrat";
+    font-size: 18px;
+
+    margin-left: 120px;
+    margin-right: 20px;
+
+    cursor: pointer;
+  }
+
+  #modalBody {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin-inline: 20px;
+  }
+
+  #modalForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 50px;
+  }
+
+  #nameFieldContainer,
+  #phoneFieldContainer,
+  #divisionFieldContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  #modalForm input {
+    font-size: 14px;
+    width: 350px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #divisionField {
+    width: 368px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #restFields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #dateFields {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    width: 368px;
+    margin-bottom: 20px;
+  }
+
+  #dateFields input {
+    width: 155px;
+  }
+
+  #scheduleField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  #scheduleField input {
+    width: 20px;
+    margin: 0;
+    margin-right: 10px;
+  }
+
+  #deleteBtn {
+    margin-left: 13px;
+
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+    background-color: rgba(231, 88, 88, 0.684);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #btnsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 138%;
+    padding: 20px 0px;
+    margin-top: 20px;
+    border-top: solid 1px rgb(189, 189, 189);
+  }
+
+  #btnsContainer button {
+    margin: 0 30px 0 30px;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+  }
+
+  #cancelBtn {
+    background-color: rgba(83, 83, 83, 0.751);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #saveBtn {
+    background-color: rgba(223, 220, 168, 0.899);
+    color: rgb(46, 46, 46);
+
+    cursor: pointer;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  #preLoadContainer {
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 100px;
+  }
+
+  #tableContainer {
+    opacity: 0;
+    transition: all 0.8s;
+  }
+
+  .pre-table-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .new-emp-container {
+    display: inline-block;
+  }
+
+  .new-emp-btn {
+    font-size: 16px;
+    padding: 5px 8px;
+    background-color: rgb(228, 228, 206);
+    border: solid 1px gray;
+    border-radius: 3px;
+
+    cursor: pointer;
+  }
+
+  tr {
+    background-color: rgba(49, 132, 115, 0.551);
+    color: rgb(236, 230, 230);
+  }
+
+  td {
+    color: black;
+
+    font-family: "Manrope", sans-serif;
+    font-weight: 300;
+  }
+
+  tr.odd {
+    background-color: rgba(218, 217, 193, 0.1) !important;
+  }
+
+  tr.even {
+    background-color: rgba(244, 242, 177, 0.1) !important;
+  }
+
+  .change-btn {
+    background-color: rgb(228, 228, 206);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+
+    cursor: pointer;
+  }
+
+  #modalContainer {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 900;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  #modalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: rgb(236, 236, 230);
+    border-radius: 10px;
+    box-shadow: 0 0 100px 10px rgba(28, 155, 134, 0.5);
+  }
+
+  #modalTitleContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    font-size: 20px;
+    width: 100%;
+    padding: 20px 0px;
+    margin-bottom: 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom: solid 1px rgb(189, 189, 189);
+  }
+
+  #modalTitle {
+    margin-left: 20px;
+  }
+
+  #closeModal {
+    font-family: "Montserrat";
+    font-size: 18px;
+
+    margin-right: 20px;
+
+    cursor: pointer;
+  }
+
+  #modalBody {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin-inline: 20px;
+  }
+
+  #modalForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  #nameFieldContainer,
+  #phoneFieldContainer,
+  #divisionFieldContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  #modalForm input {
+    font-size: 14px;
+    width: 304px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #divisionField {
+    width: 320px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #restFields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #dateFields {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    width: 320px;
+    margin-bottom: 20px;
+  }
+
+  #dateFields input {
+    width: 155px;
+  }
+
+  #scheduleField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 320px;
+  }
+
+  #scheduleField input {
+    width: 20px;
+    margin: 0;
+    margin-right: 10px;
+  }
+
+  #deleteBtn {
+    margin-left: 13px;
+
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+    background-color: rgba(231, 88, 88, 0.684);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #btnsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 112%;
+    padding: 20px 0px;
+    margin-top: 20px;
+    border-top: solid 1px rgb(189, 189, 189);
+  }
+
+  #btnsContainer button {
+    margin: 0 30px 0 30px;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+  }
+
+  #cancelBtn {
+    background-color: rgba(83, 83, 83, 0.751);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #saveBtn {
+    background-color: rgba(223, 220, 168, 0.899);
+    color: rgb(46, 46, 46);
+
+    cursor: pointer;
+  }
+}
