@@ -8,14 +8,12 @@ services:
       - .:/app
     depends_on:
       - redis
-    network_mode: "host"
     restart: always
 #    environment:
 #      - ENV=production
 
   redis:
     image: redis
-    network_mode: "host"
     restart: always
 
   flask:
@@ -26,6 +24,7 @@ services:
       - .:/app
     depends_on:
       - redis
-    network_mode: "host"
     restart: always
+    ports:
+      - "5000:5000"
 

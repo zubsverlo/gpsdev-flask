@@ -13,7 +13,7 @@ config = get_config()
 db_session = create_db_session(config)
 login_manager = LoginManager()
 bcrypt = Bcrypt()
-redis_session = Redis()
+redis_session = Redis("redis")
 
 
 def create_app():
