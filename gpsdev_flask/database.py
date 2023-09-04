@@ -5,7 +5,8 @@ from greenlet import getcurrent
 
 
 def create_db_session(config):
-    engine = create_engine(config.DB, echo=config.DATABASE_ECHO)
+    engine = create_engine(config.DB, echo=config.DATABASE_ECHO,
+                           pool_recycle=300)
     db_session = scoped_session(
         sessionmaker(autocommit=False,
                      autoflush=False,

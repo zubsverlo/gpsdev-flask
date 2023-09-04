@@ -10,6 +10,7 @@ from gpsdev_flask.api.error_responses import (validation_error_422,
 from trajectory_report.map import MapMovements
 from trajectory_report.exceptions import ReportException
 from gpsdev_flask.api import api_login_required
+from gpsdev_flask.celery_tasks import update_redis_cache
 
 
 serves = Blueprint('serves', __name__)
@@ -36,6 +37,7 @@ def route_main():
             db_session.add(Serves(**serv))
 
         db_session.commit()
+        update_redis_cache.delay('serves')
         return jsonify(schema.dump(new_serves)), 201
 
     if request.method == 'PATCH':
@@ -63,6 +65,7 @@ def route_main():
                 .values(approval=serv['approval'])
             )
         db_session.commit()
+        update_redis_cache.delay('serves')
         return jsonify({}), 200
 
 
@@ -102,6 +105,7 @@ def serves_delete():
             )
         )
     db_session.commit()
+    update_redis_cache.delay('serves')
     return jsonify({}), 204
 
 
@@ -136,5 +140,6 @@ def check_coordinates():
                               approval=1))
 
         db_session.commit()
+        update_redis_cache.delay('serves')
         return jsonify({}), 201
     return validation_error_422('Не подтверждено')
