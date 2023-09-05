@@ -36,3 +36,11 @@ def update_redis_cache(table):
     return
 
 
+@app_celery.task
+def update_json_cache(table, json_response):
+    redis_session.set(table, json_response)
+
+
+@app_celery.task
+def clear_json_cache(table):
+    redis_session.delete(table)
