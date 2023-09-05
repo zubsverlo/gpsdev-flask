@@ -201,7 +201,7 @@ class UserSchema(Schema):
             pswd = bcrypt.generate_password_hash(new_password).decode('utf-8')
             data['password'] = pswd
 
-        if data.get('access_set'):
+        if 'access_set' in data.keys():
             access = data['access_set']
             res = db_session.query(Division)\
                 .filter(
@@ -211,7 +211,6 @@ class UserSchema(Schema):
                 ).all()
             del data['access_set']
             data['access'] = res
-
         return data
 
     @post_dump
