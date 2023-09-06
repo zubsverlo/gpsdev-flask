@@ -148,7 +148,6 @@ $.ajax({
   method: "GET",
   contentType: "application/json",
 }).done(function (data) {
-  console.log(data);
   data.forEach((user) => {
     let newArray = [];
     user.access.forEach((d) => {
@@ -209,10 +208,11 @@ $.ajax({
   $("#tableContainer")[0].style.opacity = 1;
 });
 
+// When change button is clicked, create modal,
+// fill form with api data
 $("#usersTable").on("click", "button", function (e) {
   currentRowOfTable = e.target.closest("tr");
   let data = usersTable.row(e.target.closest("tr")).data();
-  console.log(data);
 
   modal.style.display = "flex";
   modalTitle.innerText = `Изменить пользователя ${
@@ -267,6 +267,7 @@ function hideModal() {
   modalForm.innerHTML = "";
 }
 
+// collect new user fields data
 function createUser() {
   let name = document.getElementById("nameField").value;
   let phone = document.getElementById("phoneField").value;
@@ -297,11 +298,10 @@ function createUser() {
     rang_id: rangId,
   };
 
-  console.log(parameters);
-
   sendNewUser(parameters);
 }
 
+// send new user data to api and get responses
 function sendNewUser(parameters) {
   fetch("/api/users", {
     method: "POST",
@@ -315,7 +315,6 @@ function sendNewUser(parameters) {
       return Promise.reject(response);
     })
     .then((data) => {
-      console.log("this is data: ", data);
       let newArray = [];
       data.access.forEach((d) => {
         newArray.push(d.division);
@@ -346,6 +345,7 @@ function sendNewUser(parameters) {
     });
 }
 
+// collect edit user fields data
 function changeUser() {
   let name = document.getElementById("nameField").value;
   let phone = document.getElementById("phoneField").value;
@@ -377,14 +377,12 @@ function changeUser() {
 
   password ? (parameters["password"] = password) : null;
 
-  console.log(parameters);
-
   sendEditUser(parameters);
 }
 
+// send edit user data to api and get responses
 function sendEditUser(parameters) {
   let userID = document.getElementById("nameField").getAttribute("user-id");
-  console.log(userID);
   fetch(`/api/users/${userID}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -406,7 +404,7 @@ function sendEditUser(parameters) {
 
       hideModal();
       alertsToggle("Пользователь изменен!", "success", 2500);
-      $("#usersTable").DataTable().row(currentRowOfTable).add(data).draw();
+      $("#usersTable").DataTable().row(currentRowOfTable).data(data).draw();
       currentRowOfTable = null;
       newArray = [];
     })
@@ -430,9 +428,9 @@ function sendEditUser(parameters) {
     });
 }
 
+// send delete user user_id to api and get responses
 function deleteUser() {
   let userID = document.getElementById("nameField").getAttribute("user-id");
-  console.log(currentRowOfTable);
   if (!confirm("Действительно хотите удалить пользователя?")) return;
   fetch(`/api/users/${userID}`, {
     method: "DELETE",
@@ -443,9 +441,7 @@ function deleteUser() {
         hideModal();
         alertsToggle("Пользователь удален!", "success", 2500);
         $("#usersTable").DataTable().row(currentRowOfTable).remove().draw();
-        console.log("current", currentRowOfTable);
         currentRowOfTable = null;
-        console.log("current clear", currentRowOfTable);
       }
       return Promise.reject(response);
     })

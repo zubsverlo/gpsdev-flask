@@ -317,13 +317,11 @@ function getOption(e) {
 function getAddressList() {
   let addressInput = document.getElementById("addressField");
   let adValue = addressInput.value;
-  console.log(adValue);
   if (adValue == "") {
     addressOuterContainer.style.display = "none";
     addressContainer.innerHTML = "";
     return;
   }
-  console.log("get address");
   fetch(`api/address-lookup/${adValue}`, {
     method: "GET",
     headers: {
@@ -331,11 +329,9 @@ function getAddressList() {
     },
   })
     .then((response) => {
-      console.log("!respone");
       return response.json();
     })
     .then((data) => {
-      console.log(data);
       let inputRect = addressInput.getBoundingClientRect();
       let left = inputRect.left;
       let bottom = inputRect.bottom;
@@ -366,14 +362,12 @@ function getAddressList() {
 // every time, when input value changes
 let time;
 function addressType() {
-  console.log("listen");
   let addressInput = document.getElementById("addressField");
   if (addressInput.hasAttribute("lat") && addressInput.hasAttribute("lon")) {
     addressInput.removeAttribute("lat");
     addressInput.removeAttribute("lon");
   }
   clearTimeout(time);
-  console.log("clear");
   time = setTimeout(getAddressList, 500);
 }
 
@@ -438,8 +432,6 @@ function createObject() {
   active ? (parameters["active"] = active) : null;
 
   phone != "" ? (parameters["phone"] = phone) : null;
-
-  console.log(parameters);
 
   sendNewObject(parameters);
 }
@@ -510,23 +502,18 @@ function changeObject() {
     phone: phone,
   };
 
-  console.log(parameters);
-
   sendEditObject(parameters);
 }
 
 // send edit object data to api and get responses
 function sendEditObject(parameters) {
   let objectId = document.getElementById("nameField").getAttribute("object-id");
-  console.log(objectId);
   fetch(`/api/objects/${objectId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(parameters),
   })
     .then((response) => {
-      console.log("response");
-
       if (response.status === 200) {
         return response.json();
       }
@@ -545,13 +532,10 @@ function sendEditObject(parameters) {
       currentRowOfTable = null;
     })
     .catch((response) => {
-      console.log("error");
       if (response.status === 404) {
-        console.log("error 404");
         alertsToggle("Подопечный не найден!", "danger", 3000);
       }
       if (response.status === 422) {
-        console.log("error 422");
         response.json().then((json) => {
           Object.values(json.detail).forEach((entry) => {
             let splitEntry = entry.split(":");
