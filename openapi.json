@@ -527,7 +527,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Object"
                 }
               }
             }
@@ -1483,6 +1483,38 @@
         ],
         "summary": "Поиск адресов по nominatim.openstreetmap.org",
         "description": "Чтобы получить точные координаты адреса (при добавлении подопечного или проверке служебной записки по адресу), мы обращаемся к сервису nominatim.openstreetmap.org. Он выдаёт список полных названий адресов и точных координат по запросу.",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressLookupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/address-lookup/google/{address}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "address",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Адрес для поиска"
+        }
+      ],
+      "get": {
+        "tags": [
+          "AddressLookup"
+        ],
+        "summary": "Поиск адресов по сервису google places",
+        "description": "Чтобы получить точные координаты адреса (при добавлении подопечного или проверке служебной записки по адресу), мы обращаемся к сервису google places, как альернативному openstreetmap. Он выдаёт список полных названий адресов и точных координат по запросу.",
         "responses": {
           "200": {
             "description": "Ok",
