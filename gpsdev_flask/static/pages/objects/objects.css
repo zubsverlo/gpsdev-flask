@@ -447,7 +447,7 @@
     justify-content: space-between;
 
     background-color: rgb(236, 236, 230);
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 0 100px 10px rgba(28, 155, 134, 0.5);
   }
 
@@ -461,8 +461,8 @@
     width: 100%;
     padding: 20px 0px;
     margin-bottom: 20px;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     border-bottom: solid 1px rgb(189, 189, 189);
   }
 

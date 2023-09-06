@@ -581,7 +581,9 @@ function deleteObject() {
         hideModal();
         alertsToggle("Подопечный удален!", "success", 2500);
         $("#objectTable").DataTable().row(currentRowOfTable).remove().draw();
+        currentRowOfTable = null;
       }
+      return Promise.reject(response);
     })
     .catch((response) => {
       if (response.status === 403) {
