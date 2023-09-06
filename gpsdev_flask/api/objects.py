@@ -1,7 +1,7 @@
 from flask import Blueprint
 from gpsdev_flask import db_session
 from gpsdev_flask.models import ObjectsSite, Division
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from flask import jsonify, request, g
 from flask_login import current_user
 from marshmallow import ValidationError
@@ -53,7 +53,7 @@ def objects_many():
         return jsonify(schema.dump(db_obj)), 201
 
 
-@objects.route('/<int:object_id>', methods=['GET', 'PATCH'])
+@objects.route('/<int:object_id>', methods=['GET', 'PATCH', 'DELETE'])
 @api_login_required
 def objects_one(object_id=None):
     if request.method == "GET":
@@ -87,3 +87,11 @@ def objects_one(object_id=None):
         db_session.commit()
         update_redis_cache.delay('objects')
         return jsonify(obj)
+
+    if request.method == 'DELETE':
+        db_session.execute(
+            delete(ObjectsSite).filter_by(object_id=object_id)
+        )
+        db_session.commit()
+        return jsonify({}), 204
+
