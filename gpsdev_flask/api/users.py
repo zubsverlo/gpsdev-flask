@@ -56,11 +56,15 @@ def default_user(user_id=None):
             user = schema.load(request.get_json())
         except ValidationError as e:
             return validation_error_422(e.messages)
+        if 'access' in user:
+            user_db.access = user.get('access')
+            del user['access']
         db_session.execute(
             update(User)
             .filter_by(id=user_id)
             .values(**user)
         )
+
         db_session.commit()
         db_session.refresh(user_db)
         clear_json_cache.delay('users')
