@@ -57,10 +57,17 @@ function createForm() {
   let switchAddressBtn = document.createElement("input");
   switchAddressBtn.id = "switchAddressBtn";
   switchAddressBtn.type = "checkbox";
-  switchAddressBtn.checked = true;
+  if (localStorage.getItem("address-sorce") === "1") {
+    switchAddressBtn.checked = false;
+  } else if (localStorage.getItem("address-sorce") === "2") {
+    switchAddressBtn.checked = true;
+  } else {
+    switchAddressBtn.checked = true;
+  }
 
   let switchAddressSpan = document.createElement("span");
   switchAddressSpan.id = "switchAddressSpan";
+  switchAddressSpan.onclick = switchAddress;
 
   let addressFieldLabel = document.createElement("label");
   addressFieldLabel.id = "addressFieldLabel";
@@ -279,6 +286,15 @@ function hideModal() {
   modalForm.innerHTML = "";
 }
 
+function switchAddress() {
+  let checkbox = document.getElementById("switchAddressBtn");
+  if (!checkbox.checked) {
+    localStorage.setItem("address-sorce", "2");
+  } else if (checkbox.checked) {
+    localStorage.setItem("address-sorce", "1");
+  }
+}
+
 let lat;
 let lon;
 
@@ -322,7 +338,13 @@ function getAddressList() {
     addressContainer.innerHTML = "";
     return;
   }
-  fetch(`api/address-lookup/${adValue}`, {
+  let url;
+
+  url =
+    localStorage.getItem("address-sorce") === "1"
+      ? `api/address-lookup/google/${adValue}`
+      : `api/address-lookup/${adValue}`;
+  fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
