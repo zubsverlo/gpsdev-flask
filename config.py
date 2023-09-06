@@ -12,6 +12,7 @@ class Config(object):
     SECRET_KEY = os.getenv('SECRET_KEY')
     DATABASE_ECHO = False
     DB = os.getenv('DATABASE_DEVELOPMENT')
+    TOKEN_GOOGLE_PLACES = os.getenv('TOKEN_GOOGLE_PLACES')
 
 
 class ProductionConfig(Config):
