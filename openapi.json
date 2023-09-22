@@ -1561,6 +1561,68 @@
           }
         }
       }
+    },
+    "/comment": {
+      "post": {
+        "tags": [
+          "Comment"
+        ],
+        "summary": "Комментарии в таблице посещений",
+        "description": "Добавить или изменить комментарий из таблицы-отчета",
+        "requestBody": {
+          "description": "По одному комментарию за раз",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Comment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/frequency": {
+      "post": {
+        "tags": [
+          "Frequency"
+        ],
+        "summary": "Кратность посещений ПСУ в таблице посещений",
+        "description": "Добавить или изменить кратность посещений в таблице",
+        "requestBody": {
+          "description": "По одному изменению за раз",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Frequency"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2168,6 +2230,54 @@
             "type": "string"
           }
         }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "division_id": {
+            "type": "integer"
+          },
+          "employee_id": {
+            "type": "integer"
+          },
+          "object_id": {
+            "type": "integer"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "comment",
+          "division_id",
+          "employee_id",
+          "object_id"
+        ]
+      },
+      "Frequency": {
+        "type": "object",
+        "properties": {
+          "division_id": {
+            "type": "integer"
+          },
+          "employee_id": {
+            "type": "integer"
+          },
+          "object_id": {
+            "type": "integer"
+          },
+          "frequency": {
+            "type": "integer",
+            "maximum": 4
+          }
+        },
+        "required": [
+          "division_id",
+          "employee_id",
+          "frequency",
+          "object_id"
+        ]
       }
     },
     "securitySchemes": {

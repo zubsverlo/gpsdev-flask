@@ -1,0 +1,4 @@
+FROM python:3.10
+WORKDIR /app
+RUN pip install redis==4.5.4
+CMD ["python3", "background_redis_executor.py"]
