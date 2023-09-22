@@ -68,6 +68,7 @@ $.ajax({
 
   $("#preLoadContainer")[0].style.display = "none";
   $("#tableContainer")[0].style.opacity = 1;
+  $("#employeeTable").DataTable().draw();
 
   // When change button is clicked, create modal,
   // add delete button in form, fill form with api data

@@ -225,6 +225,7 @@ $.ajax({
 
   $("#preLoadContainer")[0].style.display = "none";
   $("#tableContainer")[0].style.opacity = 1;
+  $("#objectTable").DataTable().draw();
 });
 
 // When change button is clicked, create modal,
