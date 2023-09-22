@@ -3,7 +3,7 @@ from gpsdev_flask import db_session
 from gpsdev_flask.models import ObjectsSite
 from sqlalchemy import select
 from flask import jsonify, send_file, request
-from trajectory_report.report import Report
+from trajectory_report.report import Report, ReportWithAdditionalColumns
 from trajectory_report.exceptions import ReportException
 from gpsdev_flask.ma_schemas import ReportSchema
 from marshmallow import ValidationError
@@ -23,7 +23,7 @@ def get_report():
     except ValidationError as e:
         return validation_error_422(e.messages)
     try:
-        r = Report(**report_request)
+        r = ReportWithAdditionalColumns(**report_request)
     except ReportException as e:
         return report_error_422(str(e))
     return jsonify(r.as_json_dict)
@@ -37,7 +37,7 @@ def download():
     except ValidationError as e:
         return validation_error_422(e.messages)
     try:
-        r = Report(**report_request)
+        r = ReportWithAdditionalColumns(**report_request)
     except ReportException as e:
         return report_error_422(str(e))
 

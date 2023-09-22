@@ -9,7 +9,7 @@ from gpsdev_flask.api.error_responses import (not_found_404,
                                               validation_error_422,
                                               not_allowed_403)
 from gpsdev_flask.api import api_login_required
-from gpsdev_flask.celery_tasks import update_json_cache, clear_json_cache
+from gpsdev_flask.celery_tasks import set_json_cache, invalidate_cache
 from gpsdev_flask import redis_session
 import json
 
@@ -30,7 +30,7 @@ def default_user(user_id=None):
         db_session.add(user)
         db_session.commit()
         db_session.refresh(user)
-        clear_json_cache.delay('users')
+        invalidate_cache.delay('users')
         return jsonify(schema.dump(user)), 201
     if request.method == 'GET' and user_id:
         res = db_session.query(User).filter_by(id=user_id).first()
@@ -45,7 +45,7 @@ def default_user(user_id=None):
         res = db_session.query(User).all()
         schema = UserSchema(many=True)
         res = schema.dump(res)
-        update_json_cache.delay('users', json.dumps(res))
+        set_json_cache.delay('users', json.dumps(res))
         return jsonify(res)
     if request.method == 'PATCH':
         user_db = db_session.get(User, user_id)
@@ -67,7 +67,7 @@ def default_user(user_id=None):
 
         db_session.commit()
         db_session.refresh(user_db)
-        clear_json_cache.delay('users')
+        invalidate_cache.delay('users')
         return jsonify(schema.dump(user_db))
     if request.method == 'DELETE':
         db_session.execute(
@@ -75,5 +75,5 @@ def default_user(user_id=None):
             .filter_by(id=user_id)
         )
         db_session.commit()
-        clear_json_cache.delay('users')
+        invalidate_cache.delay('users')
         return jsonify({}), 204

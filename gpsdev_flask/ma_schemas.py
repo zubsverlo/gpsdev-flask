@@ -260,7 +260,7 @@ class StatementsSchema(Schema):
 
     @post_load
     def change_object_id(self, data, **kwargs):
-        if data['value'] in "БОУН":
+        if data['value'] in "БОУН" and data['value']:
             data['object_id'] = 1
         return data
 
@@ -347,3 +347,19 @@ class LoginSchema(Schema):
             raise ValidationError('Неправильный номер или пароль')
         login_user(user, remember=data.get('remember', False))
         return data
+
+
+class CommentSchema(Schema):
+    division_id = fields.Integer(required=True)
+    employee_id = fields.Integer(required=True)
+    object_id = fields.Integer(required=True)
+    comment = fields.String(validate=validate.Length(
+        max=250, error="Комментарий не должен превышать 250 символов"
+    ), required=True)
+
+
+class FrequencySchema(Schema):
+    division_id = fields.Integer(required=True)
+    employee_id = fields.Integer(required=True)
+    object_id = fields.Integer(required=True)
+    frequency = fields.Integer(validate=validate.Range(max=4), required=True)

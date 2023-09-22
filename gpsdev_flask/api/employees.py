@@ -10,7 +10,7 @@ from gpsdev_flask.api.error_responses import (not_found_404,
                                               not_allowed_403,
                                               validation_error_422)
 from gpsdev_flask.api import api_login_required
-from gpsdev_flask.celery_tasks import update_redis_cache
+from gpsdev_flask.celery_tasks import invalidate_cache
 
 
 employees = Blueprint('employees', __name__)
@@ -39,8 +39,8 @@ def employees_one():
         db_session.add(new_emp_db)
         db_session.commit()
         db_session.refresh(new_emp_db)
-        update_redis_cache.delay('employees')
-        update_redis_cache.delay('schedules')
+        invalidate_cache.delay('employees')
+        invalidate_cache.delay('schedules')
         return jsonify(schema.dump(new_emp_db)), 201
 
 
@@ -73,8 +73,8 @@ def employees_many(name_id):
         )
         db_session.commit()
         updated_employee = db_session.get(Employees, name_id)
-        update_redis_cache.delay('employees')
-        update_redis_cache.delay('schedules')
+        invalidate_cache.delay('employees')
+        invalidate_cache.delay('schedules')
         return jsonify(schema.dump(updated_employee))
 
     if request.method == "DELETE":
@@ -86,6 +86,6 @@ def employees_many(name_id):
                 "You are not allowed to delete employees")
         db_session.delete(emp)
         db_session.commit()
-        update_redis_cache.delay('employees')
-        update_redis_cache.delay('schedules')
+        invalidate_cache.delay('employees')
+        invalidate_cache.delay('schedules')
         return jsonify({}), 204

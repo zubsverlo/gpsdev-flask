@@ -19,24 +19,27 @@ def statements_main():
         stmts = StatementsSchema(many=True).load(request.json)
     except ValidationError as e:
         return validation_error_422(e.messages)
-    stmts_line = []
     for stmt in stmts:
+        stmt_json = (f"{stmt['division']},{stmt['name_id']},"
+                     f"{stmt['object_id']},{stmt['date'].isoformat()},"
+                     f"{stmt['value']}")
+        redis_session.lpush('queue_redis', stmt_json)
+
         if stmt.get('value'):
-            stmts_line.append(
+            line = (
                 f"replace into statements_site"
                 f"(division, name_id, object_id, date, statement) "
                 f"values('{stmt['division']}', '{stmt['name_id']}', "
                 f"'{stmt['object_id']}', '{stmt['date']}', '{stmt['value']}')"
             )
+            redis_session.lpush('queue_sql', line)
         else:
-            stmts_line.append(
+            line = (
                 f"delete from statements_site where "
                 f"division = '{stmt['division']}' "
                 f"and name_id = '{stmt['name_id']}' "
                 f"and object_id = '{stmt['object_id']}' "
                 f"and date = '{stmt['date']}'")
-
-    for line in stmts_line:
-        redis_session.lpush('queue_sql', line)
+            redis_session.lpush('queue_sql', line)
 
     return jsonify({}), 201
