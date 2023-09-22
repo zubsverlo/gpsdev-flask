@@ -1,0 +1,1 @@
+from trajectory_report.notificators.telegram import notify_admin
