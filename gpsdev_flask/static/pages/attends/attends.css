@@ -1,0 +1,155 @@
+@media screen and (min-width: 900px) {
+  #preLoadContainer {
+    height: 500px;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 200px;
+  }
+
+  #tableParametersContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  #tableParameters {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  #tableParameters > * {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+  }
+
+  #tableParameters > * > * {
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  #startDateOfPeriodContainer {
+    margin: 0px;
+  }
+
+  #tableParameters select {
+    height: 42px;
+    /* padding: 0px 4px; */
+    border-radius: 3px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(213 197 143 / 82%);
+    color: rgb(77, 77, 77);
+  }
+
+  #previousCurrenMonthContainer button,
+  #currentMonthContainer button {
+    height: 41px;
+    padding: 0px 5px;
+    border-radius: 3px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(205 188 126 / 36%);
+    color: rgb(75, 75, 75);
+  }
+
+  #tableParameters select option {
+    text-align: none;
+  }
+
+  #tableParameters input {
+    width: 102px;
+    height: 40px;
+    padding: 0px 5px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(205 188 126 / 36%);
+    color: rgb(75, 75, 75);
+  }
+
+  #startDateOfPeriod {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-right: none !important;
+  }
+
+  #endDateOfPeriod {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+
+  #requestBtn {
+    padding: 11.5px 5px;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: rgb(28 100 121 / 60%);
+    color: rgb(247 243 243);
+
+    transition: all 0.4s;
+  }
+
+  #requestBtn:hover {
+    background-color: rgba(10, 127, 115, 0.66);
+    color: rgb(247 243 243);
+  }
+  #requestBtn:active {
+    background-color: rgba(228, 232, 173, 0.66);
+    color: rgb(74, 74, 74);
+  }
+
+  #tableContainer {
+    opacity: 0;
+    transition: all 0.8s;
+  }
+
+  .jexcel_filter {
+    margin-top: 5px;
+    align-items: center;
+  }
+
+  .jexcel_search input {
+    padding: 5px;
+  }
+
+  #customToolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0px;
+  }
+
+  #customToolbar > * {
+    background-color: rgb(25, 121, 100, 30%);
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 4px 5px 0px 5px;
+
+    margin-right: 5px;
+    cursor: pointer;
+  }
+
+  .jexcel_content::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+  }
+}
