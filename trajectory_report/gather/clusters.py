@@ -34,7 +34,7 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
     return pd.read_sql(sel, DB_ENGINE)
 
 
-def main():
+def make_clusters():
     # Получить список дат для формирования кластеров
     dates = get_dates_range()
     print(dates)
@@ -52,4 +52,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    make_clusters()

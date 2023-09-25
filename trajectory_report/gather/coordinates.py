@@ -245,6 +245,7 @@ async def fetch_all(tokens):
 
 def fetch_coordinates():
     asyncio.run(fetch_all(TOKENS_MTS.values()))
+    print('coordinates fetched')
 
 
 if __name__ == "__main__":

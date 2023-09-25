@@ -52,3 +52,15 @@ services:
     entrypoint: celery
     command: -A gpsdev_flask.celery_app.app_celery worker --loglevel=info
 
+#  celery-beat:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile-celery
+#    depends_on:
+#      - redis
+#    restart: always
+#    volumes:
+#      - .:/app
+#    entrypoint: celery
+#    command: -A gpsdev_flask.celery_app beat -l info
+
