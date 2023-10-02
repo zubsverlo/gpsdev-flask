@@ -19,7 +19,7 @@ def prepare_clusters(coordinates: pd.DataFrame) -> pd.DataFrame:
     # Формирование остановок. Самый важный этап, настройки влияют
     # на итоговый отчет. Уменьшение spatial_radius с 0.8 до 0.3 показало
     # большую точность, в связке с уменьшением радиуса ПСУ до 650 метров
-    tdf = detection.stops(tdf, **STAY_LOCATIONS_CONFIG)
+    tdf = detection.stay_locations(tdf, **STAY_LOCATIONS_CONFIG)
     # добавляет колонку с номерами кластеров, не влияет на кол-во остановок
     if not len(tdf):
         return TrajDataFrame(
