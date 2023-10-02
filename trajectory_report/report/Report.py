@@ -479,9 +479,11 @@ class Report(ReportBase):
         res.columns = new_columns
         res.to_excel(writer, index=False)
         book = writer.book  # доступ к xlsx книге
-        book.get_worksheet_by_name('Sheet1').freeze_panes(1, 2)
-        book.get_worksheet_by_name('Sheet1').set_column('A:B', 30, None)
-        book.get_worksheet_by_name('Sheet1').set_column('C:D', 10, None)
+        book.get_worksheet_by_name('Sheet1').freeze_panes(1, 3)
+        book.get_worksheet_by_name('Sheet1').set_column('A:A', 30, None)
+        book.get_worksheet_by_name('Sheet1').set_column('B:B', 15, None)
+        book.get_worksheet_by_name('Sheet1').set_column('C:C', 30, None)
+        book.get_worksheet_by_name('Sheet1').set_column('D:D', 8, None)
         format_attend = book.add_format({'bg_color': '#cfe2f3'})
         format_absence = book.add_format({'bg_color': '#f88a8a'})
         format_na = book.add_format(
@@ -507,7 +509,7 @@ class Report(ReportBase):
             for t in a.itertuples():
                 item_format = no_payments if t.to_format else align_left
                 book.get_worksheet_by_name('Sheet1')\
-                    .write(t.Index+1, 1, t.object, item_format)
+                    .write(t.Index+1, 2, t.object, item_format)
 
         # book.get_worksheet_by_name('Sheet1')\
         #     .conditional_format('C1:ET1000',
@@ -861,8 +863,9 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2023-08-01', '2023-08-30', "ПВТ1")
+    # r = ReportWithAdditionalColumns('2023-08-01', '2023-08-30', "ПВТ1")
+    # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
-    a = r.as_json_dict
+    # a = r.as_json_dict
     print(e-s)
     pass
