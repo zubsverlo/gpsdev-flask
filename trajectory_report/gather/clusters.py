@@ -30,8 +30,8 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
                  Coordinates.latitude) \
         .where(Coordinates.requestDate > date) \
         .where(Coordinates.requestDate < date + dt.timedelta(days=1)) \
-        .where(Coordinates.locationDate is not None)
-    return pd.read_sql(sel, DB_ENGINE)
+        .where(Coordinates.locationDate != None)
+    return pd.read_sql(sel, DB_ENGINE.connect())
 
 
 def make_clusters():
@@ -52,4 +52,9 @@ def make_clusters():
 
 
 if __name__ == "__main__":
-    make_clusters()
+    coords = get_coordinates(dt.date(2023, 10, 4))
+    a = prepare_clusters(coords)
+    # a = a.loc[a['subscriberID'] == 3329149]
+
+    pass
+    # make_clusters()

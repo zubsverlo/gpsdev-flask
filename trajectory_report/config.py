@@ -35,7 +35,7 @@ STAY_LOCATIONS_CONFIG['minutes_for_a_stop'] = 2
 STAY_LOCATIONS_CONFIG['no_data_for_minutes'] = 360
 # Радиус в км, по которому объединять локации в одну остановку
 # Стандарт: 0.8
-STAY_LOCATIONS_CONFIG['spatial_radius_km'] = 0.8
+STAY_LOCATIONS_CONFIG['spatial_radius_km'] = 0.3
 # В каком радиусе объединять остановки в кластер
 # Стандарт: 0.3
 CLUSTERS_CONFIG['cluster_radius_km'] = 0.3
@@ -45,7 +45,7 @@ CLUSTERS_CONFIG['cluster_radius_km'] = 0.3
 REPORT_BASE = dict()
 # Радиус, который считается приемлемым между координатами кластера
 # и координатами объекта, чтобы считать это посещением.
-REPORT_BASE['RADIUS'] = 700
+REPORT_BASE['RADIUS'] = 500
 
 # Длительность в минутах между посещениями, чтобы считать их отдельными.
 # Например, если сотрудник пришел, затем ушёл и вернулся.
