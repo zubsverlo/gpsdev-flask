@@ -194,10 +194,9 @@ class Report(ReportBase):
                  name_ids: Optional[List[int]] = None,
                  object_ids: Optional[List[int]] = None,
                  counts: bool = False,
-                 use_cache: bool = True
                  ):
         data = report_data_factory(date_from, date_to, division,
-                                   name_ids, object_ids, use_cache=use_cache)
+                                   name_ids, object_ids)
         self._date_from = dt.date.fromisoformat(str(date_from))
         self._date_to = dt.date.fromisoformat(str(date_to))
 
@@ -646,10 +645,9 @@ class ReportWithAdditionalColumns(Report):
                  name_ids: Optional[List[int]] = None,
                  object_ids: Optional[List[int]] = None,
                  counts: bool = False,
-                 use_cache: bool = True
                  ):
         super().__init__(date_from, date_to, division, name_ids,
-                         object_ids, counts, use_cache)
+                         object_ids, counts)
 
     @property
     def horizontal_report(self) -> pd.DataFrame:
@@ -863,7 +861,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    # r = ReportWithAdditionalColumns('2023-08-01', '2023-08-30', "ПВТ1")
+    r = ReportWithAdditionalColumns('2023-10-01', '2023-10-11', "ПВТ6")
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
     # a = r.as_json_dict

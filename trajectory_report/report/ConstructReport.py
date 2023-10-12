@@ -1,7 +1,7 @@
 # (основной запрос отчетов)
 import pandas as pd
 from trajectory_report.report import construct_select as cs
-from trajectory_report.database import DB_ENGINE, REDIS_CONN
+from trajectory_report.database import DB_ENGINE, ASYNC_DB_ENGINE, REDIS_CONN
 import datetime as dt
 from trajectory_report.report.ClusterGenerator import prepare_clusters
 from typing import Optional, List, Union, Any
@@ -13,6 +13,8 @@ import redis
 import pickle
 import bz2
 import json
+from asyncio import create_task, gather
+import asyncio
 
 
 class CachedReportDataGetter:
@@ -329,6 +331,83 @@ class DatabaseReportDataGetter:
         return data
 
 
+class AsyncReportDataGetter:
+    def get_data(self, *args, **kwargs):
+        return asyncio.run(self.trigger(*args, **kwargs))
+        
+    async def trigger(self,
+            date_from: Union[dt.date, str],
+            date_to: Union[dt.date, str],
+            division: Optional[Union[int, str]] = None,
+            name_ids: Optional[List[int]] = None,
+            object_ids: Optional[List[int]] = None
+    ) -> dict:
+        """Формирует select и запрашивает их из БД"""
+        date_from = dt.date.fromisoformat(str(date_from))
+        date_to = dt.date.fromisoformat(str(date_to))
+        includes_current_date: bool = dt.date.today() <= date_to
+        with DB_ENGINE.connect() as conn:
+            stmts = pd.read_sql(cs.statements(
+                    date_from=date_from,
+                    date_to=date_to,
+                    division=division,
+                    name_ids=name_ids,
+                    object_ids=object_ids
+                ), conn)
+            journal = pd.read_sql(cs.journal(name_ids), conn)
+            conn.close()
+        if not len(stmts):
+            raise ReportException(f'Не найдено заявленных выходов в период '
+                                    f'с {date_from} до {date_to}')
+        name_ids = stmts.name_id.unique().tolist()
+        journal['period_end'] = journal['period_end'].fillna(dt.date.today())
+        subs_ids = journal.subscriberID.unique().tolist()
+        tasks = []
+        tasks.extend([
+            create_task(self.async_fetch(cs.employee_schedules(name_ids)), name='schedules'),
+            create_task(self.async_fetch(cs.serves(date_from, date_to, name_ids)), name='serves'),
+            create_task(self.async_fetch(cs.clusters(date_from, date_to, subs_ids)), name='clusters'),
+            create_task(self.async_fetch(cs.comment(division, name_ids)), name='comment'),
+            create_task(self.async_fetch(cs.frequency(division, name_ids)), name='frequency')
+        ]
+        )
+        if includes_current_date:
+            tasks.append(
+                create_task(self.async_fetch(cs.current_locations(subs_ids)), 
+                            name='current_locations')
+                )
+        await gather(*tasks)
+        await ASYNC_DB_ENGINE.dispose()
+        results = {t.get_name(): pd.DataFrame(t.result()) for t in tasks}
+        if includes_current_date:
+            try:
+                current_locations = results['current_locations']
+                current_locations['date'] = current_locations['locationDate'] \
+                    .apply(lambda x: x.date())
+                clsters_from_locs = prepare_clusters(current_locations)
+                results['clusters'] = pd.concat(
+                    [results['clusters'], clsters_from_locs]
+                    )
+            except (TypeError, AttributeError):
+                print("Кластеры по текущим локациям не были сформированы. "
+                      "Возможно, из-за недостатка кол-ва локаций.")
+        data = dict()
+        data['_stmts'] = stmts
+        data['_journal'] = journal
+        data['_schedules'] = results['schedules']
+        data['_serves'] = results['serves']
+        data['_clusters'] = results['clusters']
+        data['_comment'] = results['comment']
+        data['_frequency'] = results['frequency']
+        return data    
+        
+    
+    @staticmethod    
+    async def async_fetch(sel):
+        async with ASYNC_DB_ENGINE.connect() as conn:
+            cursor_result = await conn.execute(sel)
+            return cursor_result.fetchall()
+
 class OneEmployeeReportDataGetter:
 
     def __init__(self,
@@ -369,22 +448,16 @@ class OneEmployeeReportDataGetter:
             return stmts, clusters, locations
 
 
-def report_data_factory(date_from: Union[dt.date, str], *args, use_cache=True,
-                        **kwargs
-                        ) -> dict:
-    try:
-        redis_available = REDIS_CONN.ping()
-    except redis.ConnectionError:
-        redis_available = False
+def report_data_factory(date_from: Union[dt.date, str], *args, **kwargs) -> dict:
+    
 
     date_from = dt.date.fromisoformat(str(date_from))
-    cache_date_from = \
-       ((dt.date.today().replace(day=1)) - dt.timedelta(days=1)).replace(day=1)
-    if date_from >= cache_date_from and redis_available and use_cache:
-        data = CachedReportDataGetter().get_data(date_from, *args, **kwargs)
-    else:
-        data = DatabaseReportDataGetter().get_data(date_from, *args, **kwargs)
+    data = AsyncReportDataGetter().get_data(date_from, *args, **kwargs)
     return data
 
 
 
+if __name__ == '__main__':
+    a = AsyncReportDataGetter().get_data('2023-09-01', '2023-10-30', 'ПВТ1')
+    # print(a)
+    pass

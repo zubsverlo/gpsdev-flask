@@ -6,8 +6,10 @@ dotenv.load_dotenv()
 
 if os.getenv('ENV') == 'production':
     DB = os.getenv('DATABASE_PRODUCTION')
+    ASYNC_DB = os.getenv('ASYNC_DATABASE_PRODUCTION')
 else:
     DB = os.getenv('DATABASE_DEVELOPMENT')
+    ASYNC_DB = os.getenv('ASYNC_DATABASE_DEVELOPMENT')
 
 REDIS = 'redis'
 
