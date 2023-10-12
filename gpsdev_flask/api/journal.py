@@ -8,7 +8,6 @@ from gpsdev_flask.ma_schemas import JournalSchema
 from gpsdev_flask.api.error_responses import (not_allowed_403,
                                               not_found_404,
                                               validation_error_422)
-from gpsdev_flask.celery_tasks import invalidate_cache
 
 
 journal = Blueprint('journal', __name__)
@@ -48,7 +47,6 @@ def journal_main(row_id=None):
             .values(**new_record)
         )
         db_session.commit()
-        invalidate_cache.delay('journal')
         return jsonify(schema.dump(new_record))
 
     if request.method == 'DELETE':
@@ -57,5 +55,4 @@ def journal_main(row_id=None):
             return not_found_404("No journal records found")
         db_session.delete(record)
         db_session.commit()
-        invalidate_cache.delay('journal')
         return jsonify({}), 204

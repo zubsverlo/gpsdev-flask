@@ -20,11 +20,6 @@ def statements_main():
     except ValidationError as e:
         return validation_error_422(e.messages)
     for stmt in stmts:
-        stmt_json = (f"{stmt['division']},{stmt['name_id']},"
-                     f"{stmt['object_id']},{stmt['date'].isoformat()},"
-                     f"{stmt['value']}")
-        redis_session.lpush('queue_redis', stmt_json)
-
         if stmt.get('value'):
             line = (
                 f"replace into statements_site"

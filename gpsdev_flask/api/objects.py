@@ -9,7 +9,6 @@ from gpsdev_flask.ma_schemas import ObjectSchema
 from gpsdev_flask.api.error_responses import (not_found_404,
                                               validation_error_422)
 from gpsdev_flask.api import api_login_required
-from gpsdev_flask.celery_tasks import invalidate_cache
 
 
 objects = Blueprint('objects', __name__)
@@ -49,7 +48,6 @@ def objects_many():
         db_session.add(db_obj)
         db_session.commit()
         db_session.refresh(db_obj)
-        invalidate_cache.delay('objects')
         return jsonify(schema.dump(db_obj)), 201
 
 
@@ -85,7 +83,6 @@ def objects_one(object_id=None):
             .values(**obj)
         )
         db_session.commit()
-        invalidate_cache.delay('objects')
         return jsonify(obj)
 
     if request.method == 'DELETE':

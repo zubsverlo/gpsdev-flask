@@ -6,7 +6,6 @@ from gpsdev_flask.api.error_responses import validation_error_422
 from gpsdev_flask.api import api_login_required
 from gpsdev_flask import db_session
 from sqlalchemy import text
-from gpsdev_flask.celery_tasks import invalidate_cache
 
 
 comment = Blueprint('comment', __name__)
@@ -29,5 +28,4 @@ def comment_post():
     )
 
     db_session.execute(text(sql))
-    invalidate_cache.delay('comment')
     return jsonify({}), 201

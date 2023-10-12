@@ -14,7 +14,7 @@ def login():
     return render_template('login.html')
 
 
-@pages.route('/home')
+@pages.route('/')
 @login_required
 def home():
     return render_template('home.html')
