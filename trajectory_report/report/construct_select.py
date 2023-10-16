@@ -226,7 +226,7 @@ def comment(division: Optional[int] = None,
                          Comment.object_id,
                          Comment.comment)
     if isinstance(division, int):
-        sel = sel.where(Statements.division == division)
+        sel = sel.where(Comment.division_id == division)
     if isinstance(division, str):
         sel = sel.join(Division, Comment.division_id == Division.id)
         sel = sel.where(Division.division == division)
@@ -242,7 +242,7 @@ def frequency(division: Optional[int] = None,
                          Frequency.object_id,
                          Frequency.frequency)
     if isinstance(division, int):
-        sel = sel.where(Statements.division == division)
+        sel = sel.where(Frequency.division_id == division)
     if isinstance(division, str):
         sel = sel.join(Division, Frequency.division_id == Division.id)
         sel = sel.where(Division.division == division)

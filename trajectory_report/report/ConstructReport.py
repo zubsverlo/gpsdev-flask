@@ -363,22 +363,36 @@ class AsyncReportDataGetter:
         journal['period_end'] = journal['period_end'].fillna(dt.date.today())
         subs_ids = journal.subscriberID.unique().tolist()
         tasks = []
+        selects = {
+            'schedules': cs.employee_schedules(name_ids),
+            'serves': cs.serves(date_from, date_to, name_ids),
+            'clusters': cs.clusters(date_from, date_to, subs_ids),
+            'comment': cs.comment(division, name_ids),
+            'frequency': cs.frequency(division, name_ids),
+            'current_locations': cs.current_locations(subs_ids)
+        }
+        selects_cols = {
+            k: [i.name for i in v.selected_columns]
+            for k, v in selects.items()
+        }
         tasks.extend([
-            create_task(self.async_fetch(cs.employee_schedules(name_ids)), name='schedules'),
-            create_task(self.async_fetch(cs.serves(date_from, date_to, name_ids)), name='serves'),
-            create_task(self.async_fetch(cs.clusters(date_from, date_to, subs_ids)), name='clusters'),
-            create_task(self.async_fetch(cs.comment(division, name_ids)), name='comment'),
-            create_task(self.async_fetch(cs.frequency(division, name_ids)), name='frequency')
+            create_task(self.async_fetch(selects['schedules']), name='schedules'),
+            create_task(self.async_fetch(selects['serves']), name='serves'),
+            create_task(self.async_fetch(selects['clusters']), name='clusters'),
+            create_task(self.async_fetch(selects['comment']), name='comment'),
+            create_task(self.async_fetch(selects['frequency']), name='frequency')
         ]
         )
         if includes_current_date:
             tasks.append(
-                create_task(self.async_fetch(cs.current_locations(subs_ids)), 
+                create_task(self.async_fetch(selects['current_locations']), 
                             name='current_locations')
                 )
         await gather(*tasks)
         await ASYNC_DB_ENGINE.dispose()
-        results = {t.get_name(): pd.DataFrame(t.result()) for t in tasks}
+        results = {t.get_name(): pd.DataFrame(t.result(), columns=selects_cols[t.get_name()]) for t in tasks}
+        pass
+        
         if includes_current_date:
             try:
                 current_locations = results['current_locations']
@@ -452,12 +466,12 @@ def report_data_factory(date_from: Union[dt.date, str], *args, **kwargs) -> dict
     
 
     date_from = dt.date.fromisoformat(str(date_from))
-    data = AsyncReportDataGetter().get_data(date_from, *args, **kwargs)
+    data = DatabaseReportDataGetter().get_data(date_from, *args, **kwargs)
     return data
 
 
 
 if __name__ == '__main__':
-    a = AsyncReportDataGetter().get_data('2023-09-01', '2023-10-30', 'ПВТ1')
+    a = AsyncReportDataGetter().get_data('2023-10-01', '2023-10-30', 'ПВТ9,ПНИ25')
     # print(a)
     pass
