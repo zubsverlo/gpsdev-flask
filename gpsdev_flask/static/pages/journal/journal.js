@@ -1,4 +1,5 @@
 import { alertsToggle } from "../../alerts.js";
+import { hideModal } from "../../modal.js";
 import { dictionary } from "../../translation_dict.js";
 
 let journalTable;
@@ -194,14 +195,6 @@ $("#journalTable").on("click", "button", function (e) {
 });
 
 closeModal.addEventListener("click", hideModal);
-
-// clear and hide Modal
-function hideModal() {
-  modal.style.display = "none";
-  modalTitle.innerText = "";
-  modalBody.innerHTML = "";
-  modalForm.innerHTML = "";
-}
 
 // collect edited row with period fields data
 function changePeriod() {

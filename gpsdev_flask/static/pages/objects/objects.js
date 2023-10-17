@@ -1,4 +1,5 @@
 import { alertsToggle } from "../../alerts.js";
+import { hideModal } from "../../modal.js";
 import { dictionary } from "../../translation_dict.js";
 
 let objectTable;
@@ -278,14 +279,6 @@ $("#objectTable").on("click", "button", function (e) {
 });
 
 closeModal.addEventListener("click", hideModal);
-
-// clear and hide Modal
-function hideModal() {
-  modal.style.display = "none";
-  modalTitle.innerText = "";
-  modalBody.innerHTML = "";
-  modalForm.innerHTML = "";
-}
 
 function switchAddress() {
   let checkbox = document.getElementById("switchAddressBtn");

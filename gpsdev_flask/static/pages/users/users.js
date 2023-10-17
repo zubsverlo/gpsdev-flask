@@ -1,4 +1,5 @@
 import { alertsToggle } from "../../alerts.js";
+import { hideModal } from "../../modal.js";
 import { dictionary } from "../../translation_dict.js";
 
 let usersTable;
@@ -259,14 +260,6 @@ $("#usersTable").on("click", "button", function (e) {
 });
 
 closeModal.addEventListener("click", hideModal);
-
-// clear and hide Modal
-function hideModal() {
-  modal.style.display = "none";
-  modalTitle.innerText = "";
-  modalBody.innerHTML = "";
-  modalForm.innerHTML = "";
-}
 
 // collect new user fields data
 function createUser() {

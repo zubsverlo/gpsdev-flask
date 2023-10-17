@@ -10,8 +10,9 @@
       href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Manrope:wght@200;300;400;500;700&family=Montserrat:wght@400;500;600;700&family=Raleway:wght@400;500;700&family=Roboto+Mono&family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/static/header.css" />
-    <link rel="stylesheet" href="/static/alerts.css" />
+    <link rel="stylesheet" href="../static/header.css" />
+    <link rel="stylesheet" href="../static/alerts.css" />
+    <link rel="stylesheet" href="../static/modal.css" />
 
     <title>{{title or 'GPSDEV'}}</title>
 
@@ -97,6 +98,16 @@
       class="alert-container"
       style="display: none"
     ></div>
+
+    <div id="modalContainer">
+      <div id="modalContent">
+        <div id="modalTitleContainer">
+          <div id="modalTitle"></div>
+          <div id="closeModal">X</div>
+        </div>
+        <div id="modalBody"></div>
+      </div>
+    </div>
 
     <div id="contentBlock">{% block content %}{% endblock content %}</div>
   </body>

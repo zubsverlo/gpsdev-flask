@@ -1,135 +1,10 @@
 import { alertsToggle } from "../../alerts.js";
+import { hideModal } from "../../modal.js";
 import { dictionary } from "../../translation_dict.js";
 import { checkPattern } from "../../check_pattern.js";
 
 let employeeTable;
 let currentRowOfTable;
-
-// creating table
-$.ajax({
-  url: "/api/employees",
-  method: "GET",
-  contentType: "application/json",
-}).done(function (data) {
-  let windowHeight = window.innerHeight - 220;
-  employeeTable = new DataTable("#employeeTable", {
-    aaData: data,
-    scrollX: "100%",
-    scrollY: windowHeight,
-    scrollCollapse: true,
-    paging: false,
-    language: {
-      search: "Поиск: ",
-      info: "Найдено по запросу: _TOTAL_ ",
-      infoFiltered: "( из _MAX_ записей )",
-      infoEmpty: "",
-      zeroRecords: "Совпадений не найдено",
-    },
-    dom: "<'pre-table-row'<'new-emp-container'B>f>rtip",
-    buttons: [
-      {
-        //add new-employee button
-        text: "Новый сотрудник",
-        className: "new-emp-btn",
-        attr: {
-          id: "addNewEmployee",
-        },
-        action: function () {
-          modal.style.display = "flex";
-          modalTitle.innerText = "Добавить сотрудника";
-          createForm();
-          modalBody.appendChild(modalForm);
-
-          let hireDateField = document.getElementById("hireDateField");
-          let date = new Date().toISOString().split("T")[0];
-
-          hireDateField.value = date;
-
-          document.getElementById("saveBtn").onclick = createEmployee;
-        },
-      },
-    ],
-
-    columns: [
-      { data: "division_name" },
-      { data: "name" },
-      { data: "phone" },
-      { data: "schedule_name" },
-      { data: "hire_date" },
-      { data: "quit_date" },
-      {
-        // add column with change buttons to all rows in table
-        data: null,
-        defaultContent: "<button class='change-btn'>Изменить</button>",
-        targets: -1,
-      },
-    ],
-  });
-
-  $("#preLoadContainer")[0].style.display = "none";
-  $("#tableContainer")[0].style.opacity = 1;
-  $("#employeeTable").DataTable().draw();
-
-  // When change button is clicked, create modal,
-  // add delete button in form, fill form with api data
-  employeeTable.on("click", "button", function (e) {
-    currentRowOfTable = e.target.closest("tr");
-    let data = employeeTable.row(e.target.closest("tr")).data();
-
-    modal.style.display = "flex";
-    modalTitle.innerText = `Изменить сотрудника  ${
-      localStorage.getItem("rang-id") == 1 ? " ID: " + data.name_id : ""
-    }`;
-    modalForm = createForm();
-    modalBody.appendChild(modalForm);
-
-    let deleteAccess = localStorage.getItem("rang-id");
-    if (deleteAccess == "1") {
-      let deleteBtn = document.createElement("button");
-      deleteBtn.id = "deleteBtn";
-      deleteBtn.type = "button";
-      deleteBtn.innerText = "Удалить";
-      deleteBtn.onclick = deleteEmployee;
-
-      document.getElementById("scheduleField").append(deleteBtn);
-    }
-
-    let name = document.getElementById("nameField");
-    name.setAttribute("name-id", data.name_id);
-    let phone = document.getElementById("phoneField");
-    let options = document.getElementById("divisionField").childNodes;
-    let hireDate = document.getElementById("hireDateField");
-    let quitDate = document.getElementById("quitDateField");
-    let scheduleCheck = document.getElementById("scheduleCheck");
-    let saveBtn = document.getElementById("saveBtn");
-
-    name.value = data.name;
-    phone.value = data.phone;
-    options.forEach((o) =>
-      data.division_name === o.innerText ? (o.selected = true) : null
-    );
-    hireDate.value = data.hire_date;
-    quitDate.value = data.quit_date;
-    data.schedule == 2 ? (scheduleCheck.checked = true) : null;
-
-    saveBtn.onclick = changeEmployee;
-  });
-});
-
-const closeModal = document.getElementById("closeModal");
-const modal = document.getElementById("modalContainer");
-const modalTitle = document.getElementById("modalTitle");
-const modalBody = document.getElementById("modalBody");
-
-closeModal.addEventListener("click", hideModal);
-
-// clear and hide Modal
-function hideModal() {
-  modal.style.display = "none";
-  modalTitle.innerText = "";
-  modalBody.innerHTML = "";
-  modalForm.innerHTML = "";
-}
 
 // create modal form container
 let modalForm = document.createElement("form");
@@ -251,6 +126,123 @@ function createForm() {
 
   return modalForm;
 }
+// creating table
+$.ajax({
+  url: "/api/employees",
+  method: "GET",
+  contentType: "application/json",
+}).done(function (data) {
+  let windowHeight = window.innerHeight - 220;
+  employeeTable = new DataTable("#employeeTable", {
+    aaData: data,
+    scrollX: "100%",
+    scrollY: windowHeight,
+    scrollCollapse: true,
+    paging: false,
+    language: {
+      search: "Поиск: ",
+      info: "Найдено по запросу: _TOTAL_ ",
+      infoFiltered: "( из _MAX_ записей )",
+      infoEmpty: "",
+      zeroRecords: "Совпадений не найдено",
+    },
+    dom: "<'pre-table-row'<'new-emp-container'B>f>rtip",
+    buttons: [
+      {
+        //add new-employee button
+        text: "Новый сотрудник",
+        className: "new-emp-btn",
+        attr: {
+          id: "addNewEmployee",
+        },
+        action: function () {
+          modal.style.display = "flex";
+          modalTitle.innerText = "Добавить сотрудника";
+          createForm();
+          modalBody.appendChild(modalForm);
+
+          let hireDateField = document.getElementById("hireDateField");
+          let date = new Date().toISOString().split("T")[0];
+
+          hireDateField.value = date;
+
+          document.getElementById("saveBtn").onclick = createEmployee;
+        },
+      },
+    ],
+
+    columns: [
+      { data: "division_name" },
+      { data: "name" },
+      { data: "phone" },
+      { data: "schedule_name" },
+      { data: "hire_date" },
+      { data: "quit_date" },
+      {
+        // add column with change buttons to all rows in table
+        data: null,
+        defaultContent: "<button class='change-btn'>Изменить</button>",
+        targets: -1,
+      },
+    ],
+  });
+
+  $("#preLoadContainer")[0].style.display = "none";
+  $("#tableContainer")[0].style.opacity = 1;
+  $("#employeeTable").DataTable().draw();
+
+  // When change button is clicked, create modal,
+  // add delete button in form, fill form with api data
+  employeeTable.on("click", "button", function (e) {
+    currentRowOfTable = e.target.closest("tr");
+    let data = employeeTable.row(e.target.closest("tr")).data();
+
+    modal.style.display = "flex";
+    modalTitle.innerText = `Изменить сотрудника  ${
+      localStorage.getItem("rang-id") == 1 ? " ID: " + data.name_id : ""
+    }`;
+    modalForm = createForm();
+    modalBody.appendChild(modalForm);
+
+    let deleteAccess = localStorage.getItem("rang-id");
+    if (deleteAccess == "1") {
+      let deleteBtn = document.createElement("button");
+      deleteBtn.id = "deleteBtn";
+      deleteBtn.type = "button";
+      deleteBtn.innerText = "Удалить";
+      deleteBtn.onclick = deleteEmployee;
+
+      document.getElementById("scheduleField").append(deleteBtn);
+    }
+
+    let name = document.getElementById("nameField");
+    name.setAttribute("name-id", data.name_id);
+    let phone = document.getElementById("phoneField");
+    let options = document.getElementById("divisionField").childNodes;
+    let hireDate = document.getElementById("hireDateField");
+    let quitDate = document.getElementById("quitDateField");
+    let scheduleCheck = document.getElementById("scheduleCheck");
+    let saveBtn = document.getElementById("saveBtn");
+
+    name.value = data.name;
+    phone.value = data.phone;
+    options.forEach((o) =>
+      data.division_name === o.innerText ? (o.selected = true) : null
+    );
+    hireDate.value = data.hire_date;
+    quitDate.value = data.quit_date;
+    data.schedule == 2 ? (scheduleCheck.checked = true) : null;
+
+    saveBtn.onclick = changeEmployee;
+  });
+});
+
+const closeModal = document.getElementById("closeModal");
+const modal = document.getElementById("modalContainer");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+
+closeModal.addEventListener("click", hideModal);
 
 // collect new employee fields data
 function createEmployee(e) {
