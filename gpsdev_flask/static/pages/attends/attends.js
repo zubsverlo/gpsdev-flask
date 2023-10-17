@@ -1,8 +1,12 @@
 import { alertsToggle } from "../../alerts.js";
+import { hideModal } from "../../modal.js";
 import { dictionary } from "../../translation_dict.js";
 
 let attendsTable;
 let currentRowOfTable;
+
+const closeModal = document.getElementById("closeModal");
+closeModal.addEventListener("click", hideModal);
 
 let divisionField = document.getElementById("divisionSelect");
 let access = JSON.parse(localStorage.getItem("access"));
@@ -105,6 +109,11 @@ function getTableParameters(e) {
   $("#preLoadContainer")[0].style.display = "flex";
   let counts = countsR == "1" ? false : true;
 
+  if (startDate == "" || endDate == "") {
+    $("#preLoadContainer")[0].style.display = "none";
+    alertsToggle("Укажите дату!", "warning", 5000);
+    return;
+  }
   let parameters = {
     division: divisionId,
     date_from: startDate,
@@ -118,6 +127,7 @@ function getTableParameters(e) {
 
 function requestTable(e) {
   let parameters = getTableParameters(e);
+  if (parameters == undefined) return;
   getTable(parameters);
 }
 
@@ -139,10 +149,8 @@ const formatDict = {
     align: "left",
     wordWrap: false,
   },
-  frequency: { title: "Кол-во", name: "frequency", width: 53 },
+  frequency: { title: "Кол-во", name: "frequency", width: 58 },
 };
-
-jspreadsheet.createTable = () => {};
 
 function getTable(parameters) {
   let table = document.getElementById("attendsTable");
@@ -152,40 +160,52 @@ function getTable(parameters) {
     method: "POST",
     contentType: "application/json",
     data: JSON.stringify(parameters),
-  }).done(function (data) {
-    console.log("data: ", data);
-    let columns = data.horizontal_report.columns;
-    let newColumns = [];
-    columns.forEach((column) => {
-      let newColumn = formatDict[column]
-        ? formatDict[column]
-        : { title: column, name: column, width: 70 };
-      newColumns.push(newColumn);
-    });
-    console.log("newColumns: ", newColumns);
-    console.log("Row data: ", data.horizontal_report.data);
-    $("#preLoadContainer")[0].style.display = "none";
+  })
+    .done(function (data) {
+      console.log("data: ", data);
+      let columns = data.horizontal_report.columns;
+      let newColumns = [];
 
-    let windowHeight = window.innerHeight - 180;
+      columns.forEach((column) => {
+        let newColumn = formatDict[column]
+          ? formatDict[column]
+          : { title: column, name: column, width: 70 };
 
-    attendsTable = jspreadsheet(document.getElementById("attendsTable"), {
-      columns: newColumns,
-      data: data.horizontal_report.data,
-      freezeColumns: 4,
-      search: true,
-      editable: false,
-      freezeRows: 2,
-      tableOverflow: true,
-      tableHeight: windowHeight + "px",
-      tableWidth: "100%",
-      lazyLoading: false,
-      text: {
-        search: "Поиск",
-      },
+        newColumns.push(newColumn);
+      });
+      $("#preLoadContainer")[0].style.display = "none";
+
+      let windowHeight = window.innerHeight - 180;
+
+      attendsTable = jspreadsheet(document.getElementById("attendsTable"), {
+        columns: newColumns,
+        data: data.horizontal_report.data,
+        freezeColumns: 4,
+        search: true,
+        editable: false,
+        freezeRows: 2,
+        tableOverflow: true,
+        tableHeight: windowHeight + "px",
+        tableWidth: "100%",
+        lazyLoading: false,
+        text: {
+          search: "Поиск",
+        },
+      });
+      createToolbar();
+      dateFormatColoredWeekends();
+      reMergeCells();
+      if (localStorage.getItem("toggleComments") === "hide") {
+        attendsTable.hideColumn(2);
+      }
+    })
+    .fail(function (xhr, status, error) {
+      let json = xhr.responseJSON;
+      if (json.status == 422) {
+        $("#preLoadContainer")[0].style.display = "none";
+        alertsToggle(json.detail, "danger", 6000);
+      }
     });
-    createToolbar();
-    dateFormatColoredWeekends();
-  });
 }
 
 function dateFormatColoredWeekends() {
@@ -225,9 +245,16 @@ function createToolbar() {
 
   let toggleCommentsBtn = document.createElement("button");
   toggleCommentsBtn.id = "toggleCommentsBtn";
-  toggleCommentsBtn.innerHTML = `<span class="material-icons">speaker_notes</span>`;
-  toggleCommentsBtn.title = "Скрыть столбец с комментариями";
+  toggleCommentsBtn.title = "Скрыть/Показать столбец с комментариями";
   toggleCommentsBtn.onclick = toggleComments;
+  if (
+    localStorage.getItem("toggleComments") == "show" ||
+    localStorage.getItem("toggleComments") == null
+  ) {
+    toggleCommentsBtn.innerHTML = `<span class="material-icons">speaker_notes_off</span>`;
+  } else if (localStorage.getItem("toggleComments") == "hide") {
+    toggleCommentsBtn.innerHTML = `<span class="material-icons">speaker_notes</span>`;
+  }
 
   let duplicatesBtn = document.createElement("button");
   duplicatesBtn.id = "duplicatesBtn";
@@ -239,7 +266,7 @@ function createToolbar() {
   refreshTableBtn.id = "refreshTableBtn";
   refreshTableBtn.innerHTML = `<span class="material-icons">refresh</span>`;
   refreshTableBtn.title = "Обновить данные в отчете";
-  refreshTableBtn.onclick = updateDataInTable;
+  refreshTableBtn.onclick = updateTable;
 
   customToolbar.append(
     addEmployeeBtn,
@@ -269,6 +296,9 @@ function tableWithToolbar(customToolbar) {
   searchField.style.border = "1px solid gray";
   searchField.style.width = "200px";
   searchField.onfocus = noneOutlineBorder;
+  searchField.addEventListener("focus", () => {
+    jexcel.current.resetSelection();
+  });
 
   let table = document.getElementsByClassName("jexcel_content")[0].children[0];
   table.style.border = "none";
@@ -279,15 +309,332 @@ function noneOutlineBorder() {
   this.style.outline = "none";
 }
 
-function addEmployeeInTable() {
-  console.log("addEmployeeInTable");
+let employeesNameList = [];
+let objectsNameList = [];
+let rotateInterval;
+
+async function addEmployeeInTable() {
+  let modal = document.getElementById("modalContainer");
+  let modalTitle = document.getElementById("modalTitle");
+  let modalBody = document.getElementById("modalBody");
+
+  modal.style.display = "flex";
+  modalTitle.innerText = "Добавление сотрудника в таблицу";
+
+  let preLoadingImg = document.createElement("img");
+  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.id = "preLoadingImg";
+  modalBody.prepend(preLoadingImg);
+
+  rotateInterval = setInterval(rotateImg, 50);
+
+  await getEmployees(employeesNameList);
+  await getObjects(objectsNameList);
+
+  let inputsContainer = createContentInModal();
+  modalBody.append(inputsContainer);
 }
 
-function downloadXlsx() {
-  console.log("downloadXlsx");
+let angle = 0;
+function rotateImg() {
+  angle += 10;
+  let img = document.getElementById("preLoadingImg");
+  img.style.transform = `rotateZ(${angle}deg)`;
+}
+
+async function getEmployees() {
+  await fetch("/api/employees", {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      employeesNameList = data;
+      console.log("employeesNameList ", employeesNameList);
+    });
+}
+
+async function getObjects() {
+  await fetch("/api/objects", {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      objectsNameList = data;
+
+      console.log("objectsNameList", objectsNameList);
+
+      clearInterval(rotateInterval);
+      let img = document.getElementById("preLoadingImg");
+      img.remove();
+    });
+}
+
+var currentSelect;
+function createContentInModal() {
+  let inputsContainer = document.createElement("div");
+  inputsContainer.id = "inputsContainer";
+
+  let employeeSelect = document.createElement("button");
+  employeeSelect.id = "employeeSelect";
+  employeeSelect.innerHTML = `Выберите сотрудника <span class="material-icons"> arrow_drop_down </span>`;
+  employeeSelect.setAttribute("input-type", "employee");
+  employeeSelect.onclick = createEmployeesList;
+  employeeSelect.addEventListener("click", (e) => {
+    currentSelect = e.target;
+  });
+
+  let objectSelect = document.createElement("button");
+  objectSelect.id = "objectSelect";
+  objectSelect.innerHTML = `По очереди выберите подопечных из списка <span class="material-icons"> arrow_drop_down </span>`;
+  objectSelect.setAttribute("input-type", "object");
+  objectSelect.disabled = true;
+  objectSelect.classList.add("unacive-select");
+  objectSelect.onclick = createObjectsList;
+  objectSelect.addEventListener("click", (e) => {
+    currentSelect = e.target;
+  });
+
+  let fieldOfSelection = document.createElement("div");
+  fieldOfSelection.id = "fieldOfSelection";
+  fieldOfSelection.style.display = "none";
+
+  let btnsContainer = document.createElement("div");
+  btnsContainer.id = "btnsContainer";
+
+  let cancelBtn = document.createElement("button");
+  cancelBtn.id = "cancelBtn";
+  cancelBtn.type = "button";
+  cancelBtn.innerText = "Отменить";
+  cancelBtn.onclick = hideModal;
+
+  let saveBtn = document.createElement("button");
+  saveBtn.id = "saveBtn";
+  saveBtn.type = "submit";
+  saveBtn.innerText = "Сохранить";
+
+  btnsContainer.append(cancelBtn, saveBtn);
+
+  inputsContainer.append(
+    employeeSelect,
+    objectSelect,
+    fieldOfSelection,
+    btnsContainer
+  );
+  return inputsContainer;
+}
+
+function createEmployeesList() {
+  console.log("Employees list", employeesNameList);
+  let inputsContainer = document.getElementById("inputsContainer");
+  let employeeSelect = document.getElementById("employeeSelect");
+  let objectSelect = document.getElementById("objectSelect");
+  employeeSelect.disabled = true;
+  employeeSelect.style.display = "none";
+  objectSelect.style.display = "none";
+
+  let employeeListContainer = document.createElement("div");
+  employeeListContainer.id = "employeeListContainer";
+
+  let employeeSearch = document.createElement("input");
+  employeeSearch.id = "employeeSearch";
+  employeeSearch.type = "text";
+  employeeSearch.oninput = nameSearch;
+
+  let employeeList = document.createElement("div");
+  employeeList.id = "employeeList";
+
+  renderListOfNames(employeesNameList, employeeList);
+
+  let btnsContainer = document.getElementById("btnsContainer");
+  let saveBtn = document.getElementById("saveBtn");
+
+  let backBtn = document.createElement("button");
+  backBtn.id = "backBtn";
+  backBtn.innerText = "Назад";
+  backBtn.onclick = returnBack;
+
+  btnsContainer.insertBefore(backBtn, saveBtn);
+  employeeListContainer.append(employeeSearch, employeeList);
+  inputsContainer.prepend(employeeListContainer);
+  employeeSearch.focus();
+}
+
+function createObjectsList() {
+  console.log("Objects list", objectsNameList);
+  let inputsContainer = document.getElementById("inputsContainer");
+  let employeeSelect = document.getElementById("employeeSelect");
+  let objectSelect = document.getElementById("objectSelect");
+  employeeSelect.disabled = true;
+  employeeSelect.style.display = "none";
+  objectSelect.style.display = "none";
+
+  let objectListContainer = document.createElement("div");
+  objectListContainer.id = "objectListContainer";
+
+  let objectSearch = document.createElement("input");
+  objectSearch.id = "objectSearch";
+  objectSearch.type = "text";
+  objectSearch.oninput = nameSearch;
+
+  let objectList = document.createElement("div");
+  objectList.id = "objectList";
+
+  renderListOfNames(objectsNameList, objectList);
+
+  let btnsContainer = document.getElementById("btnsContainer");
+  let saveBtn = document.getElementById("saveBtn");
+
+  let backBtn = document.createElement("button");
+  backBtn.id = "backBtn";
+  backBtn.innerText = "Назад";
+  backBtn.onclick = returnBack;
+
+  btnsContainer.insertBefore(backBtn, saveBtn);
+  objectListContainer.append(objectSearch, objectList);
+  inputsContainer.prepend(objectListContainer);
+  console.log("createObjectsList");
+
+  objectSearch.focus();
+}
+
+function nameSearch() {
+  if (document.getElementById("employeeSearch") !== null) {
+    var input = document.getElementById("employeeSearch");
+    var container = document.getElementById("employeeList");
+    var list = employeesNameList;
+  }
+  if (document.getElementById("objectSearch") !== null) {
+    var input = document.getElementById("objectSearch");
+    var container = document.getElementById("objectList");
+    var list = objectsNameList;
+  }
+  let resultList = [];
+  container.innerHTML = "";
+
+  for (let i = 0; i < list.length; i++) {
+    let currentName = list[i];
+    if (
+      currentName.name.toLowerCase().indexOf(input.value.toLowerCase()) > -1
+    ) {
+      resultList.push(currentName);
+    }
+  }
+  renderListOfNames(resultList, container);
+}
+
+function renderListOfNames(list, container) {
+  list.slice(0, 50).forEach((r) => {
+    let div = document.createElement("div");
+    let anc = document.createElement("a");
+
+    anc.innerText = " " + r.division_name;
+    anc.classList.add("division-name-in-list");
+    div.innerText = r.name;
+    div.setAttribute("name", r.name);
+    r.name_id
+      ? div.setAttribute("name_id", r.name_id)
+      : div.setAttribute("object_id", r.object_id);
+    div.setAttribute("division", r.division_name);
+    div.setAttribute("division_id", r.division);
+    div.onclick = chosenName;
+
+    div.append(anc);
+    container.append(div);
+  });
+}
+
+function chosenName(e) {
+  let input = null;
+  let select = null;
+  let name = e.target.getAttribute("name");
+  let objectSelect = document.getElementById("objectSelect");
+
+  document.getElementById("employeeSearch")
+    ? (input = document.getElementById("employeeSearch"))
+    : (input = document.getElementById("objectSearch"));
+
+  currentSelect.getAttribute("input-type") === "employee"
+    ? (select = document.getElementById("employeeSelect"))
+    : (select = document.getElementById("objectSelect"));
+
+  input.value = name;
+  returnBack();
+  select.innerText = name;
+  objectSelect.disabled = false;
+  objectSelect.classList.remove("unacive-select");
+
+  console.log(name);
+  console.log(input);
+}
+
+function returnBack() {
+  currentSelect = null;
+  let employeeSelect = document.getElementById("employeeSelect");
+  let objectSelect = document.getElementById("objectSelect");
+  employeeSelect.disabled = false;
+  employeeSelect.style.display = "flex";
+  objectSelect.style.display = "flex";
+
+  let employeeListContainer = document.getElementById("employeeListContainer");
+  let objectListContainer = document.getElementById("objectListContainer");
+  employeeListContainer ? (employeeListContainer.innerHTML = "") : null;
+  objectListContainer ? (objectListContainer.innerHTML = "") : null;
+
+  let backBtn = document.getElementById("backBtn");
+  backBtn.remove();
+}
+
+function downloadXlsx(e) {
+  let parameters = getTableParameters(e);
+  $("#preLoadContainer")[0].style.display = "none";
+  getXlsx(parameters);
+}
+
+function getXlsx(parameters) {
+  let division =
+    document.getElementById("divisionSelect").selectedOptions[0].innerText;
+
+  let fileName = `${parameters.date_from}_${parameters.date_to}_${division}_Отчет.xlsx`;
+
+  let xmlHttpRequest = new XMLHttpRequest();
+  xmlHttpRequest.onreadystatechange = function () {
+    var a;
+    if (xmlHttpRequest.readyState === 4 && xmlHttpRequest.status === 200) {
+      a = document.createElement("a");
+      a.href = window.URL.createObjectURL(xmlHttpRequest.response);
+      a.download = fileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+    }
+  };
+  xmlHttpRequest.open("POST", "/api/report/download");
+  xmlHttpRequest.setRequestHeader("Content-Type", "application/json");
+  xmlHttpRequest.responseType = "blob";
+  xmlHttpRequest.send(JSON.stringify(parameters));
 }
 
 function toggleComments() {
+  let toggleCommentsBtn = document.getElementById("toggleCommentsBtn");
+  if (
+    localStorage.getItem("toggleComments") == "show" ||
+    localStorage.getItem("toggleComments") == null
+  ) {
+    toggleCommentsBtn.innerHTML = `<span class="material-icons">speaker_notes</span>`;
+    attendsTable.hideColumn(2);
+    localStorage.setItem("toggleComments", "hide");
+  } else if (localStorage.getItem("toggleComments") == "hide") {
+    toggleCommentsBtn.innerHTML = `<span class="material-icons">speaker_notes_off</span>`;
+    attendsTable.showColumn(2);
+    localStorage.setItem("toggleComments", "show");
+  }
+
   console.log("toggleComments");
 }
 
@@ -296,16 +643,29 @@ function showDuplicates() {
 }
 
 function updateTable(e) {
+  let arrayOfParameters = [];
   let parameters = getTableParameters(e);
-  updateDataInTable(parameters);
+  let table = attendsTable;
+  arrayOfParameters.push(parameters, table);
+  document.getElementById("attendsTable").style.display = "none";
+  if (
+    table.selectedCell != null ||
+    table.selectedCell != undefined ||
+    table.selectedCell != ""
+  ) {
+    let selectedCells = table.selectedCell;
+    arrayOfParameters.push(selectedCells);
+  }
+  console.log("Прошли selectedCells");
+  let search = document.getElementsByClassName("jexcel_search")[0];
+  if (search.value != null || search.value != undefined) {
+    let searchValue = search.value;
+    arrayOfParameters.push(searchValue);
+  }
+  updateDataInTable(...arrayOfParameters);
 }
 
-function updateDataInTable(parameters) {
-  let table = attendsTable;
-  let selectedCells = table.selectedCell;
-  let search = document.getElementsByClassName("jexcel_search")[0];
-  let searchValue = search.value;
-
+function updateDataInTable(parameters, table, selectedCells, searchValue) {
   $.ajax({
     url: "/api/report",
     method: "POST",
@@ -313,115 +673,66 @@ function updateDataInTable(parameters) {
     data: JSON.stringify(parameters),
   }).done(function (data) {
     console.log("data: ", data);
-    let columns = data.horizontal_report.columns;
-    let newColumns = [];
-    columns.forEach((column) => {
-      let newColumn = formatDict[column]
-        ? formatDict[column]
-        : { title: column, name: column, width: 70 };
-      newColumns.push(newColumn);
-    });
+    console.log(table);
+    table.setData(data.horizontal_report.data);
+    let newSearch = document.getElementsByClassName("jexcel_search")[0];
+    reMergeCells();
+    if (localStorage.getItem("toggleComments") == "hide") {
+      attendsTable.hideColumn(2);
+    }
+    if (searchValue) {
+      newSearch.value = searchValue;
+      table.search(searchValue);
+    }
+    if (selectedCells) {
+      table.updateSelectionFromCoords(...selectedCells);
+      table.updateScroll();
+    }
+    $("#preLoadContainer")[0].style.display = "none";
+
+    document.getElementById("attendsTable").style.display = "inline-block";
   });
 
   console.log("updateDataInTable");
 }
 
-// function getTable(parameters) {
-//   $.ajax({
-//     url: "/api/report",
-//     method: "POST",
-//     contentType: "application/json",
-//     data: JSON.stringify(parameters),
-//   }).done(function (data) {
-//     console.log(data);
+function reMergeCells() {
+  let table = attendsTable;
+  table.destroyMerged();
+  let columnData = table.getColumnData(0);
+  let currentValue = columnData[0];
+  let i = 0;
+  for (i = 0; i < columnData.length; i++) {
+    if (columnData[i] === "") {
+      columnData[i] = currentValue;
+    } else {
+      currentValue = columnData[i];
+    }
+  }
+  let toMergeCells = [];
+  let startValue = columnData[0];
+  let startIndex = 0;
+  let endIndex = 0;
 
-//     let columns = data.horizontal_report.columns;
-//     let numColumns = columns.length;
-//     let columnInit = [];
-//     let table = document.getElementById("attendsTable").children[0].children[0];
-
-//     for (let i = 0; i < numColumns; i++) {
-//       columnInit.push({ title: columns[i] });
-//       // let th = document.createElement("th");
-//       // th.innerText = columns[i];
-//       // table.appendChild(th);
-//     }
-//     console.log(columnInit);
-
-//     let windowHeight = window.innerHeight - 220;
-//     attendsTable = new DataTable("#attendsTable", {
-//       aaData: data,
-//       scrollY: windowHeight,
-//       scrollX: "100%",
-//       scrollCollapse: false,
-//       paging: false,
-//       language: {
-//         search: "Поиск: ",
-//         info: "Найдено по запросу: _TOTAL_ ",
-//         infoFiltered: "( из _MAX_ записей )",
-//         infoEmpty: "",
-//         zeroRecords: "Совпадений не найдено",
-//       },
-//       dom: "<'pre-table-row'<'btns-container'B>f>rtip",
-//       buttons: [
-//         {
-//           text: "Сотрудник +",
-//           className: "add-emp-btn",
-//           attr: {
-//             id: "addEmployee",
-//           },
-//           action: function () {
-//             console.log("employee");
-//           },
-//         },
-//         {
-//           text: "Скачать",
-//           className: "download-btn",
-//           attr: {
-//             id: "downloadBtn",
-//           },
-//           action: function () {
-//             console.log("download");
-//           },
-//         },
-//         {
-//           text: "Комментарии",
-//           className: "comment-toggle-btn",
-//           attr: {
-//             id: "commentToggleBtn",
-//           },
-//           action: function () {
-//             console.log("comment");
-//           },
-//         },
-//         {
-//           text: "Дубликаты",
-//           className: "duplicates-btn",
-//           attr: {
-//             id: "duplicatesBtn",
-//           },
-//           action: function () {
-//             console.log("duplicates");
-//           },
-//         },
-//         {
-//           text: "Обновить",
-//           className: "refresh-btn",
-//           attr: {
-//             id: "refreshBtn",
-//           },
-//           action: function () {
-//             console.log("refresh");
-//           },
-//         },
-//       ],
-
-//       columns: columnInit,
-//     });
-
-//     $("#preLoadContainer")[0].style.display = "none";
-//     $("#tableParametersContainer")[0].style.display = "flex";
-//     $("#tableContainer")[0].style.opacity = 1;
-//     $("#objectTable").DataTable().draw();
-//   });
-// }
+  for (i = 0; i < columnData.length; i++) {
+    let value = columnData[i];
+    if (value !== startValue) {
+      if (i - startIndex > 1) {
+        toMergeCells.push(["A" + String(startIndex + 1), i - startIndex]);
+      }
+      startValue = value;
+      startIndex = i;
+    }
+    endIndex = i + 1;
+  }
+  if (endIndex - startIndex > 1) {
+    toMergeCells.push(["A" + String(startIndex + 1), endIndex - startIndex]);
+  }
+  for (i in toMergeCells) {
+    table.setMerge(toMergeCells[i][0], 0, toMergeCells[i][1]);
+    let separator = table.getCell(toMergeCells[i][0]).parentElement.children;
+    Array.from(separator).forEach((cell) => {
+      cell.classList.add("higlight-separate");
+    });
+  }
+}

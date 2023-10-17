@@ -1,4 +1,8 @@
 @media screen and (min-width: 900px) {
+  .higlight-separate {
+    border-top: 1px solid black !important;
+  }
+
   #preLoadContainer {
     height: 500px;
 
@@ -146,10 +150,147 @@
     padding: 4px 5px 0px 5px;
 
     margin-right: 5px;
+    transition: background-color 0.5s;
+    cursor: pointer;
+  }
+
+  #customToolbar > *:hover {
+    background-color: rgba(4, 106, 84, 0.473);
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 4px 5px 0px 5px;
+
+    margin-right: 5px;
+    cursor: pointer;
+  }
+
+  #customToolbar > *:active {
+    background-color: rgba(0, 64, 82, 0.516);
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 4px 5px 0px 5px;
+
+    margin-right: 5px;
     cursor: pointer;
   }
 
   .jexcel_content::-webkit-scrollbar-thumb {
     border-radius: 5px;
+  }
+
+  #preLoadingImg {
+    width: 24px;
+    margin-bottom: 20px;
+  }
+
+  #btnsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 110.5%;
+    padding: 20px 0px;
+    margin-top: 20px;
+    border-top: solid 1px rgb(189, 189, 189);
+  }
+
+  #btnsContainer button {
+    margin: 0 30px 0 30px;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+  }
+
+  #cancelBtn {
+    background-color: rgba(83, 83, 83, 0.751);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #backBtn {
+    background-color: rgba(169, 169, 169, 0.751);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #saveBtn {
+    background-color: rgba(223, 220, 168, 0.899);
+    color: rgb(46, 46, 46);
+
+    cursor: pointer;
+  }
+
+  #inputsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #employeeSelect,
+  #objectSelect,
+  #employeeSearch,
+  #objectSearch {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: start;
+
+    border: 1px solid rgb(166, 166, 166);
+    border-radius: 3px;
+    padding: 5px;
+    width: 380px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 20px;
+  }
+
+  #employeeSelect:hover,
+  #objectSelect:hover {
+    background-color: rgb(223, 223, 223);
+  }
+
+  .unacive-select {
+    cursor: no-drop !important;
+  }
+
+  #employeeSearch:focus,
+  #objectSearch:focus {
+    outline: 1px solid gray;
+    border: 1px solid rgb(182, 182, 182);
+  }
+
+  #employeeListContainer,
+  #objectListContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 400px;
+  }
+  #employeeList,
+  #objectList {
+    height: 300px;
+    width: 412px;
+    overflow-y: scroll;
+  }
+  #employeeList > *,
+  #objectList > * {
+    padding: 2px;
+    cursor: pointer;
+  }
+  #employeeList > :hover,
+  #objectList > :hover {
+    background-color: rgb(223, 223, 223);
+  }
+
+  .division-name-in-list {
+    font-size: 14px;
+    color: gray;
+    margin-left: 15px;
   }
 }

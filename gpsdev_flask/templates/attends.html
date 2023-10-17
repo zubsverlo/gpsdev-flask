@@ -52,10 +52,10 @@
       <button id="currentMonth" title="Текущий месяц"></button>
     </div>
     <div id="startDateOfPeriodContainer">
-      <input id="startDateOfPeriod" type="date" />
+      <input id="startDateOfPeriod" type="date" value="2023-09-04" />
     </div>
     <div id="endDateOfPeriodContainer">
-      <input id="endDateOfPeriod" type="date" />
+      <input id="endDateOfPeriod" type="date" value="2023-09-10" />
     </div>
     <div id="timeOrQuantitySelectContainer">
       <select id="timeOrQuantitySelect">
@@ -75,20 +75,9 @@
 
 <div id="attendsTable" style="max-width: 100%"></div>
 
-<!-- <div id="tableContainer">
-  <table
-    id="attendsTable"
-    style="overflow-x: auto; width: 100%"
-    class="row-border"
-  >
-    <thead>
-      <tr></tr>
-    </thead>
-  </table>
-</div> -->
-
 <script type="module" src="../static/pages/attends/attends.js"></script>
 <script type="module" src="../static/alerts.js"></script>
+<script type="module" src="../static/modal.js"></script>
 <script type="module" src="../static/translation_dict.js"></script>
 
 {% endblock content %}
