@@ -20,16 +20,10 @@ def objects_many():
     if request.method == "GET":
         if 'active' in request.args.keys() \
                 and request.args.get('active') != 'false':
-            sel = select(ObjectsSite.object_id,
-                         ObjectsSite.name,
-                         ObjectsSite.address,
-                         ObjectsSite.division,
-                         Division.division.label('division_name')
-                         ).join(Division) \
-                .where(ObjectsSite.division.in_(current_user.access_list)) \
-                .where(ObjectsSite.active == True)
-            res = db_session.execute(sel).all()
-            return jsonify(ObjectSchema(partial=True, many=True).dump(res))
+            res = db_session.query(ObjectsSite)\
+                .filter(ObjectsSite.active == True)\
+                .all()
+            return jsonify(ObjectSchema(many=True, exclude=['active', 'latitude', 'longitude', 'no_payments', 'phone']).dump(res))
 
         res = db_session.query(ObjectsSite)\
             .filter(ObjectsSite.division.in_(current_user.access_list))\
