@@ -259,6 +259,46 @@
     cursor: no-drop !important;
   }
 
+  #fieldOfSelection {
+    display: none;
+    flex-direction: column;
+
+    width: 376px;
+
+    border-radius: 5px;
+    border: 1px solid rgb(195, 195, 195);
+  }
+
+  .employee-in-list-to-add {
+    font-size: 15px;
+    background-color: rgba(219, 230, 191, 0.439);
+    padding: 3px 2px;
+  }
+
+  .objects-in-list-to-add {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    font-size: 14px;
+
+    background-color: rgb(4 166 130 / 8%);
+    border-top: 1px solid rgb(195, 195, 195);
+    border-bottom: 1px solid rgb(195, 195, 195);
+    padding: 5px;
+  }
+
+  .delete-object-in-list {
+    padding: 1px 4px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .delete-object-in-list:hover {
+    background-color: rgb(154, 154, 154);
+    color: rgb(244, 238, 238);
+  }
+
   #employeeSearch:focus,
   #objectSearch:focus {
     outline: 1px solid gray;

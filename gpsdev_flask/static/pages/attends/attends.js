@@ -357,7 +357,7 @@ async function getEmployees() {
 }
 
 async function getObjects() {
-  await fetch("/api/objects", {
+  await fetch("/api/objects?active=true", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   })
@@ -417,6 +417,7 @@ function createContentInModal() {
   saveBtn.id = "saveBtn";
   saveBtn.type = "submit";
   saveBtn.innerText = "Сохранить";
+  saveBtn.onclick = insertEmployeeIntoTable;
 
   btnsContainer.append(cancelBtn, saveBtn);
 
@@ -434,9 +435,11 @@ function createEmployeesList() {
   let inputsContainer = document.getElementById("inputsContainer");
   let employeeSelect = document.getElementById("employeeSelect");
   let objectSelect = document.getElementById("objectSelect");
+  let fieldOfSelection = document.getElementById("fieldOfSelection");
   employeeSelect.disabled = true;
   employeeSelect.style.display = "none";
   objectSelect.style.display = "none";
+  fieldOfSelection.style.display = "none";
 
   let employeeListContainer = document.createElement("div");
   employeeListContainer.id = "employeeListContainer";
@@ -470,9 +473,11 @@ function createObjectsList() {
   let inputsContainer = document.getElementById("inputsContainer");
   let employeeSelect = document.getElementById("employeeSelect");
   let objectSelect = document.getElementById("objectSelect");
+  let fieldOfSelection = document.getElementById("fieldOfSelection");
   employeeSelect.disabled = true;
   employeeSelect.style.display = "none";
   objectSelect.style.display = "none";
+  fieldOfSelection.style.display = "none";
 
   let objectListContainer = document.createElement("div");
   objectListContainer.id = "objectListContainer";
@@ -552,7 +557,8 @@ function renderListOfNames(list, container) {
 function chosenName(e) {
   let input = null;
   let select = null;
-  let name = e.target.getAttribute("name");
+  let element = e.target;
+  let name = element.getAttribute("name");
   let objectSelect = document.getElementById("objectSelect");
 
   document.getElementById("employeeSearch")
@@ -569,8 +575,53 @@ function chosenName(e) {
   objectSelect.disabled = false;
   objectSelect.classList.remove("unacive-select");
 
+  createListToAdd(element, select);
+
   console.log(name);
   console.log(input);
+}
+
+function createListToAdd(element, currentSelect) {
+  let fieldOfSelection = document.getElementById("fieldOfSelection");
+  fieldOfSelection.style.display = "flex";
+
+  if (currentSelect.getAttribute("input-type") === "employee") {
+    fieldOfSelection.childNodes[0]
+      ? fieldOfSelection.childNodes[0].remove()
+      : null;
+    let employeeDiv = document.createElement("div");
+    employeeDiv.innerText = element.getAttribute("name") + ":";
+    employeeDiv.setAttribute("name", element.getAttribute("name"));
+    employeeDiv.setAttribute("name_id", element.getAttribute("name_id"));
+    employeeDiv.className = "employee-in-list-to-add";
+
+    fieldOfSelection.prepend(employeeDiv);
+  } else {
+    let objectsInList = [...fieldOfSelection.children].slice(1);
+    let flag = false;
+    objectsInList.forEach((o) => {
+      if (o.getAttribute("object_id") == element.getAttribute("object_id"))
+        flag = true;
+    });
+    if (flag) return;
+
+    let objectDiv = document.createElement("div");
+    objectDiv.innerText = element.getAttribute("name");
+    objectDiv.setAttribute("name", element.getAttribute("name"));
+    objectDiv.setAttribute("object_id", element.getAttribute("object_id"));
+    objectDiv.className = "objects-in-list-to-add";
+
+    let anc = document.createElement("a");
+    anc.innerText = "X";
+    anc.className = "delete-object-in-list";
+    anc.addEventListener("click", (e) => {
+      let div = e.target.parentElement;
+      div.remove();
+    });
+
+    objectDiv.appendChild(anc);
+    fieldOfSelection.append(objectDiv);
+  }
 }
 
 function returnBack() {
@@ -588,6 +639,37 @@ function returnBack() {
 
   let backBtn = document.getElementById("backBtn");
   backBtn.remove();
+}
+
+function insertEmployeeIntoTable() {
+  let elementsToAdd = document.getElementById("fieldOfSelection").children;
+  if (elementsToAdd.length <= 1) {
+    alertsToggle(
+      "Выберите подопечных для добавления в таблицу!",
+      "danger",
+      4000
+    );
+    return;
+  }
+  let employeeName = elementsToAdd[0].getAttribute("name");
+  let employeeId = elementsToAdd[0].getAttribute("name_id");
+
+  // attendsTable.destroyMerged();
+
+  [...elementsToAdd].slice(1).forEach((e) => {
+    let objectName = e.getAttribute("name");
+    let objectId = e.getAttribute("object_id");
+    console.log(employeeName, objectName);
+    attendsTable.insertRow(
+      [employeeName, employeeId, "", objectName, objectId],
+      0,
+      1
+    );
+  });
+
+  hideModal();
+
+  reMergeCells();
 }
 
 function downloadXlsx(e) {
