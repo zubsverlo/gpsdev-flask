@@ -103,6 +103,7 @@ class ObjectSchema(Schema):
     phone = fields.String(validate=validate.Length(
         max=200, error="Контактные данные должны быть в пределах 200 символов"))
     no_payments = fields.Boolean(load_default=False)
+    income = fields.Float()
     active = fields.Boolean(load_default=True)
     admission_date = fields.Date()
     denial_date = fields.Date()

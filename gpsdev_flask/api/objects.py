@@ -85,7 +85,8 @@ def objects_one(object_id=None):
             .values(**obj)
         )
         db_session.commit()
-        return jsonify(obj)
+        db_session.refresh(p_object)
+        return jsonify(schema.dump(p_object))
 
     if request.method == 'DELETE':
         db_session.execute(

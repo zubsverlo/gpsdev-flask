@@ -292,7 +292,8 @@ class DatabaseReportDataGetter:
                 raise ReportException(f'Не найдено заявленных выходов в период '
                                       f'с {date_from} до {date_to}')
             name_ids = stmts.name_id.unique().tolist()
-
+            object_ids = stmts.object_id.unique().tolist()
+            
             journal = pd.read_sql(cs.journal(name_ids), conn)
             journal['period_end'] = journal['period_end'].fillna(
                 dt.date.today())
@@ -311,6 +312,7 @@ class DatabaseReportDataGetter:
                     .apply(lambda x: x.date())
             comment = pd.read_sql(cs.comment(division, name_ids), conn)
             frequency = pd.read_sql(cs.frequency(division, name_ids), conn)
+            income = pd.read_sql(cs.income(object_ids), conn)
 
         if includes_current_date:
             try:
@@ -328,6 +330,7 @@ class DatabaseReportDataGetter:
         data['_clusters'] = clusters
         data['_comment'] = comment
         data['_frequency'] = frequency
+        data['_income'] = income
         return data
 
 

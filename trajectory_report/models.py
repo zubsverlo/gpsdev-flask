@@ -165,6 +165,7 @@ class ObjectsSite(Base):
     radius: Mapped[int]
     active: Mapped[bool]
     no_payments: Mapped[bool]
+    income: Mapped[float]
     admission_date: Mapped[dt.date]
     denial_date: Mapped[dt.date]
     apartment_number: Mapped[str] = mapped_column(CHAR(length=50))

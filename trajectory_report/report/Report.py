@@ -207,6 +207,7 @@ class Report(ReportBase):
         self._clusters = data.get('_clusters')
         self._comment = data.get('_comment')
         self._frequency = data.get('_frequency')
+        self._income = data.get('_income')
 
         self._counts = counts
 
@@ -674,8 +675,10 @@ class ReportWithAdditionalColumns(Report):
                                           how='outer')
         report = pd.merge(report, comments_and_frequency,
                           on=['name_id', 'object_id'], how='left')
+        report = pd.merge(report, self._income, on=['object_id'], how='left')
         report.insert(2, 'comment', report.pop('comment'))
         report.insert(5, 'frequency', report.pop('frequency'))
+        report.insert(6, 'income', report.pop('income'))
         report = report.fillna('')
         return report
 
@@ -861,7 +864,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2023-10-01', '2023-10-11', "ПВТ6")
+    r = ReportWithAdditionalColumns('2023-09-01', '2023-10-31', "ПВТ6")
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
     # a = r.as_json_dict
