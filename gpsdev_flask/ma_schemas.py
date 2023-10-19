@@ -104,9 +104,17 @@ class ObjectSchema(Schema):
         max=200, error="Контактные данные должны быть в пределах 200 символов"))
     no_payments = fields.Boolean(load_default=False)
     active = fields.Boolean(load_default=True)
+    admission_date = fields.Date()
+    denial_date = fields.Date()
+    apartment_number = fields.String(
+        validate=validate.Length(
+            max=50, 
+            error='Нужно уложиться в 50 символов для номера квартиры'
+            )
+        )
     division_name = fields.Pluck(
         DivisionSchema, 'division', attribute='division_ref', dump_only=True
-    )
+        )
 
     @validates('division')
     def validate_division(self, value):

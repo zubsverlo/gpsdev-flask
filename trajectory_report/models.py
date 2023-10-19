@@ -165,6 +165,9 @@ class ObjectsSite(Base):
     radius: Mapped[int]
     active: Mapped[bool]
     no_payments: Mapped[bool]
+    admission_date: Mapped[dt.date]
+    denial_date: Mapped[dt.date]
+    apartment_number: Mapped[str] = mapped_column(CHAR(length=50))
     division_ref: Mapped['Division'] = relationship('Division', lazy='joined')
 
     def __repr__(self):

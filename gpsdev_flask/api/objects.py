@@ -25,7 +25,10 @@ def objects_many():
                 .all()
             return jsonify(ObjectSchema(
                 many=True, 
-                exclude=['active', 'latitude', 'longitude', 'no_payments', 'phone']
+                exclude=[
+                    'active', 'latitude', 'longitude', 'no_payments', 'phone',
+                    'admission_date', 'denial_date', 'apartment_number'
+                    ]
                 ).dump(res)
             )
 
@@ -69,6 +72,7 @@ def objects_one(object_id=None):
             return not_found_404()
 
         g.p_object = p_object
+        
         schema = ObjectSchema(partial=True)
         try:
             obj = schema.load(request.get_json())
