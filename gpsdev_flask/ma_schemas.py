@@ -105,8 +105,8 @@ class ObjectSchema(Schema):
     no_payments = fields.Boolean(load_default=False)
     income = fields.Float()
     active = fields.Boolean(load_default=True)
-    admission_date = fields.Date()
-    denial_date = fields.Date()
+    admission_date = fields.Date(allow_none=True)
+    denial_date = fields.Date(allow_none=True)
     apartment_number = fields.String(
         validate=validate.Length(
             max=50, 
