@@ -2,6 +2,12 @@ const modal = document.getElementById("modalContainer");
 const modalTitle = document.getElementById("modalTitle");
 const modalBody = document.getElementById("modalBody");
 
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    hideModal();
+  }
+});
+
 // clear and hide Modal
 export function hideModal() {
   modal.style.display = "none";

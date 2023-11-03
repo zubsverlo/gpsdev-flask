@@ -30,6 +30,79 @@ function createForm() {
   nameField.type = "text";
   nameField.required = true;
 
+  let divisionFieldContainer = document.createElement("div");
+  divisionFieldContainer.id = "divisionFieldContainer";
+
+  let divisionFieldLabel = document.createElement("label");
+  divisionFieldLabel.htmlFor = "divisionField";
+  divisionFieldLabel.innerText = "Подразделение:";
+
+  let divisionField = document.createElement("select");
+  divisionField.id = "divisionField";
+  divisionField.required = true;
+
+  let options = JSON.parse(localStorage.getItem("access"));
+  options.forEach((d) => {
+    const divisionName = d.division;
+    let option = document.createElement("option");
+    option.setAttribute("division_id", d.division_id);
+    option.innerText = divisionName;
+    divisionField.appendChild(option);
+  });
+
+  let restFields = document.createElement("div");
+  restFields.id = "restFields";
+
+  let activeField = document.createElement("div");
+  activeField.id = "activeField";
+
+  let activeCheck = document.createElement("input");
+  activeCheck.id = "activeCheck";
+  activeCheck.type = "checkbox";
+  activeCheck.checked = "true";
+
+  let activeCheckLabel = document.createElement("label");
+  activeCheckLabel.htmlFor = "activeCheck";
+  activeCheckLabel.innerText = "Показывать в списке для заполнения шахматки";
+
+  let noPaymentField = document.createElement("div");
+  noPaymentField.id = "noPaymentField";
+
+  let noPaymentCheck = document.createElement("input");
+  noPaymentCheck.id = "noPaymentCheck";
+  noPaymentCheck.type = "checkbox";
+
+  let noPaymentCheckLabel = document.createElement("label");
+  noPaymentCheckLabel.htmlFor = "noPaymentCheck";
+  noPaymentCheckLabel.innerText = "Частично платная основа, но не доплачивает";
+
+  let dateFieldsContainer = document.createElement("div");
+  dateFieldsContainer.id = "dateFieldsContainer";
+
+  let startDateContainer = document.createElement("div");
+  startDateContainer.id = "startDateContainer";
+
+  let startDateLabel = document.createElement("label");
+  startDateLabel.id = "startDateLabel";
+  startDateLabel.innerText = "Дата приема на обслуж.";
+  startDateLabel.htmlFor = "startDateField";
+
+  let startDateField = document.createElement("input");
+  startDateField.id = "startDateField";
+  startDateField.type = "date";
+
+  let endDateContainer = document.createElement("div");
+  endDateContainer.id = "endDateContainer";
+
+  let endDateLabel = document.createElement("label");
+  endDateLabel.id = "endDateLabel";
+  endDateLabel.innerText = "Дата снятия с обслуж.";
+  endDateLabel.htmlFor = "endDateField";
+
+  let endDateField = document.createElement("input");
+  endDateField.id = "endDateField";
+  endDateField.type = "date";
+
   let phoneFieldContainer = document.createElement("div");
   phoneFieldContainer.id = "phoneFieldContainer";
 
@@ -81,50 +154,17 @@ function createForm() {
   addressField.placeholder = "Начните вводить адрес";
   addressField.required = true;
 
-  let divisionFieldContainer = document.createElement("div");
-  divisionFieldContainer.id = "divisionFieldContainer";
+  let apartmentFieldContainer = document.createElement("div");
+  apartmentFieldContainer.id = "apartmentFieldContainer";
 
-  let divisionFieldLabel = document.createElement("label");
-  divisionFieldLabel.htmlFor = "divisionField";
-  divisionFieldLabel.innerText = "Подразделение:";
+  let apartmentFieldLabel = document.createElement("label");
+  apartmentFieldLabel.id = "apartmentFieldLabel";
+  apartmentFieldLabel.innerText = "Номер квартиры, подъезд, код домофона и т.д";
+  apartmentFieldLabel.htmlFor = "";
 
-  let divisionField = document.createElement("select");
-  divisionField.id = "divisionField";
-  divisionField.required = true;
-
-  let options = JSON.parse(localStorage.getItem("access"));
-  options.forEach((d) => {
-    const divisionName = d.division;
-    let option = document.createElement("option");
-    option.setAttribute("division_id", d.division_id);
-    option.innerText = divisionName;
-    divisionField.appendChild(option);
-  });
-
-  let restFields = document.createElement("div");
-  restFields.id = "restFields";
-
-  let activeField = document.createElement("div");
-  activeField.id = "activeField";
-
-  let activeCheck = document.createElement("input");
-  activeCheck.id = "activeCheck";
-  activeCheck.type = "checkbox";
-
-  let activeCheckLabel = document.createElement("label");
-  activeCheckLabel.htmlFor = "activeCheck";
-  activeCheckLabel.innerText = "Показывать в списке для заполнения шахматки";
-
-  let noPaymentField = document.createElement("div");
-  noPaymentField.id = "noPaymentField";
-
-  let noPaymentCheck = document.createElement("input");
-  noPaymentCheck.id = "noPaymentCheck";
-  noPaymentCheck.type = "checkbox";
-
-  let noPaymentCheckLabel = document.createElement("label");
-  noPaymentCheckLabel.htmlFor = "noPaymentCheck";
-  noPaymentCheckLabel.innerText = "Частично платная основа, но не доплачивает";
+  let apartmentField = document.createElement("input");
+  apartmentField.id = "apartmentField";
+  apartmentField.type = "text";
 
   let btnsContainer = document.createElement("div");
   btnsContainer.id = "btnsContainer";
@@ -141,27 +181,33 @@ function createForm() {
   saveBtn.innerText = "Сохранить";
 
   nameFieldContainer.append(nameFieldLabel, nameField);
-  phoneFieldContainer.append(phoneFieldLabel, phoneField);
   switchAddressLabel.append(switchAddressBtn, switchAddressSpan);
   switchAddressContainer.append(switchAddressLabelName, switchAddressLabel);
+  startDateContainer.append(startDateLabel, startDateField);
+  endDateContainer.append(endDateLabel, endDateField);
+  phoneFieldContainer.append(phoneFieldLabel, phoneField);
   addressFieldContainer.append(
     addressFieldLabel,
     addressField,
     switchAddressContainer
   );
+  apartmentFieldContainer.append(apartmentFieldLabel, apartmentField);
 
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
   restFields.append(activeField, noPaymentField);
   activeField.append(activeCheck, activeCheckLabel);
   noPaymentField.append(noPaymentCheck, noPaymentCheckLabel);
+  dateFieldsContainer.append(startDateContainer, endDateContainer);
   btnsContainer.append(cancelBtn, saveBtn);
 
   modalForm.append(
     nameFieldContainer,
     divisionFieldContainer,
     restFields,
+    dateFieldsContainer,
     phoneFieldContainer,
     addressFieldContainer,
+    apartmentFieldContainer,
     btnsContainer
   );
 
@@ -172,62 +218,79 @@ $.ajax({
   url: "/api/objects",
   method: "GET",
   contentType: "application/json",
-}).done(function (data) {
-  let windowHeight = window.innerHeight - 220;
-  objectTable = new DataTable("#objectTable", {
-    aaData: data,
-    scrollY: windowHeight,
-    scrollX: "100%",
-    scrollCollapse: true,
-    paging: false,
-    language: {
-      search: "Поиск: ",
-      info: "Найдено по запросу: _TOTAL_ ",
-      infoFiltered: "( из _MAX_ записей )",
-      infoEmpty: "",
-      zeroRecords: "Совпадений не найдено",
-    },
-    dom: "<'pre-table-row'<'new-obj-container'B>f>rtip",
-    buttons: [
-      {
-        //add new-object button
-        text: "Новый подопечный",
-        className: "new-obj-btn",
-        attr: {
-          id: "addNewObject",
-        },
-        action: function () {
-          modal.style.display = "flex";
-          modalTitle.innerText = "Добавить подопечного";
-          createForm();
-          modalBody.appendChild(modalForm);
-
-          let addressField = document.getElementById("addressField");
-          addressField.addEventListener("input", addressType);
-
-          document.getElementById("saveBtn").onclick = createObject;
-        },
+})
+  .done(function (data) {
+    objectTable = new DataTable("#objectTable", {
+      aaData: data,
+      scrollY: "70vh",
+      scrollX: "100%",
+      scrollResize: true,
+      scrollCollapse: true,
+      paging: false,
+      language: {
+        search: "Поиск: ",
+        info: "Найдено по запросу: _TOTAL_ ",
+        infoFiltered: "( из _MAX_ записей )",
+        infoEmpty: "",
+        zeroRecords: "Совпадений не найдено",
       },
-    ],
+      dom: "<'pre-table-row'<'new-obj-container'B>f>rtip",
+      buttons: [
+        {
+          //add new-object button
+          text: "Новый подопечный",
+          className: "new-obj-btn",
+          attr: {
+            id: "addNewObject",
+          },
+          action: function () {
+            modal.style.display = "flex";
+            modalTitle.innerText = "Добавить подопечного";
+            createForm();
+            modalBody.appendChild(modalForm);
 
-    columns: [
-      { data: "division_name" },
-      { data: "name" },
-      { data: "address" },
-      { data: "phone" },
-      {
-        // add column with change buttons to all rows in table
-        data: null,
-        defaultContent: "<button class='change-btn'>Изменить</button>",
-        targets: -1,
-      },
-    ],
+            let addressField = document.getElementById("addressField");
+            addressField.addEventListener("input", addressType);
+
+            document.getElementById("saveBtn").onclick = createObject;
+          },
+        },
+      ],
+
+      columns: [
+        { data: "division_name" },
+        { data: "name" },
+        { data: "address" },
+        { data: "apartment_number" },
+        { data: "phone" },
+        {
+          // add column with change buttons to all rows in table
+          data: null,
+          defaultContent: "<button class='change-btn'>Изменить</button>",
+          targets: -1,
+        },
+      ],
+    });
+
+    $("#preLoadContainer")[0].style.display = "none";
+    $("#tableContainer")[0].style.opacity = 1;
+    $("#objectTable").DataTable().draw();
+  })
+  .fail(function (xhr, status, error) {
+    let json = xhr.responseJSON;
+    if (xhr.status == 500) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(
+        "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+        "danger",
+        6000
+      );
+    }
+    if (xhr.status == 422) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(json.detail, "danger", 6000);
+    }
   });
-
-  $("#preLoadContainer")[0].style.display = "none";
-  $("#tableContainer")[0].style.opacity = 1;
-  $("#objectTable").DataTable().draw();
-});
 
 // When change button is clicked, create modal,
 // fill form with api data
@@ -262,6 +325,9 @@ $("#objectTable").on("click", "button", function (e) {
   let active = document.getElementById("activeCheck");
   let phone = document.getElementById("phoneField");
   let address = document.getElementById("addressField");
+  let startDate = document.getElementById("startDateField");
+  let endDate = document.getElementById("endDateField");
+  let apartment = document.getElementById("apartmentField");
   let saveBtn = document.getElementById("saveBtn");
 
   name.value = data.name;
@@ -274,6 +340,9 @@ $("#objectTable").on("click", "button", function (e) {
   address.value = data.address;
   address.setAttribute("lat", data.latitude);
   address.setAttribute("lon", data.longitude);
+  startDate.value = data.admission_date;
+  endDate.value = data.denial_date;
+  apartment.value = data.apartment_number;
 
   saveBtn.onclick = changeObject;
 });
@@ -345,7 +414,11 @@ function getAddressList() {
     },
   })
     .then((response) => {
-      return response.json();
+      if (response.ok) {
+        return response.json();
+      }
+
+      return Promise.reject(response);
     })
     .then((data) => {
       let inputRect = addressInput.getBoundingClientRect();
@@ -371,6 +444,28 @@ function getAddressList() {
 
         addressContainer.append(op);
       });
+    })
+    .catch((response) => {
+      if (response.status === 422) {
+        response.json().then((json) => {
+          Object.values(json.detail).forEach((entry) => {
+            let splitEntry = entry.split(":");
+            let nameField = splitEntry[0];
+            let newNameField = dictionary[nameField]
+              ? dictionary[nameField]
+              : nameField;
+            let newEntry = newNameField + ": " + splitEntry[1];
+            alertsToggle(newEntry, "danger", 3000);
+          });
+        });
+      }
+      if (response.status === 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -425,9 +520,12 @@ function createObject() {
   let divisionId =
     options.options[options.selectedIndex].getAttribute("division_id");
 
+  let startDate = document.getElementById("startDateField").value;
+  let endDate = document.getElementById("endDateField").value;
   let latitude = addressInput.getAttribute("lat");
   let longitude = addressInput.getAttribute("lon");
   let address = addressInput.value;
+  let apartment = document.getElementById("apartmentField").value;
   let noPayments = document.getElementById("noPaymentCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
@@ -444,11 +542,16 @@ function createObject() {
     address: address,
   };
 
+  startDate ? (parameters["admission_date"] = startDate) : null;
+  endDate ? (parameters["denial_date"] = endDate) : null;
+
   noPayments ? (parameters["no_payments"] = noPayments) : null;
   active ? (parameters["active"] = active) : null;
 
+  apartment != "" ? (parameters["apartment_number"] = apartment) : null;
   phone != "" ? (parameters["phone"] = phone) : null;
 
+  console.log(parameters);
   sendNewObject(parameters);
 }
 
@@ -484,6 +587,13 @@ function sendNewObject(parameters) {
           });
         });
       }
+      if (response.status === 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -496,9 +606,12 @@ function changeObject() {
   let divisionId =
     options.options[options.selectedIndex].getAttribute("division_id");
 
+  let startDate = document.getElementById("startDateField").value;
+  let endDate = document.getElementById("endDateField").value;
   let latitude = addressInput.getAttribute("lat");
   let longitude = addressInput.getAttribute("lon");
   let address = addressInput.value;
+  let apartment = document.getElementById("apartmentField").value;
   let noPayments = document.getElementById("noPaymentCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
@@ -510,15 +623,19 @@ function changeObject() {
   let parameters = {
     name: name,
     division: divisionId,
+    admission_date: startDate == "" ? null : startDate,
+    denial_date: endDate == "" ? null : endDate,
     latitude: latitude,
     longitude: longitude,
     address: address,
     no_payments: noPayments,
     active: active,
     phone: phone,
+    apartment_number: apartment,
   };
 
   sendEditObject(parameters);
+  console.log("parameters: ", parameters);
 }
 
 // send edit object data to api and get responses
@@ -536,12 +653,14 @@ function sendEditObject(parameters) {
       return Promise.reject(response);
     })
     .then((data) => {
-      let access = JSON.parse(localStorage.getItem("access"));
-      access.forEach((d) => {
-        d.division_id === data.division
-          ? (data["division_name"] = d.division)
-          : null;
-      });
+      console.log(data);
+      // let access = JSON.parse(localStorage.getItem("access"));
+      // access.forEach((d) => {
+      //   d.division_id === data.division
+      //     ? (data["division_name"] = d.division)
+      //     : null;
+      // });
+      // console.log("data with division-name ", data);
       hideModal();
       alertsToggle("Подопечный изменен!", "success", 2500);
       $("#objectTable").DataTable().row(currentRowOfTable).data(data).draw();
@@ -563,6 +682,13 @@ function sendEditObject(parameters) {
             alertsToggle(newEntry, "danger", 3000);
           });
         });
+      }
+      if (response.status === 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
     });
 }
@@ -591,6 +717,13 @@ function deleteObject() {
       }
       if (response.status === 404) {
         alertsToggle("Подопечный не найден!", "danger", 3000);
+      }
+      if (response.status === 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
     });
 }

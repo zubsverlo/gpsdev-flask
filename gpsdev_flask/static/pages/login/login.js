@@ -64,13 +64,20 @@ function login(e) {
 
       location.search
         ? (location.href = location.search.split("?next=")[1])
-        : (location.href = "/home");
+        : (location.href = "/");
     })
     .catch((response) => {
       if (response.status == 422) {
         response.json().then((error) => {
           alertsToggle("Неверный логин или пароль!", "danger", 3000);
         });
+      }
+      if (json.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку, или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
     });
 }

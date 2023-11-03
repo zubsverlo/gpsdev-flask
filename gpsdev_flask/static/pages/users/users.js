@@ -148,67 +148,82 @@ $.ajax({
   url: "/api/users",
   method: "GET",
   contentType: "application/json",
-}).done(function (data) {
-  data.forEach((user) => {
-    let newArray = [];
-    user.access.forEach((d) => {
-      newArray.push(d.division);
+})
+  .done(function (data) {
+    data.forEach((user) => {
+      let newArray = [];
+      user.access.forEach((d) => {
+        newArray.push(d.division);
+      });
+      let result = newArray.join(", ");
+      user["divisions"] = result;
     });
-    let result = newArray.join(", ");
-    user["divisions"] = result;
-  });
-  let windowHeight = window.innerHeight - 220;
-  usersTable = new DataTable("#usersTable", {
-    aaData: data,
-    scrollY: windowHeight,
-    scrollX: "100%",
-    scrollCollapse: true,
-    paging: false,
-    language: {
-      search: "Поиск: ",
-      info: "Найдено по запросу: _TOTAL_ ",
-      infoFiltered: "( из _MAX_ записей )",
-      infoEmpty: "",
-      zeroRecords: "Совпадений не найдено",
-    },
-    dom: "<'pre-table-row'<'new-obj-container'B>f>rtip",
-    buttons: [
-      {
-        //add new-user button
-        text: "Новый пользователь",
-        className: "new-user-btn",
-        attr: {
-          id: "addNewUser",
-        },
-        action: function () {
-          modal.style.display = "flex";
-          modalTitle.innerText = "Добавить пользователя";
-          createForm();
-          modalBody.appendChild(modalForm);
-
-          document.getElementById("saveBtn").onclick = createUser;
-        },
+    usersTable = new DataTable("#usersTable", {
+      aaData: data,
+      scrollY: "70vh",
+      scrollX: "100%",
+      scrollCollapse: true,
+      paging: false,
+      language: {
+        search: "Поиск: ",
+        info: "Найдено по запросу: _TOTAL_ ",
+        infoFiltered: "( из _MAX_ записей )",
+        infoEmpty: "",
+        zeroRecords: "Совпадений не найдено",
       },
-    ],
+      dom: "<'pre-table-row'<'new-obj-container'B>f>rtip",
+      buttons: [
+        {
+          //add new-user button
+          text: "Новый пользователь",
+          className: "new-user-btn",
+          attr: {
+            id: "addNewUser",
+          },
+          action: function () {
+            modal.style.display = "flex";
+            modalTitle.innerText = "Добавить пользователя";
+            createForm();
+            modalBody.appendChild(modalForm);
 
-    columns: [
-      { data: "id" },
-      { data: "name" },
-      { data: "phone" },
-      { data: "divisions" },
-      {
-        //add column with change buttons to all rows in table
-        data: null,
-        defaultContent: "<button class='change-btn'>Изменить</button>",
-        targets: -1,
-      },
-    ],
+            document.getElementById("saveBtn").onclick = createUser;
+          },
+        },
+      ],
+
+      columns: [
+        { data: "id" },
+        { data: "name" },
+        { data: "phone" },
+        { data: "divisions" },
+        {
+          //add column with change buttons to all rows in table
+          data: null,
+          defaultContent: "<button class='change-btn'>Изменить</button>",
+          targets: -1,
+        },
+      ],
+    });
+
+    $("#preLoadContainer")[0].style.display = "none";
+    $("#tableContainer")[0].style.opacity = 1;
+    $("#usersTable").DataTable().draw();
+  })
+  .fail(function (xhr, status, error) {
+    let json = xhr.responseJSON;
+    if (xhr.status == 422) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(json.detail, "danger", 6000);
+    }
+    if (xhr.status == 500) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(
+        "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+        "danger",
+        6000
+      );
+    }
   });
-
-  $("#preLoadContainer")[0].style.display = "none";
-  $("#tableContainer")[0].style.opacity = 1;
-  $("#usersTable").DataTable().draw();
-});
 
 // When change button is clicked, create modal,
 // fill form with api data
@@ -336,6 +351,13 @@ function sendNewUser(parameters) {
           });
         });
       }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -419,6 +441,13 @@ function sendEditUser(parameters) {
           });
         });
       }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -445,6 +474,13 @@ function deleteUser() {
       }
       if (response.status === 404) {
         alertsToggle("Пользователь не найден!", "danger", 3000);
+      }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
     });
 }

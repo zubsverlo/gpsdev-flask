@@ -131,111 +131,126 @@ $.ajax({
   url: "/api/employees",
   method: "GET",
   contentType: "application/json",
-}).done(function (data) {
-  let windowHeight = window.innerHeight - 220;
-  employeeTable = new DataTable("#employeeTable", {
-    aaData: data,
-    scrollX: "100%",
-    scrollY: windowHeight,
-    scrollCollapse: true,
-    paging: false,
-    language: {
-      search: "Поиск: ",
-      info: "Найдено по запросу: _TOTAL_ ",
-      infoFiltered: "( из _MAX_ записей )",
-      infoEmpty: "",
-      zeroRecords: "Совпадений не найдено",
-    },
-    dom: "<'pre-table-row'<'new-emp-container'B>f>rtip",
-    buttons: [
-      {
-        //add new-employee button
-        text: "Новый сотрудник",
-        className: "new-emp-btn",
-        attr: {
-          id: "addNewEmployee",
-        },
-        action: function () {
-          modal.style.display = "flex";
-          modalTitle.innerText = "Добавить сотрудника";
-          createForm();
-          modalBody.appendChild(modalForm);
-
-          let hireDateField = document.getElementById("hireDateField");
-          let date = new Date().toISOString().split("T")[0];
-
-          hireDateField.value = date;
-
-          document.getElementById("saveBtn").onclick = createEmployee;
-        },
+})
+  .done(function (data) {
+    employeeTable = new DataTable("#employeeTable", {
+      aaData: data,
+      scrollX: "100%",
+      scrollY: "70vh",
+      scrollCollapse: true,
+      paging: false,
+      language: {
+        search: "Поиск: ",
+        info: "Найдено по запросу: _TOTAL_ ",
+        infoFiltered: "( из _MAX_ записей )",
+        infoEmpty: "",
+        zeroRecords: "Совпадений не найдено",
       },
-    ],
+      dom: "<'pre-table-row'<'new-emp-container'B>f>rtip",
+      buttons: [
+        {
+          //add new-employee button
+          text: "Новый сотрудник",
+          className: "new-emp-btn",
+          attr: {
+            id: "addNewEmployee",
+          },
+          action: function () {
+            modal.style.display = "flex";
+            modalTitle.innerText = "Добавить сотрудника";
+            createForm();
+            modalBody.appendChild(modalForm);
 
-    columns: [
-      { data: "division_name" },
-      { data: "name" },
-      { data: "phone" },
-      { data: "schedule_name" },
-      { data: "hire_date" },
-      { data: "quit_date" },
-      {
-        // add column with change buttons to all rows in table
-        data: null,
-        defaultContent: "<button class='change-btn'>Изменить</button>",
-        targets: -1,
-      },
-    ],
-  });
+            let hireDateField = document.getElementById("hireDateField");
+            let date = new Date().toISOString().split("T")[0];
 
-  $("#preLoadContainer")[0].style.display = "none";
-  $("#tableContainer")[0].style.opacity = 1;
-  $("#employeeTable").DataTable().draw();
+            hireDateField.value = date;
 
-  // When change button is clicked, create modal,
-  // add delete button in form, fill form with api data
-  employeeTable.on("click", "button", function (e) {
-    currentRowOfTable = e.target.closest("tr");
-    let data = employeeTable.row(e.target.closest("tr")).data();
+            document.getElementById("saveBtn").onclick = createEmployee;
+          },
+        },
+      ],
 
-    modal.style.display = "flex";
-    modalTitle.innerText = `Изменить сотрудника  ${
-      localStorage.getItem("rang-id") == 1 ? " ID: " + data.name_id : ""
-    }`;
-    modalForm = createForm();
-    modalBody.appendChild(modalForm);
+      columns: [
+        { data: "division_name" },
+        { data: "name" },
+        { data: "phone" },
+        { data: "schedule_name" },
+        { data: "hire_date" },
+        { data: "quit_date" },
+        {
+          // add column with change buttons to all rows in table
+          data: null,
+          defaultContent: "<button class='change-btn'>Изменить</button>",
+          targets: -1,
+        },
+      ],
+    });
 
-    let deleteAccess = localStorage.getItem("rang-id");
-    if (deleteAccess == "1") {
-      let deleteBtn = document.createElement("button");
-      deleteBtn.id = "deleteBtn";
-      deleteBtn.type = "button";
-      deleteBtn.innerText = "Удалить";
-      deleteBtn.onclick = deleteEmployee;
+    $("#preLoadContainer")[0].style.display = "none";
+    $("#tableContainer")[0].style.opacity = 1;
+    $("#employeeTable").DataTable().draw();
 
-      document.getElementById("scheduleField").append(deleteBtn);
+    // When change button is clicked, create modal,
+    // add delete button in form, fill form with api data
+    employeeTable.on("click", "button", function (e) {
+      currentRowOfTable = e.target.closest("tr");
+      let data = employeeTable.row(e.target.closest("tr")).data();
+
+      modal.style.display = "flex";
+      modalTitle.innerText = `Изменить сотрудника  ${
+        localStorage.getItem("rang-id") == 1 ? " ID: " + data.name_id : ""
+      }`;
+      modalForm = createForm();
+      modalBody.appendChild(modalForm);
+
+      let deleteAccess = localStorage.getItem("rang-id");
+      if (deleteAccess == "1") {
+        let deleteBtn = document.createElement("button");
+        deleteBtn.id = "deleteBtn";
+        deleteBtn.type = "button";
+        deleteBtn.innerText = "Удалить";
+        deleteBtn.onclick = deleteEmployee;
+
+        document.getElementById("scheduleField").append(deleteBtn);
+      }
+
+      let name = document.getElementById("nameField");
+      name.setAttribute("name-id", data.name_id);
+      let phone = document.getElementById("phoneField");
+      let options = document.getElementById("divisionField").childNodes;
+      let hireDate = document.getElementById("hireDateField");
+      let quitDate = document.getElementById("quitDateField");
+      let scheduleCheck = document.getElementById("scheduleCheck");
+      let saveBtn = document.getElementById("saveBtn");
+
+      name.value = data.name;
+      phone.value = data.phone;
+      options.forEach((o) =>
+        data.division_name === o.innerText ? (o.selected = true) : null
+      );
+      hireDate.value = data.hire_date;
+      quitDate.value = data.quit_date;
+      data.schedule == 2 ? (scheduleCheck.checked = true) : null;
+
+      saveBtn.onclick = changeEmployee;
+    });
+  })
+  .fail(function (xhr, status, error) {
+    let json = xhr.responseJSON;
+    if (xhr.status == 500) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(
+        "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+        "danger",
+        6000
+      );
     }
-
-    let name = document.getElementById("nameField");
-    name.setAttribute("name-id", data.name_id);
-    let phone = document.getElementById("phoneField");
-    let options = document.getElementById("divisionField").childNodes;
-    let hireDate = document.getElementById("hireDateField");
-    let quitDate = document.getElementById("quitDateField");
-    let scheduleCheck = document.getElementById("scheduleCheck");
-    let saveBtn = document.getElementById("saveBtn");
-
-    name.value = data.name;
-    phone.value = data.phone;
-    options.forEach((o) =>
-      data.division_name === o.innerText ? (o.selected = true) : null
-    );
-    hireDate.value = data.hire_date;
-    quitDate.value = data.quit_date;
-    data.schedule == 2 ? (scheduleCheck.checked = true) : null;
-
-    saveBtn.onclick = changeEmployee;
+    if (xhr.status == 422) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(json.detail, "danger", 6000);
+    }
   });
-});
 
 const closeModal = document.getElementById("closeModal");
 const modal = document.getElementById("modalContainer");
@@ -317,6 +332,13 @@ async function sendNewEmployee(parameters) {
           });
         });
       }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -396,6 +418,13 @@ function sendEditEmployee(parameters) {
           });
         });
       }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -424,6 +453,13 @@ function deleteEmployee() {
       }
       if (error.status === 404) {
         alertsToggle("Сотрудник не найден!", "danger", 3000);
+      }
+      if (error.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
     });
 }

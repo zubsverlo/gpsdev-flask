@@ -89,6 +89,12 @@
     border: 1px solid gray;
     background-color: rgb(205 188 126 / 36%);
     color: rgb(75, 75, 75);
+    transition: box-shadow 0.5s;
+  }
+
+  #tableParameters input:focus {
+    border: 1px solid black;
+    outline: none;
   }
 
   #startDateOfPeriod {
@@ -100,6 +106,15 @@
   #endDateOfPeriod {
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
+  }
+
+  .date-highlight {
+    box-shadow: 0px 0px 8px 1px rgb(122, 122, 122);
+  }
+
+  .fade-out-box {
+    box-shadow: 0px 0px 13px rgba(27, 160, 100, 0);
+    transition: box-shadow 0.8s;
   }
 
   #requestBtn {
@@ -245,6 +260,8 @@
     border-radius: 3px;
     padding: 5px;
     width: 380px;
+    font-size: 15px;
+
     cursor: pointer;
     transition: background-color 0.2s;
     margin-bottom: 20px;
@@ -332,5 +349,58 @@
     font-size: 14px;
     color: gray;
     margin-left: 15px;
+  }
+
+  #duplicateTableContainer {
+    margin-bottom: 20px;
+  }
+
+  #duplicateTable {
+    border-spacing: 0px;
+    font-size: 16px;
+  }
+
+  .scroll-table {
+    height: 500px;
+    overflow-y: scroll;
+  }
+
+  #duplicateTable tr {
+    transition: all 0.3s;
+  }
+
+  #duplicateTable tr:hover {
+    background-color: rgb(202, 202, 202);
+    color: rgb(99, 99, 99);
+  }
+
+  #duplicateTable thead > tr > th {
+    font-weight: 800;
+    padding: 5px 0px;
+    color: rgb(89 89 89);
+  }
+
+  #duplicateTable thead > tr:hover {
+    background-color: transparent;
+    color: rgb(89 89 89);
+  }
+
+  #duplicateTable tr > th {
+    border-left: 1px solid gray;
+    border-top: 1px solid gray;
+    font-weight: 400;
+    color: rgb(75, 75, 75);
+  }
+
+  #duplicateTable .odd-row {
+    background-color: rgb(234 233 219);
+  }
+
+  #duplicateTable .even-row {
+    background-color: rgb(174 174 174 / 12%);
+  }
+
+  #duplicateTable .last-row > * {
+    border-bottom: 1px solid gray;
   }
 }

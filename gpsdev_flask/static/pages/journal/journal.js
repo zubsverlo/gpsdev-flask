@@ -115,42 +115,57 @@ $.ajax({
   url: "/api/journal",
   method: "GET",
   contentType: "application/json",
-}).done(function (data) {
-  let windowHeight = window.innerHeight - 220;
-  journalTable = new DataTable("#journalTable", {
-    aaData: data,
-    scrollY: windowHeight,
-    scrollX: "100%",
-    scrollCollapse: true,
-    paging: false,
-    language: {
-      search: "Поиск: ",
-      info: "Найдено по запросу: _TOTAL_ ",
-      infoFiltered: "( из _MAX_ записей )",
-      infoEmpty: "",
-      zeroRecords: "Совпадений не найдено",
-    },
-    dom: "<'pre-table-row'f>rtip",
-    columns: [
-      { data: "id" },
-      { data: "name_id" },
-      { data: "name" },
-      { data: "subscriberID" },
-      { data: "period_init" },
-      { data: "period_end" },
-      {
-        // add column with change buttons to all rows in table
-        data: null,
-        defaultContent: "<button class='change-btn'>Изменить</button>",
-        targets: -1,
+})
+  .done(function (data) {
+    journalTable = new DataTable("#journalTable", {
+      aaData: data,
+      scrollY: "70vh",
+      scrollX: "100%",
+      scrollCollapse: true,
+      paging: false,
+      language: {
+        search: "Поиск: ",
+        info: "Найдено по запросу: _TOTAL_ ",
+        infoFiltered: "( из _MAX_ записей )",
+        infoEmpty: "",
+        zeroRecords: "Совпадений не найдено",
       },
-    ],
-  });
+      dom: "<'pre-table-row'f>rtip",
+      columns: [
+        { data: "id" },
+        { data: "name_id" },
+        { data: "name" },
+        { data: "subscriberID" },
+        { data: "period_init" },
+        { data: "period_end" },
+        {
+          // add column with change buttons to all rows in table
+          data: null,
+          defaultContent: "<button class='change-btn'>Изменить</button>",
+          targets: -1,
+        },
+      ],
+    });
 
-  $("#preLoadContainer")[0].style.display = "none";
-  $("#tableContainer")[0].style.opacity = 1;
-  $("#journalTable").DataTable().draw();
-});
+    $("#preLoadContainer")[0].style.display = "none";
+    $("#tableContainer")[0].style.opacity = 1;
+    $("#journalTable").DataTable().draw();
+  })
+  .fail(function (xhr, status, error) {
+    let json = xhr.responseJSON;
+    if (xhr.status == 500) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(
+        "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+        "danger",
+        6000
+      );
+    }
+    if (xhr.status == 422) {
+      $("#preLoadContainer")[0].style.display = "none";
+      alertsToggle(json.detail, "danger", 6000);
+    }
+  });
 
 $("#journalTable").on("click", "button", function (e) {
   currentRowOfTable = e.target.closest("tr");
@@ -255,6 +270,13 @@ function sendPeriod(parameters) {
           });
         });
       }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
     });
 }
 
@@ -281,6 +303,13 @@ function deletePeriod() {
       }
       if (response.status === 404) {
         alertsToggle("Запись не найден!", "danger", 3000);
+      }
+      if (response.status == 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
     });
 }
