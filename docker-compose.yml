@@ -9,18 +9,18 @@ services:
     depends_on:
       - redis
     restart: always
-#    environment:
-#      - ENV=production
+  #    environment:
+  #      - ENV=production
 
-  redis-executor:
-    build:
-      context: .
-      dockerfile: Dockerfile-redis-executor
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
-    restart: always
+  # redis-executor:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-redis-executor
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - redis
+  #   restart: always
 
   redis:
     image: redis
@@ -51,7 +51,6 @@ services:
       - .:/app
     entrypoint: celery
     command: -A gpsdev_flask.celery_app.app_celery worker --loglevel=info
-
 #  celery-beat:
 #    build:
 #      context: .
