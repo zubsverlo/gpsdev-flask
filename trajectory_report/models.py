@@ -140,6 +140,8 @@ class Employees(Base):
     address: Mapped[str] = mapped_column(CHAR(length=150))
     hire_date: Mapped[dt.date]
     quit_date: Mapped[dt.date]
+    no_tracking: Mapped[bool]
+    bath_attendant: Mapped[bool]
     division: Mapped[int] = mapped_column(ForeignKey('division.id'))
     schedule: Mapped[int] = mapped_column(ForeignKey('schedule.id'))
     division_ref: Mapped['Division'] = relationship('Division', lazy='joined')

@@ -56,6 +56,8 @@ class EmployeesSchema(Schema):
     address = fields.String()
     division = fields.Integer(required=True)
     schedule = fields.Integer(load_default=1)
+    no_tracking = fields.Boolean(load_default=False)
+    bath_attendant = fields.Boolean(load_default=False)
 
     @validates('name')
     def validate_name(self, name):
@@ -100,8 +102,12 @@ class ObjectSchema(Schema):
     latitude = fields.Float(required=True)
     longitude = fields.Float(required=True)
     division = fields.Integer(required=True)
-    phone = fields.String(validate=validate.Length(
-        max=200, error="Контактные данные должны быть в пределах 200 символов"))
+    phone = fields.String(
+        validate=validate.Length(
+            max=200,
+            error="Контактные данные должны быть в пределах 200 символов"
+        )
+    )
     no_payments = fields.Boolean(load_default=False)
     income = fields.Float()
     active = fields.Boolean(load_default=True)
@@ -109,7 +115,7 @@ class ObjectSchema(Schema):
     denial_date = fields.Date(allow_none=True)
     apartment_number = fields.String(
         validate=validate.Length(
-            max=50, 
+            max=50,
             error='Нужно уложиться в 50 символов для номера квартиры'
             )
         )
@@ -371,4 +377,6 @@ class FrequencySchema(Schema):
     division_id = fields.Integer(required=True)
     employee_id = fields.Integer(required=True)
     object_id = fields.Integer(required=True)
-    frequency = fields.Integer(validate=validate.Range(max=4), required=True)
+    frequency = fields.Integer(validate=validate.Range(max=4),
+                               required=True,
+                               allow_none=True)
