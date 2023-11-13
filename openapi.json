@@ -1511,11 +1511,14 @@
         "summary": "Кратность посещений ПСУ в таблице посещений",
         "description": "Добавить или изменить кратность посещений в таблице",
         "requestBody": {
-          "description": "По одному изменению за раз",
+          "description": "Список из измененных объектов, при удалении указать null в frequency.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Frequency"
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Frequency"
+                }
               }
             }
           }
@@ -2154,6 +2157,7 @@
           },
           "frequency": {
             "type": "integer",
+            "nullable": true,
             "maximum": 4
           }
         },
