@@ -313,6 +313,8 @@ class DatabaseReportDataGetter:
             comment = pd.read_sql(cs.comment(division, name_ids), conn)
             frequency = pd.read_sql(cs.frequency(division, name_ids), conn)
             income = pd.read_sql(cs.income(object_ids), conn)
+            no_payments = pd.read_sql(cs.no_payments(object_ids), conn)
+            no_payments = no_payments.object_id.tolist()
 
         if includes_current_date:
             try:
@@ -331,6 +333,7 @@ class DatabaseReportDataGetter:
         data['_comment'] = comment
         data['_frequency'] = frequency
         data['_income'] = income
+        data['_no_payments'] = no_payments
         return data
 
 

@@ -109,9 +109,26 @@ class ReportBase:
                                      'leaving_datetime']
         # Смещаем bool на строку ниже, добавляя столбец
         df['odd_line'] = df['next_ld_is_less'].shift(1)
+
         # Удаляем столбец. fillna(False), чтобы покрыть образовавшийся NaT в
         # первой строке при смещении bool вниз.
         df = df[~df['odd_line'].fillna(False)]
+
+        # В случае, если в таблице нет ни одного зафиксированного выхода,
+        # после "удаления" лишних строк останется пустой DF без Columns.
+        # Чтобы не возникло key_error при дальнейшней обработке, на этом месте
+        # вернём пустой df со всеми столбцами:
+        if df.empty:
+            return pd.DataFrame(
+                columns=[
+                    'subscriberID', 'date', 'name_id', 'name', 'object_id',
+                    'object', 'longitude_object', 'latitude_object',
+                    'statement', 'j_exist', 'datetime', 'longitude_clusters',
+                    'latitude_clusters', 'leaving_datetime', 'cluster',
+                    'in_radius', 'next_ld_is_less', 'odd_line',
+                    'time_difference'
+                    ]
+                )
 
         # time_difference - это разница между leaving_datetime текущей строки
         # и datetime последующей. Так мы определяем, относить ли два кластера
@@ -120,8 +137,7 @@ class ReportBase:
         # текущего, поэтому, если это значение меньше или равно допускаемого
         # времени между двумя кластерами, то эти кластеры можно объединить.
         df['time_difference'] = df.groupby(['name_id', 'object_id', 'date']) \
-                                    ['datetime'].shift(-1) - df[
-                                    'leaving_datetime']
+                                ['datetime'].shift(-1) - df['leaving_datetime']
         # bool маска для нахождения кластеров для объединения
         mask = (df['time_difference'] <=
                 dt.timedelta(minutes=REPORT_BASE['MINS_BETWEEN_ATTENDS']))
@@ -208,6 +224,7 @@ class Report(ReportBase):
         self._comment = data.get('_comment')
         self._frequency = data.get('_frequency')
         self._income = data.get('_income')
+        self._no_payments = data.get('_no_payments')
 
         self._counts = counts
 
@@ -635,7 +652,8 @@ class Report(ReportBase):
                         'columns': h_report_columns,
                         'data': h_report
                     },
-                'duplicated_attends': dups}
+                'duplicated_attends': dups,
+                'no_payments': self._no_payments}
 
 
 class ReportWithAdditionalColumns(Report):
@@ -864,7 +882,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2023-09-01', '2023-10-31', "ПВТ6")
+    r = ReportWithAdditionalColumns('2023-09-01', '2023-10-31', "Коньково")
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
     # a = r.as_json_dict

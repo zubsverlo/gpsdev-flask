@@ -250,7 +250,15 @@ def frequency(division: Optional[int] = None,
         sel = sel.where(Frequency.employee_id.in_(name_ids))
     return sel
 
+
 def income(object_ids: List[int], **kwargs) -> Select:
     sel: Select = select(ObjectsSite.object_id, ObjectsSite.income)\
+        .where(ObjectsSite.object_id.in_(object_ids))
+    return sel
+
+
+def no_payments(object_ids: List[int], **kwargs) -> Select:
+    sel: Select = select(ObjectsSite.object_id)\
+        .where(ObjectsSite.no_payments == True)\
         .where(ObjectsSite.object_id.in_(object_ids))
     return sel
