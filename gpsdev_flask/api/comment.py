@@ -28,4 +28,5 @@ def comment_post():
     )
 
     db_session.execute(text(sql))
+    db_session.commit()
     return jsonify({}), 201
