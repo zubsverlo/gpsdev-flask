@@ -171,6 +171,7 @@ class ObjectsSite(Base):
     admission_date: Mapped[dt.date]
     denial_date: Mapped[dt.date]
     apartment_number: Mapped[str] = mapped_column(CHAR(length=50))
+    personal_service_after_revision: Mapped[str] = mapped_column(CHAR(length=70))
     division_ref: Mapped['Division'] = relationship('Division', lazy='joined')
 
     def __repr__(self):

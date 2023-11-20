@@ -109,7 +109,7 @@ class ObjectSchema(Schema):
         )
     )
     no_payments = fields.Boolean(load_default=False)
-    income = fields.Float()
+    income = fields.Float(allow_none=True)
     active = fields.Boolean(load_default=True)
     admission_date = fields.Date(allow_none=True)
     denial_date = fields.Date(allow_none=True)
@@ -119,6 +119,12 @@ class ObjectSchema(Schema):
             error='Нужно уложиться в 50 символов для номера квартиры'
             )
         )
+    personal_service_after_revision = fields.String(
+        validate=validate.Length(
+            max=70,
+            error='Нужно уложиться в 70 символов'
+        )
+    )
     division_name = fields.Pluck(
         DivisionSchema, 'division', attribute='division_ref', dump_only=True
         )
@@ -371,6 +377,11 @@ class CommentSchema(Schema):
     comment = fields.String(validate=validate.Length(
         max=250, error="Комментарий не должен превышать 250 символов"
     ), required=True)
+
+    @post_load
+    def strip_comment(self, data, **kwargs):
+        data['comment'] = data['comment'].strip()
+        return data
 
 
 class FrequencySchema(Schema):
