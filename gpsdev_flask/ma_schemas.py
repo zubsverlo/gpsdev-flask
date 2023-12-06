@@ -253,6 +253,8 @@ class ServesSchema(Schema):
         max=200, error="Комментарий не должен превышать 200 символов"),
                             required=True)
     approval = fields.Integer(load_default=3, validate=validate.OneOf([1, 3]))
+    address = fields.String(validate=validate.Length(
+        max=255, error="Адрес не должен превышать 255 символов"))
     name = fields.Pluck(
         EmployeesSchema(only=['name']),
         'name', attribute='employee', dump_only=True
@@ -284,6 +286,12 @@ class StatementsSchema(Schema):
         if data['value'] in "БОУН" and data['value']:
             data['object_id'] = 1
         return data
+    
+    @validates_schema
+    def validate_value(self, data, **kwargs):
+        if data['value'] == "В" and data['object_id'] == 1:
+            raise ValidationError("Нельзя проставить В для "
+                                  "БОЛЬНИЧНЫЙ/ОТПУСК/УВОЛ.")
 
     @validates('division')
     def validate_division(self, division):
