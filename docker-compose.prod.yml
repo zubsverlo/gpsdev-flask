@@ -1,0 +1,70 @@
+version: "3.3"
+services:
+  background:
+    build:
+      context: .
+      dockerfile: Dockerfile-background-executor
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    restart: always
+    environment:
+      - ENV=production
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - "6378:6379"
+
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - ENV=production
+    restart: always
+    ports:
+      - "5002:5000"
+    command: gunicorn --bind 0.0.0.0:5000 -w 9 run:app
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    restart: always
+    volumes:
+      - .:/app
+    ports:
+      - 8080:80
+    depends_on:
+      - flask
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+    depends_on:
+      - redis
+    restart: always
+    volumes:
+      - .:/app
+    entrypoint: celery
+    command: -A gpsdev_flask.celery_app.app_celery worker --loglevel=info
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+    depends_on:
+      - redis
+    restart: always
+    volumes:
+      - .:/app
+    entrypoint: celery
+    command: -A gpsdev_flask.celery_app beat -l info
