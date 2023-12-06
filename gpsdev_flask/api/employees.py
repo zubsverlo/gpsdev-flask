@@ -1,7 +1,8 @@
 from flask import Blueprint
 from gpsdev_flask import db_session
-from gpsdev_flask.models import Employees
-from sqlalchemy import update
+from gpsdev_flask.models import Employees, Journal, Statements
+from sqlalchemy import update, delete, select, insert
+from sqlalchemy import func
 from flask import jsonify, request, g
 from flask_login import current_user
 from marshmallow import ValidationError
@@ -10,6 +11,7 @@ from gpsdev_flask.api.error_responses import (not_found_404,
                                               not_allowed_403,
                                               validation_error_422)
 from gpsdev_flask.api import api_login_required
+import datetime as dt
 
 
 employees = Blueprint('employees', __name__)
@@ -17,7 +19,7 @@ employees = Blueprint('employees', __name__)
 
 @employees.route('/', methods=['GET', 'POST'])
 @api_login_required
-def employees_one():
+def employees_many():
     if request.method == "GET":
         res = db_session.query(Employees)\
             .filter(Employees.division.in_(current_user.access_list))\
@@ -43,7 +45,7 @@ def employees_one():
 
 @employees.route('/<int:name_id>', methods=['GET', 'PATCH', 'DELETE'])
 @api_login_required
-def employees_many(name_id):
+def employees_one(name_id):
     if request.method == "GET":
         res = db_session.query(Employees)\
             .filter(Employees.division.in_(current_user.access_list)) \
@@ -79,6 +81,41 @@ def employees_many(name_id):
         if current_user.rang_id != 1:
             return not_allowed_403(
                 "You are not allowed to delete employees")
+        delete_stmt = delete(Journal).where(Journal.name_id == emp.name_id)
+        db_session.execute(delete_stmt)
         db_session.delete(emp)
         db_session.commit()
         return jsonify({}), 204
+
+
+@employees.route("/fire/<int:name_id>", methods=['GET'])
+@api_login_required
+def fire_employee(name_id: int):
+    emp = db_session.query(Employees)\
+            .filter(Employees.division.in_(current_user.access_list)) \
+            .filter_by(name_id=name_id) \
+            .first()
+    if not emp:
+        return not_found_404()
+    subq = select(func.max(Statements.date).label('date'))\
+        .where(Statements.name_id == name_id)\
+        .as_scalar()
+    sel = select(Statements.division, Statements.date)\
+        .where(Statements.name_id == name_id)\
+        .where(Statements.date == subq)\
+        .limit(1)
+    division_and_date = db_session.execute(sel).fetchone()
+    division = division_and_date.division
+    date = division_and_date.date+dt.timedelta(days=1)
+
+    ins = insert(Statements)\
+        .values(
+            division=division,
+            name_id=name_id,
+            date=date,
+            object_id=1,
+            statement="У"
+        )
+    db_session.execute(ins)
+    db_session.commit()
+    return jsonify({}), 200
