@@ -47,3 +47,15 @@ export function alertsToggle(text, className, time = 2500) {
     }, 2500);
   }, time);
 }
+
+let offlineError;
+window.addEventListener("offline", () => {
+  offlineError = setInterval(() => {
+    alertsToggle("Отсутствует интернет соединение!", "danger", 4000);
+  }, 5000);
+});
+
+window.addEventListener("online", () => {
+  clearInterval(offlineError);
+  alertsToggle("Интернет соединение востановлено!", "success", 5000);
+});
