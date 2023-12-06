@@ -78,9 +78,14 @@
 
     padding: 0 50px;
 
-    /* overflow-y: scroll;
-    overflow-x: hidden; */
-    /* max-height: 633px; */
+    max-height: 600px;
+  }
+
+  #allFieldsContainer {
+    max-height: 600px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 0px 20px;
   }
 
   #nameFieldContainer,
@@ -89,7 +94,8 @@
   #divisionFieldContainer,
   #startDateContainer,
   #endDateContainer,
-  #apartmentFieldContainer {
+  #apartmentFieldContainer,
+  #personalServiceFieldContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -213,7 +219,7 @@
     justify-content: space-between;
     align-items: center;
 
-    width: 137.8%;
+    width: 134.5%;
     padding: 20px 0px;
     margin-top: 20px;
     border-top: solid 1px rgb(189, 189, 189);
@@ -249,7 +255,7 @@
   }
 
   #switchAddressContainer {
-    display: flex;
+    display: none;
     flex-direction: row;
     align-items: center;
 
@@ -396,16 +402,33 @@
     justify-content: space-between;
 
     /* padding: 0 50px; */
+    max-height: 546px;
+  }
+
+  #allFieldsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    max-height: 456px;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 
   #nameFieldContainer,
   #phoneFieldContainer,
   #addressFieldContainer,
-  #divisionFieldContainer {
+  #divisionFieldContainer,
+  #startDateContainer,
+  #endDateContainer,
+  #apartmentFieldContainer,
+  #personalServiceFieldContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
     margin-bottom: 10px;
+
+    width: 320px;
   }
 
   #phoneFieldContainer {
@@ -537,7 +560,7 @@
   }
 
   #switchAddressContainer {
-    display: flex;
+    display: none;
     flex-direction: row;
     align-items: baseline;
   }

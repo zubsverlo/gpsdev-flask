@@ -18,6 +18,9 @@ modalForm.setAttribute("onSubmit", "return false");
 
 // create modal form inner elements
 function createForm() {
+  let allFieldsContainer = document.createElement("div");
+  allFieldsContainer.id = "allFieldsContainer";
+
   let nameFieldContainer = document.createElement("div");
   nameFieldContainer.id = "nameFieldContainer";
 
@@ -160,11 +163,24 @@ function createForm() {
   let apartmentFieldLabel = document.createElement("label");
   apartmentFieldLabel.id = "apartmentFieldLabel";
   apartmentFieldLabel.innerText = "Номер квартиры, подъезд, код домофона и т.д";
-  apartmentFieldLabel.htmlFor = "";
+  apartmentFieldLabel.htmlFor = "apartmentField";
 
   let apartmentField = document.createElement("input");
   apartmentField.id = "apartmentField";
   apartmentField.type = "text";
+
+  let personalServiceFieldContainer = document.createElement("div");
+  personalServiceFieldContainer.id = "personalServiceFieldContainer";
+
+  let personalServiceFieldLabel = document.createElement("label");
+  personalServiceFieldLabel.id = "personalServiceFieldLabel";
+  personalServiceFieldLabel.innerText = "ИППСУ после пересмотра:";
+  personalServiceFieldLabel.htmlFor = "personalServiceField";
+
+  let personalServiceField = document.createElement("input");
+  personalServiceField.id = "personalServiceField";
+  personalServiceField.type = "text";
+  personalServiceField.maxLength = 70;
 
   let btnsContainer = document.createElement("div");
   btnsContainer.id = "btnsContainer";
@@ -192,6 +208,10 @@ function createForm() {
     switchAddressContainer
   );
   apartmentFieldContainer.append(apartmentFieldLabel, apartmentField);
+  personalServiceFieldContainer.append(
+    personalServiceFieldLabel,
+    personalServiceField
+  );
 
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
   restFields.append(activeField, noPaymentField);
@@ -200,7 +220,7 @@ function createForm() {
   dateFieldsContainer.append(startDateContainer, endDateContainer);
   btnsContainer.append(cancelBtn, saveBtn);
 
-  modalForm.append(
+  allFieldsContainer.append(
     nameFieldContainer,
     divisionFieldContainer,
     restFields,
@@ -208,11 +228,23 @@ function createForm() {
     phoneFieldContainer,
     addressFieldContainer,
     apartmentFieldContainer,
-    btnsContainer
+    personalServiceFieldContainer
   );
+
+  modalForm.append(allFieldsContainer, btnsContainer);
 
   return modalForm;
 }
+
+//create addresses container
+let addressOuterContainer = document.createElement("div");
+addressOuterContainer.id = "addressOuterContainer";
+addressOuterContainer.style.display = "none";
+
+let addressContainer = document.createElement("div");
+addressContainer.id = "addressContainer";
+
+addressOuterContainer.append(addressContainer);
 
 $.ajax({
   url: "/api/objects",
@@ -250,7 +282,11 @@ $.ajax({
             modalBody.appendChild(modalForm);
 
             let addressField = document.getElementById("addressField");
-            addressField.addEventListener("input", addressType);
+            addressField.addEventListener("input", () => {
+              addressContainer.innerHTML = "";
+              modalForm.append(addressOuterContainer);
+              addressType();
+            });
 
             document.getElementById("saveBtn").onclick = createObject;
           },
@@ -290,6 +326,11 @@ $.ajax({
       $("#preLoadContainer")[0].style.display = "none";
       alertsToggle(json.detail, "danger", 6000);
     }
+    if (xhr.status == 403) {
+      $("#preLoadContainer")[0].style.display = "none";
+      let currentLocation = location.href.split("/").pop();
+      location.href = `/login?next=${currentLocation}`;
+    }
   });
 
 // When change button is clicked, create modal,
@@ -328,6 +369,7 @@ $("#objectTable").on("click", "button", function (e) {
   let startDate = document.getElementById("startDateField");
   let endDate = document.getElementById("endDateField");
   let apartment = document.getElementById("apartmentField");
+  let personalService = document.getElementById("personalServiceField");
   let saveBtn = document.getElementById("saveBtn");
 
   name.value = data.name;
@@ -340,9 +382,15 @@ $("#objectTable").on("click", "button", function (e) {
   address.value = data.address;
   address.setAttribute("lat", data.latitude);
   address.setAttribute("lon", data.longitude);
+  address.addEventListener("input", () => {
+    addressContainer.innerHTML = "";
+    modalForm.append(addressOuterContainer);
+    addressType();
+  });
   startDate.value = data.admission_date;
   endDate.value = data.denial_date;
   apartment.value = data.apartment_number;
+  personalService.value = data.personal_service_after_revision;
 
   saveBtn.onclick = changeObject;
 });
@@ -360,17 +408,6 @@ function switchAddress() {
 
 let lat;
 let lon;
-
-//create addresses container
-let addressOuterContainer = document.createElement("div");
-addressOuterContainer.id = "addressOuterContainer";
-addressOuterContainer.style.display = "none";
-
-let addressContainer = document.createElement("div");
-addressContainer.id = "addressContainer";
-
-addressOuterContainer.append(addressContainer);
-modalForm.append(addressOuterContainer);
 
 // when user clicks on the one of addresses
 // get its value and append to input value,
@@ -466,6 +503,10 @@ function getAddressList() {
           6000
         );
       }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
     });
 }
 
@@ -526,10 +567,14 @@ function createObject() {
   let longitude = addressInput.getAttribute("lon");
   let address = addressInput.value;
   let apartment = document.getElementById("apartmentField").value;
+  let personalService = document.getElementById("personalServiceField").value;
   let noPayments = document.getElementById("noPaymentCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
 
+  if (longitude == null || latitude == null) {
+    alertsToggle("Выберите адрес из списка!", "danger", 3000);
+  }
   if (name == "" || longitude == null || latitude == null || address == "") {
     return;
   }
@@ -549,6 +594,9 @@ function createObject() {
   active ? (parameters["active"] = active) : null;
 
   apartment != "" ? (parameters["apartment_number"] = apartment) : null;
+  personalService != ""
+    ? (parameters["personal_service_after_revision"] = personalService)
+    : null;
   phone != "" ? (parameters["phone"] = phone) : null;
 
   console.log(parameters);
@@ -594,6 +642,10 @@ function sendNewObject(parameters) {
           6000
         );
       }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
     });
 }
 
@@ -612,9 +664,14 @@ function changeObject() {
   let longitude = addressInput.getAttribute("lon");
   let address = addressInput.value;
   let apartment = document.getElementById("apartmentField").value;
+  let personalService = document.getElementById("personalServiceField").value;
   let noPayments = document.getElementById("noPaymentCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
+
+  if (longitude == null || latitude == null) {
+    alertsToggle("Выберите адрес из списка!", "danger", 3000);
+  }
 
   if (name == "" || longitude == null || latitude == null || address == "") {
     return;
@@ -632,6 +689,7 @@ function changeObject() {
     active: active,
     phone: phone,
     apartment_number: apartment,
+    personal_service_after_revision: personalService,
   };
 
   sendEditObject(parameters);
@@ -689,6 +747,10 @@ function sendEditObject(parameters) {
           "danger",
           6000
         );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
       }
     });
 }
