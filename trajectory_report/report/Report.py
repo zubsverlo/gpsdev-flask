@@ -372,6 +372,12 @@ class Report(ReportBase):
         with_schedules = pd.merge(
             report, self._schedules, on='name_id', how='left'
         )
+        # Резервируем служебки ванщиков
+        attendant_name_ids = self._schedules[self._schedules['schedule'] == 2]\
+            .name_id.unique()
+        reserved_serves = self._serves[self._serves.name_id
+                                       .isin(attendant_name_ids)]
+
         # Исключаем все выходы с ванщиками (к ним фильтрация не относится)
         with_schedules = with_schedules[with_schedules['schedule'] != 2]
 
@@ -383,10 +389,11 @@ class Report(ReportBase):
         serves = serves[
             serves.index.isin(serves.index.difference(with_schedules.index))
         ]
+        # Объединяем зарезервированные служебки с отфильтрованными
+        serves = pd.concat([serves.reset_index(), reserved_serves])
         # "Расшифровка" состояния служебки. 1 - одобрено. 3 - на проверке.
         serves['approval'] = serves['approval'].replace({1: "С", 3: "ПРОВ"})
         return serves \
-            .reset_index() \
             .drop_duplicates(subset=['name_id', 'object_id', 'date'])
 
     def _merge_into_one_column(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -647,8 +654,7 @@ class Report(ReportBase):
         dups = self.duplicated_attends
         dups['date'] = dups['date'].astype(str)
         dups = dups.to_dict(orient='records')
-        return {'horizontal_report':
-                    {
+        return {'horizontal_report': {
                         'columns': h_report_columns,
                         'data': h_report
                     },
@@ -764,6 +770,13 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
         df['attend_number'] = df.groupby(
             by=['name', 'object', 'date']).duration.cumcount() + 1
+        attends_sum = df.groupby(
+            by=['name', 'object', 'date']
+        ).count().duration
+         
+        df = df.set_index(['name', 'object', 'date'])
+        df['attends_sum'] = attends_sum
+        df = df.reset_index()
         return df
 
     def _location_analysis(self) -> pd.DataFrame:
@@ -882,7 +895,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2023-09-01', '2023-10-31', "Коньково")
+    r = ReportWithAdditionalColumns('2023-11-01', '2023-11-30', "Коньково")
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
     # a = r.as_json_dict
