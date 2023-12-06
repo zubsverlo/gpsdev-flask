@@ -165,6 +165,11 @@ $.ajax({
       $("#preLoadContainer")[0].style.display = "none";
       alertsToggle(json.detail, "danger", 6000);
     }
+    if (xhr.status == 403) {
+      $("#preLoadContainer")[0].style.display = "none";
+      let currentLocation = location.href.split("/").pop();
+      location.href = `/login?next=${currentLocation}`;
+    }
   });
 
 $("#journalTable").on("click", "button", function (e) {
@@ -276,6 +281,10 @@ function sendPeriod(parameters) {
           "danger",
           6000
         );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
       }
     });
 }

@@ -223,6 +223,11 @@ $.ajax({
         6000
       );
     }
+    if (xhr.status == 403) {
+      $("#preLoadContainer")[0].style.display = "none";
+      let currentLocation = location.href.split("/").pop();
+      location.href = `/login?next=${currentLocation}`;
+    }
   });
 
 // When change button is clicked, create modal,
@@ -358,6 +363,10 @@ function sendNewUser(parameters) {
           6000
         );
       }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
     });
 }
 
@@ -447,6 +456,10 @@ function sendEditUser(parameters) {
           "danger",
           6000
         );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
       }
     });
 }
