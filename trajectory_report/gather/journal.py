@@ -1,10 +1,8 @@
-from trajectory_report.JournalManager import JournalManager
+from trajectory_report.JournalManager import HrManager
 
 
 def update_journal():
-    j = JournalManager()
-    j.update_journal()
-    j.set_quit_date()
+    HrManager().todo_all()
 
 
 if __name__ == "__main__":

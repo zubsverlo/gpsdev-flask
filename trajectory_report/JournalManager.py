@@ -28,15 +28,19 @@
 """
 
 from trajectory_report.api.mts import get_subscribers
-from trajectory_report.database import DB_ENGINE
+from trajectory_report.database import DB_ENGINE, REDIS_CONN
 import datetime as dt
 from trajectory_report.models import Employees, Statements, Journal, Division
-from sqlalchemy import select, update, and_
+from sqlalchemy import select, update, insert, and_
 from sqlalchemy.orm import Session
 import pandas as pd
 from collections import defaultdict
 from numpy import nan
 from sqlalchemy import func, distinct
+from time import perf_counter
+from typing import Any
+import pickle
+import bz2
 
 
 class JournalManager:
@@ -228,7 +232,6 @@ class HrManager:
     """
 
     def __init__(self) -> None:
-        self.session = Session(DB_ENGINE)
         """
         Мне нужны данные:
             Сотрудники, которые не подключены к отслеживанию
@@ -241,19 +244,61 @@ class HrManager:
             Закрывать периоды journal, если subscriberID нет в актуальном MTS
             Добавлять запись в journal, если сотрудника подключили
             Закрывать старый период и открывать новый, если поменялись данные
+            
+        Сначала должна выполняться автоматическая часть скрипта, затем 
+        данные должны обновиться. И после этого можно предоставить suggest 
+        часть, которая содержит рекомендации к подключению/обновлению/удалению
         """
-        
+        self.session = Session(DB_ENGINE)
+        self.connection = DB_ENGINE.connect()
+        self.redis_connection = REDIS_CONN
+
+    def todo_all(self) -> None:
+        """
+        Проделать все манипуляции с Journal и Employees, затем обновить df 
+        и обновить кеш hrManagerDf.
+        """
+        self._fill_df()
+        # Проделать все автоматические операции с журналом и сотрудниками
+        self._todo_del_quit_date()
+        self._todo_set_quit_date()
+        self._todo_close_journal_period()
+        self._todo_open_journal_period()
+        self._todo_open_close_journal_period()
+        # commit на сессию
+        self.session.commit()
+        # Перезаполнить df для актуализации данных
+        self._fill_df()
+        self.redis_connection.delete("hrManagerDf")
+        self.__send_to_redis("hrManagerDf", self.df)
+
+    def __get_from_redis(self, key: str) -> Any:
+        """"Fetch from redis by key, decompress and unpickle"""
+        fetched = self.redis_connection.get(key)
+        if not fetched:
+            return None
+        return pickle.loads(bz2.decompress(fetched))
+
+    def __send_to_redis(self, key: str, obj: Any) -> bool:
+        """Compress, pickle and set as a key"""
+        self.redis_connection.set(key, bz2.compress(pickle.dumps(obj)))
+        self.redis_connection.expireat(
+            key,
+            int((dt.datetime.now()+dt.timedelta(minutes=1)).timestamp())
+        )
+        return True
+
+    def _fill_df(self) -> None:
         # Все сотрудники (для изменений и отслеживания инфо по ним)
         self.employees = self._get_employees()
-        
+
         # По каждому сотруднику все выходы за последний имеющийся день
         # вынести из last_day столбцы: последния дата выходов, есть ли в ней У
         self.last_day_statements = self._get_last_day_statements()
-        
         # Список сотрудников, по которым не было проставлено ни одного выхода
         # вынести в отдельный столбец пометку: no_statements
         self.not_in_statements = self._get_not_existing_in_statements()
-        
+
         # Список подписчиков из МТС с компаниями
         # столбец: mts_active
         # Чтобы у них был name_id для совмещения, сначала нужно собрать эти
@@ -261,11 +306,13 @@ class HrManager:
         # чтобы можно было совместить её со всеми остальными таблицами.
         # UPD: Пусть объединение будет по name сотрудника, а не name_id
         self.mts_subscribers = self._get_mts_subscribers()
-        
+
         # Открытые текущие записи журнала
         # вынести в столбец: открыт ли период в journal
         self.journal_opened = self._get_journal_opened()
         
+        self.divisions = self._get_divisions()
+
         # Идея: совместить всё в одну таблицу, и в ней проводить анализ
         # вынести из last_day столбцы: последния дата выходов, есть ли в ней У
         df = self.employees.copy()
@@ -273,7 +320,7 @@ class HrManager:
         df = pd.concat([df, self.not_in_statements])
         df = pd.merge(df, self.journal_opened,
                       on=[
-                          'name_id', 'name', 'division', 
+                          'name_id', 'name', 'division',
                           'hire_date', 'quit_date', 'no_tracking'
                           ],
                       how='outer')
@@ -284,55 +331,114 @@ class HrManager:
                    'journal_opened': False,
                    'no_statements': False}
             )
-        del_quit_date = (pd.notna(df['quit_date']))\
-            & (df['contains_fired_stmt'] == False)
-            
-        set_quit_date = (pd.isna(df['quit_date']))\
-            & (df['contains_fired_stmt'] == True)
-            
-        close_journal_period = (df['journal_opened'] == True)\
-            & (df['mts_active'] == False)
-            
-        open_journal_period = (df['mts_active'] == True)\
-            & (df['journal_opened'] == False)\
-            & (pd.isna(df['quit_date']))\
-            & (pd.notna(df['name_id']))
-            
-        open_close_journal_period = (df['mts_active'] == True)\
-            & (df['journal_opened'] == True)\
-            & (df['subscriberID_equal'] == False)\
-            & (pd.notna(df['name_id']))
+        df = pd.merge(df, self.divisions, on='division', how='left')
+        df['division_name'] = df['division_name_additional']
+        df = pd.merge(df, self.employees[['name_id', 'phone']], on=['name_id'],
+                      how='left')
+        df['phone'] = df['phone_y']
         
-        # suggestions
-        DATE_21_DAYS_AGO = dt.date.today()-dt.timedelta(days=21)
-        # проставлять увольнение по дате посл. выхода в statements
-        to_set_abandoned_quit = (pd.notna(df['name_id']))\
-            & (pd.isna(df['quit_date']))\
-            & (df['contains_fired_stmt'] == False)\
-            & (df['last_stmt_date'] <= DATE_21_DAYS_AGO)
+        self.df = df
+
+    def _todo_del_quit_date(self) -> None:
+        # Удалить quit_date, когда последний выход не "У"
+        # (при условии наличия выходов)
+        del_quit_date = (pd.notna(self.df['quit_date']))\
+            & (self.df['contains_fired_stmt'] == False)
+        del_quit_date = self.df.loc[del_quit_date]
+        name_ids = del_quit_date.name_id.to_list()
+        upd = update(Employees)\
+            .where(Employees.name_id.in_(name_ids))\
+            .values(quit_date=None)
+        self.session.execute(upd)
+
+    def _todo_set_quit_date(self) -> None:
+        # Установить quit_date, когда последний выход - это "У" 
+        # (при условии наличия выходов)
+        set_quit_date = (pd.isna(self.df['quit_date']))\
+            & (self.df['contains_fired_stmt'] == True)
+        df = self.df.loc[set_quit_date]
+        records = df.to_dict(orient='records')
+        for record in records:
+            upd = update(Employees)\
+                .where(Employees.name_id == record['name_id'])\
+                .values(quit_date=record['last_stmt_date'])
+            self.session.execute(upd)
+
+    def _todo_close_journal_period(self) -> None:
+        # Если запись в журнале открыта, но в списке мтс отсутствует - значит
+        # закрыть её (либо текущей датой, либо датой последнего выхода при 
+        # наличии выходов)
+        close_journal_period = (self.df['journal_opened'] == True)\
+            & (self.df['mts_active'] == False)
+        df = self.df.loc[close_journal_period]
+        records = df.to_dict(orient='records')
         
-        # уже уволенные
-        to_del_from_mts = (pd.notna(df['quit_date']))\
-            & (df['mts_active'] == True)
+        close_period_date = dt.date.today()-dt.timedelta(days=1)
         
-        # им бы проставить увольнение - в таблице
-        no_statements = (df['mts_active'] == True)\
-            & (df['no_statements'] == True)
-            
-        # этих нужно подключить
-        to_activate = (df['mts_active'] == False)\
-            & (df['no_tracking'] == False)\
-            & (pd.isna(df['quit_date']))
+        for record in records:
+            upd = update(Journal)\
+                .where(Journal.name_id == record['name_id'])\
+                .where(Journal.period_init == record['period_init'])\
+                .where(Journal.subscriberID == record['subscriberID'])\
+                .values(period_end=close_period_date)
+            self.session.execute(upd)
+
+    def _todo_open_journal_period(self) -> None:
+        # subscriberID для добавления в journal
+        open_journal_period = (self.df['mts_active'] == True)\
+            & (self.df['journal_opened'] == False)\
+            & (pd.isna(self.df['quit_date']))\
+            & (pd.notna(self.df['name_id']))
+        df = self.df.loc[open_journal_period]
+        records = df.to_dict(orient='records')
+        for record in records:
+            ins = insert(Journal)\
+                .values(
+                    name_id=record['name_id'],
+                    subscriberID=record['subscriberID_mts'],
+                    period_init=dt.date.today()
+                )
+            self.session.execute(ins)
+
+    def _todo_open_close_journal_period(self) -> None:
+        # Это случаи, когда subscriberID открыт, но 
+        # не совпадает с актуальным в МТС.
+        open_close_journal_period = (self.df['mts_active'] == True)\
+            & (self.df['journal_opened'] == True)\
+            & (self.df['subscriberID_equal'] == False)\
+            & (pd.notna(self.df['name_id']))
+        df = self.df.loc[open_close_journal_period]
+        records = df.to_dict(orient='records')
         
-            
-        pass
+        close_period_date = dt.date.today()-dt.timedelta(days=1)
+        
+        for record in records:
+            upd = update(Journal)\
+                .where(Journal.name_id == record['name_id'])\
+                .where(Journal.period_init == record['period_init'])\
+                .where(Journal.subscriberID == record['subscriberID'])\
+                .values(period_end=close_period_date)
+            ins = insert(Journal)\
+                .values(
+                    name_id=record['name_id'],
+                    subscriberID=record['subscriberID_mts'],
+                    period_init=dt.date.today()
+                )
+            self.session.execute(upd)
+            self.session.execute(ins)
 
     def _get_employees(self) -> pd.DataFrame:
         sel = select(
-            Employees.name_id, Employees.name, Employees.division, 
-            Employees.no_tracking, Employees.hire_date, Employees.quit_date
+            Employees.name_id, Employees.name, Employees.division,
+            Employees.no_tracking, Employees.hire_date, Employees.quit_date,
+            Employees.phone
         )
-        return pd.read_sql(sel, DB_ENGINE.connect())
+        return pd.read_sql(sel, self.connection)
+
+    def _get_divisions(self) -> pd.DataFrame:
+        sel = select(Division.id.label('division'),
+                     Division.division.label('division_name_additional'))
+        return pd.read_sql(sel, self.connection)
 
     def _get_last_day_statements(self) -> pd.DataFrame:
         # ("select ta.name_id, employees_site.quit_date, ta.date, "
@@ -362,7 +468,7 @@ class HrManager:
                 Employees, Employees.name_id == subq.c.name_id
             )
         
-        df = pd.read_sql(sel_max_date, DB_ENGINE.connect())
+        df = pd.read_sql(sel_max_date, self.connection)
         contains_fired_stmt = df\
             .groupby(['name_id'])\
             .apply(lambda x: "У" in list(x.statement))
@@ -396,7 +502,7 @@ class HrManager:
             .where(Employees.name_id.not_in(subsel))\
             .where(Employees.quit_date == None)\
             .join(Division, Employees.division == Division.id)
-        df = pd.read_sql(sel, DB_ENGINE.connect())
+        df = pd.read_sql(sel, self.connection)
         df['no_statements'] = True
         return df
 
@@ -408,7 +514,7 @@ class HrManager:
             Employees.hire_date, Employees.quit_date, Employees.no_tracking
         ).where(Journal.period_end == None)\
             .join(Employees, Journal.name_id == Employees.name_id)
-        df = pd.read_sql(sel, DB_ENGINE.connect())
+        df = pd.read_sql(sel, self.connection)
         df['journal_opened'] = True
         return df[['name_id', 'subscriberID', 'period_init', 
                    'period_end', 'journal_opened', 'name',
@@ -421,7 +527,121 @@ class HrManager:
         df = df.rename(columns={'subscriberID': 'subscriberID_mts'})
         return df[['company', 'subscriberID_mts', 'name', 'mts_active']]
 
+    @property
+    def suggest_abandoned(self) -> pd.DataFrame:
+        # проставлять увольнение по дате посл. выхода в statements
+        # Таблица отображает список сотрудников, по которым давно нет выходов
+        # Это таблица с предложением, она должна включать дату последнего
+        # выхода, отображает, подключен ли сотрудник к МТС. 
+        # Кнопка "уволить" проставляет дату увольнения в соответствии с датой 
+        # последнего выхода
+        DATE_21_DAYS_AGO = dt.date.today()-dt.timedelta(days=21)
+        to_set_abandoned_quit = (pd.notna(self.df['name_id']))\
+            & (pd.isna(self.df['quit_date']))\
+            & (self.df['contains_fired_stmt'] == False)\
+            & (self.df['last_stmt_date'] <= DATE_21_DAYS_AGO)
+        df = self.df.loc[to_set_abandoned_quit]
+        df = df[['name_id', 'name', 'division', 'division_name',
+                 'hire_date', 'last_stmt_date', 'mts_active']]
+        return df
+
+    @property
+    def suggest_del_from_mts(self) -> pd.DataFrame:
+        # уже уволенные сотрудники, но которые подключены к МТС. Кнопка будет
+        # удалять их из МТС отслеживания.
+        to_del_from_mts = (pd.notna(self.df['quit_date']))\
+            & (self.df['mts_active'] == True)\
+            & (self.df['quit_date'] <= dt.date.today())
+        df = self.df.loc[to_del_from_mts]
+        df.loc[:, ['subscriberID']] = df['subscriberID_mts']
+        df = df[['name_id', 'name', 'division', 'division_name', 'hire_date',
+                 'quit_date', 'company', 'last_stmt_date', 'subscriberID']]
+        return df
+
+    @property
+    def suggest_no_statements(self) -> pd.DataFrame:
+        # Это сотрудники, которые были подключены, но выходы так и не
+        # были проставлены. Возможно, чтобы не проставлять "У" где попало,
+        # достаточно просто удалить их из МТС и списка сотрудников сразу.
+        # Или напомнить куратору, что сотрудник так и не проставлен в таблице.
+        # Обязательно указывать кол-во дней с даты подключения, чтобы оценить
+        # степень заброшенности сотрудника.
+        no_statements = (self.df['mts_active'] == True)\
+            & (self.df['no_statements'] == True)
+        df = self.df.loc[no_statements]
+        df = df[['name_id', 'name', 'division', 'division_name', 'hire_date',
+                 'period_init']]
+        return df
+
+    @property
+    def suggest_mts_only(self) -> pd.DataFrame:
+        mts_only = (pd.isna(self.df['name_id']))
+        df = self.df.loc[mts_only]
+        df.loc[:, ['subscriberID']] = df['subscriberID_mts']
+        df = df[['name', 'company', 'subscriberID']]
+        return df
+
+    @property
+    def suggest_to_connect(self) -> pd.DataFrame:
+        # этих нужно подключить
+        # Кандидаты на подключение. Хорошо, по возможности, отображать дату
+        # последнего проставленного выхода.
+        to_connect = (self.df['mts_active'] == False)\
+            & (self.df['no_tracking'] == False)\
+            & (pd.isna(self.df['quit_date']))
+        df = self.df.loc[to_connect]
+        df = df[['name_id', 'name', 'division', 'division_name', 'hire_date',
+                 'no_statements', 'phone', 'last_stmt_date']]
+        return df
+
+    def get_suggests_dict(self) -> dict:
+        self.df = self.__get_from_redis('hrManagerDf')
+        if self.df is None:
+            self.todo_all()
+        abandoned = self.suggest_abandoned
+        abandoned.loc[:, ['hire_date', 'last_stmt_date']] = abandoned\
+            .loc[:, ['hire_date', 'last_stmt_date']]\
+            .astype(str)
+        abandoned = abandoned.to_dict(orient='records')
+
+        del_from_mts = self.suggest_del_from_mts
+        del_from_mts.loc[:, ['hire_date',
+                             'quit_date',
+                             'last_stmt_date']] = del_from_mts\
+            .loc[:, ['hire_date', 'quit_date', 'last_stmt_date']]\
+            .astype(str)
+        del_from_mts = del_from_mts.to_dict(orient='records')
+
+        no_statements = self.suggest_no_statements
+        no_statements.loc[:, ['hire_date',
+                              'period_init']] = no_statements\
+            .loc[:, ['hire_date', 'period_init']]\
+            .astype(str)
+        no_statements = no_statements.to_dict(orient='records')
+
+        to_connect = self.suggest_to_connect
+        to_connect.loc[:, ['hire_date', 'last_stmt_date']] = to_connect\
+            .loc[:, ['hire_date', 'last_stmt_date']]\
+            .astype(str)
+
+        to_connect['last_stmt_date'] = to_connect['last_stmt_date']\
+            .replace('nan', 'нет выходов')
+
+        to_connect = to_connect.to_dict(orient='records')
+
+        mts_only = self.suggest_mts_only.to_dict(orient='records')
+
+        suggests_dict = {}
+        suggests_dict['abandoned'] = abandoned
+        suggests_dict['del_from_mts'] = del_from_mts
+        suggests_dict['no_statements'] = no_statements
+        suggests_dict['to_connect'] = to_connect
+        suggests_dict['mts_only'] = mts_only
+        return suggests_dict
+
 
 if __name__ == "__main__":
     j = HrManager()
+    j.todo_all()
+    j.get_suggests_dict()
     pass

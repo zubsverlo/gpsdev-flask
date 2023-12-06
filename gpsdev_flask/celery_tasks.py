@@ -39,12 +39,12 @@ app_celery.conf.beat_schedule = {
         'task': 'update_coordinates',
         'schedule': crontab(minute='*/2')
     },
-    'fetch-clusters-every-night': {
+    'fetch-clusters-every-three-hours': {
         'task': 'clusters',
-        'schedule': crontab(minute='30', hour='0')
+        'schedule': crontab(minute='30', hour='*/3')
     },
-    'update-journal-every-5-mins': {
+    'update-journal-every-3-mins': {
         'task': 'journal',
-        'schedule': crontab(minute='*/5')
+        'schedule': crontab(minute='*/3')
     }
 }
