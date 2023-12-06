@@ -123,13 +123,17 @@
     width: 155px;
   }
 
-  #scheduleField {
+  #scheduleField,
+  #noTrackingContainer {
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    margin-bottom: 5px;
   }
 
-  #scheduleField input {
+  #scheduleField input,
+  #noTrackingContainer input {
     width: 20px;
     margin: 0;
     margin-right: 10px;

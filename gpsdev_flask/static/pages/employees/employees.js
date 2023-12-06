@@ -94,6 +94,18 @@ function createForm() {
   scheduleCheckLabel.htmlFor = "scheduleCheck";
   scheduleCheckLabel.innerText = "Сотрудник является ванщиком";
 
+  let noTrackingContainer = document.createElement("div");
+  noTrackingContainer.id = "noTrackingContainer";
+
+  let noTrackingCheckLabel = document.createElement("label");
+  noTrackingCheckLabel.id = "noTrackingCheckLabel";
+  noTrackingCheckLabel.htmlFor = "noTrackingCheck";
+  noTrackingCheckLabel.innerText = "Не остлеживать сотрудника";
+
+  let noTrackingCheck = document.createElement("input");
+  noTrackingCheck.id = "noTrackingCheck";
+  noTrackingCheck.type = "checkbox";
+
   let btnsContainer = document.createElement("div");
   btnsContainer.id = "btnsContainer";
 
@@ -111,9 +123,10 @@ function createForm() {
   nameFieldContainer.append(nameFieldLabel, nameField);
   phoneFieldContainer.append(phoneFieldLabel, phoneField);
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
-  restFields.append(dateFields, scheduleField);
+  restFields.append(dateFields, scheduleField, noTrackingContainer);
   dateFields.append(hireDateLabel, hireDateField, quitDateLabel, quitDateField);
   scheduleField.append(scheduleCheck, scheduleCheckLabel);
+  noTrackingContainer.append(noTrackingCheck, noTrackingCheckLabel);
   btnsContainer.append(cancelBtn, saveBtn);
 
   modalForm.append(
@@ -222,6 +235,7 @@ $.ajax({
       let hireDate = document.getElementById("hireDateField");
       let quitDate = document.getElementById("quitDateField");
       let scheduleCheck = document.getElementById("scheduleCheck");
+      let noTrackingCheck = document.getElementById("noTrackingCheck");
       let saveBtn = document.getElementById("saveBtn");
 
       name.value = data.name;
@@ -232,6 +246,7 @@ $.ajax({
       hireDate.value = data.hire_date;
       quitDate.value = data.quit_date;
       data.schedule == 2 ? (scheduleCheck.checked = true) : null;
+      noTrackingCheck.checked = data.no_tracking;
 
       saveBtn.onclick = changeEmployee;
     });
@@ -249,6 +264,11 @@ $.ajax({
     if (xhr.status == 422) {
       $("#preLoadContainer")[0].style.display = "none";
       alertsToggle(json.detail, "danger", 6000);
+    }
+    if (xhr.status == 403) {
+      $("#preLoadContainer")[0].style.display = "none";
+      let currentLocation = location.href.split("/").pop();
+      location.href = `/login?next=${currentLocation}`;
     }
   });
 
@@ -274,6 +294,8 @@ function createEmployee(e) {
 
   let scheduleCheck = document.getElementById("scheduleCheck").checked;
 
+  let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
+
   if (
     name == "" ||
     phone.value == "" ||
@@ -288,6 +310,7 @@ function createEmployee(e) {
     phone: phone.value,
     division: divisionId,
     hire_date: hireDate,
+    no_tracking: noTrackingCheck,
   };
 
   quitDate ? (parameters["quit_date"] = quitDate) : null;
@@ -339,6 +362,10 @@ async function sendNewEmployee(parameters) {
           6000
         );
       }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
     });
 }
 
@@ -357,6 +384,8 @@ function changeEmployee() {
 
   let scheduleCheck = document.getElementById("scheduleCheck").checked;
 
+  let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
+
   if (
     name == "" ||
     phone == "" ||
@@ -373,6 +402,7 @@ function changeEmployee() {
     hire_date: hireDate,
     quit_date: quitDate == "" ? null : quitDate,
     schedule: !scheduleCheck ? 1 : 2,
+    no_tracking: noTrackingCheck,
   };
 
   sendEditEmployee(parameters);
@@ -424,6 +454,10 @@ function sendEditEmployee(parameters) {
           "danger",
           6000
         );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
       }
     });
 }
