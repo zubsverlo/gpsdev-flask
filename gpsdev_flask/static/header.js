@@ -21,7 +21,10 @@ function logOut() {
       if (!response.ok) {
         throw new Error("Выход не осуществлен. Попробуйте еще раз!");
       }
-      localStorage.clear();
+      let keysToRemove = ["name", "phone"];
+      for (key of keysToRemove) {
+        localStorage.removeItem(key);
+      }
       location.href = "/login";
     })
     .catch((error) => console.log(error));
