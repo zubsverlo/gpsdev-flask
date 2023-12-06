@@ -289,7 +289,7 @@ class DatabaseReportDataGetter:
                 object_ids=object_ids
             ), conn)
             if not len(stmts):
-                raise ReportException(f'Не найдено заявленных выходов в период '
+                raise ReportException(f'Не заполнена таблица выходов в период '
                                       f'с {date_from} до {date_to}')
             name_ids = stmts.name_id.unique().tolist()
             object_ids = stmts.object_id.unique().tolist()
@@ -428,6 +428,7 @@ class AsyncReportDataGetter:
             cursor_result = await conn.execute(sel)
             return cursor_result.fetchall()
 
+
 class OneEmployeeReportDataGetter:
 
     def __init__(self,
@@ -455,26 +456,23 @@ class OneEmployeeReportDataGetter:
                 subscriber_id = int(journal.subscriberID.iloc[0])
             except IndexError:
                 raise ReportException(
-                    f"За сотрудником не закреплено ни одного "
-                    f"устройства в этот день ({date})")
+                    f"Не подключен к отслеживанию в этот день ({date})")
 
             locations = pd.read_sql(cs.locations_one_emp(date, subscriber_id),
                                     conn)
             valid_locations = locations[pd.notna(locations['locationDate'])]
             if not len(locations) or not len(valid_locations):
-                raise ReportException(f"По данному сотруднику не обнаружено "
-                                      f"локаций за {date}.")
+                raise ReportException(
+                    f"За {date} нет локаций. Устройство отключено!"
+                    )
             clusters = prepare_clusters(valid_locations)
             return stmts, clusters, locations
 
 
 def report_data_factory(date_from: Union[dt.date, str], *args, **kwargs) -> dict:
-    
-
     date_from = dt.date.fromisoformat(str(date_from))
     data = DatabaseReportDataGetter().get_data(date_from, *args, **kwargs)
     return data
-
 
 
 if __name__ == '__main__':
