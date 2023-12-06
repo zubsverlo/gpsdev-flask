@@ -1,6 +1,10 @@
 @media screen and (min-width: 900px) {
-  .higlight-separate {
+  .highlight-separate {
     border-top: 1px solid black !important;
+  }
+
+  .highlight-separate-right {
+    border-right: 1px solid black !important;
   }
 
   #preLoadContainer {
@@ -48,7 +52,7 @@
   }
 
   #tableParameters select {
-    height: 42px;
+    height: 41px;
     /* padding: 0px 4px; */
     border-radius: 3px;
 
@@ -272,7 +276,983 @@
     background-color: rgb(223, 223, 223);
   }
 
-  .unacive-select {
+  .unactive-select {
+    cursor: no-drop !important;
+  }
+
+  #fieldOfSelection {
+    display: none;
+    flex-direction: column;
+
+    width: 376px;
+
+    border-radius: 5px;
+    border: 1px solid rgb(195, 195, 195);
+  }
+
+  .employee-in-list-to-add {
+    font-size: 15px;
+    background-color: rgba(219, 230, 191, 0.439);
+    padding: 3px 2px;
+  }
+
+  .objects-in-list-to-add {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    font-size: 14px;
+
+    background-color: rgb(4 166 130 / 8%);
+    border-top: 1px solid rgb(195, 195, 195);
+    border-bottom: 1px solid rgb(195, 195, 195);
+    padding: 5px;
+  }
+
+  .delete-object-in-list {
+    padding: 1px 4px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .delete-object-in-list:hover {
+    background-color: rgb(154, 154, 154);
+    color: rgb(244, 238, 238);
+  }
+
+  #employeeSearch:focus,
+  #objectSearch:focus {
+    outline: 1px solid gray;
+    border: 1px solid rgb(182, 182, 182);
+  }
+
+  #employeeListContainer,
+  #objectListContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 400px;
+  }
+  #employeeList,
+  #objectList {
+    height: 300px;
+    width: 412px;
+    overflow-y: scroll;
+  }
+  #employeeList > *,
+  #objectList > * {
+    padding: 2px;
+    cursor: pointer;
+  }
+  #employeeList > :hover,
+  #objectList > :hover {
+    background-color: rgb(223, 223, 223);
+  }
+
+  .division-name-in-list {
+    font-size: 14px;
+    color: gray;
+    margin-left: 15px;
+  }
+
+  #duplicateTableContainer {
+    margin-bottom: 20px;
+  }
+
+  #duplicateTable {
+    border-spacing: 0px;
+    font-size: 16px;
+  }
+
+  .scroll-table {
+    height: 500px;
+    overflow-y: scroll;
+  }
+
+  #duplicateTable tr,
+  #reportTable tr,
+  #analysisTable tr {
+    transition: all 0.3s;
+  }
+
+  #duplicateTable tr:hover,
+  #reportTable tr:hover,
+  #analysisTable tr:hover {
+    background-color: rgb(202, 202, 202);
+    color: rgb(99, 99, 99);
+  }
+
+  #duplicateTable thead > tr > th,
+  #reportTable thead > tr > th,
+  #analysisTable thead > tr > th {
+    font-weight: 800;
+    padding: 5px 0px;
+    color: rgb(89 89 89);
+  }
+
+  #duplicateTable thead > tr:hover,
+  #reportTable thead > tr:hover,
+  #analysisTable thead > tr:hover {
+    background-color: transparent;
+    color: rgb(89 89 89);
+  }
+
+  #duplicateTable tr > th,
+  #reportTable tr > th,
+  #analysisTable tr > th {
+    border-left: 1px solid gray;
+    border-top: 1px solid gray;
+    font-weight: 400;
+    color: rgb(75, 75, 75);
+  }
+
+  #duplicateTable .odd-row,
+  #reportTable .odd-row,
+  #analysisTable .odd-row {
+    background-color: rgb(234 233 219);
+  }
+
+  #duplicateTable .even-row,
+  #reportTable .even-row,
+  #analysisTable .even-row {
+    background-color: rgb(174 174 174 / 12%);
+  }
+
+  #duplicateTable .last-row > *,
+  #reportTable .last-row > *,
+  #analysisTable .last-row > * {
+    border-bottom: 1px solid gray;
+  }
+
+  #commentAreaContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #symbolsCount {
+    margin-left: 280px;
+  }
+
+  #incomeFormContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #incomeFieldContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #incomeField {
+    margin: 10px 0px;
+    width: 180px;
+    height: 20px;
+  }
+
+  #contentContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 85vw;
+    height: 85vh;
+
+    margin-bottom: 20px;
+    transition: all 1.5s;
+  }
+
+  #horizontalPartContainer {
+    display: flex;
+    flex-direction: row;
+    flex: 5;
+    overflow-y: hidden;
+
+    transition: all 1.5s;
+  }
+
+  #mapContainer {
+    position: relative;
+    flex: 2;
+    height: 100%;
+
+    transition: all 0.5s;
+  }
+
+  .report-container-show {
+    height: 100%;
+    flex: 1;
+    opacity: 1;
+    width: 0px;
+    margin-left: 10px;
+
+    overflow: auto;
+    transition: flex 0.8s;
+  }
+  .report-container-hide {
+    height: 100%;
+    flex: 0;
+    opacity: 0;
+    width: 0px;
+    margin-left: 0px;
+
+    overflow: auto;
+    transition: all 0.8s;
+  }
+
+  #reportTable {
+    width: 100%;
+  }
+
+  #analysisPartContainer {
+    width: 66%;
+  }
+
+  .analysis-container-show {
+    height: 300px;
+    flex: 2;
+    opacity: 1;
+    margin-top: 10px;
+
+    overflow: auto;
+    transition: all 0.8s;
+  }
+  .analysis-container-hide {
+    height: 0px;
+    flex: 0;
+    opacity: 0;
+    margin-left: 0px;
+
+    overflow: auto;
+    transition: all 0.8s;
+  }
+
+  #analysisTable {
+    width: 100%;
+  }
+
+  #reportBtn,
+  #analysisBtn {
+    position: absolute;
+    right: 10px;
+
+    font-size: 16px;
+
+    background-color: rgb(200 115 115);
+    color: rgb(249, 239, 239);
+
+    box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.5);
+    border: 1px solid gray;
+    border-radius: 5px;
+
+    transition: background-color 0.2s;
+    cursor: pointer;
+  }
+
+  #reportBtn {
+    top: 10px;
+    padding: 4px 10px;
+  }
+
+  #analysisBtn {
+    top: 44px;
+    padding: 4px 5px;
+  }
+
+  #modalForm {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 20px;
+  }
+
+  #serveReasonContainer,
+  #serveAddressContainer {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 15px;
+  }
+
+  #modalForm input {
+    height: 27px;
+    width: 350px;
+
+    font-size: 14px;
+
+    padding: 0px 5px;
+    border: solid 1px gray;
+    border-radius: 5px;
+
+    margin-top: 5px;
+  }
+
+  #addressOuterContainer {
+    z-index: 900;
+    position: absolute;
+    background-color: field;
+
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 2px;
+  }
+
+  #addressContainer {
+    overflow-y: auto;
+    max-height: 180px;
+    max-width: 600px;
+  }
+
+  .address-options {
+    border: none;
+    overflow: hidden;
+    background-color: field;
+    border-bottom: solid 1px rgba(155, 155, 155, 0.7);
+    padding: 3px 5px;
+    cursor: pointer;
+  }
+
+  #switchAddressContainer {
+    display: none;
+    flex-direction: row;
+    align-items: center;
+
+    margin-top: 10px;
+  }
+
+  #switchAddressLabelName {
+    font-size: 13px;
+    margin-right: 14px;
+  }
+
+  #switchAddressLabel {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 19px;
+  }
+
+  #switchAddressLabel input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  #switchAddressSpan {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(65, 156, 153);
+    border-radius: 34px;
+    transition: 0.4s;
+
+    cursor: pointer;
+  }
+
+  #switchAddressSpan::before {
+    position: absolute;
+    content: "1";
+    left: 1px;
+    bottom: 1px;
+    background-color: white;
+
+    padding: 2.5px 6px 2px 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+
+    border: 1px solid rgb(218 199 199);
+    border-radius: 50%;
+    transition: 0.4s;
+  }
+
+  #switchAddressLabel input:checked + #switchAddressSpan {
+    background-color: rgb(211, 212, 152);
+  }
+
+  #switchAddressLabel input:focus + #switchAddressSpan {
+    box-shadow: 0 0 1px rgb(211, 212, 152);
+  }
+
+  #switchAddressLabel input:checked + #switchAddressSpan::before {
+    transform: translateX(25px);
+    content: "2";
+  }
+
+  #serveConfirmContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  #serveConfirmLabel,
+  #serveConfirmField {
+    cursor: pointer;
+  }
+
+  #serveConfirmField {
+    width: 16px !important;
+    height: 16px !important;
+
+    margin-top: 0px !important;
+    margin-left: 5px;
+  }
+
+  #modalForm #btnsContainer {
+    width: 134.5%;
+  }
+
+  #deleteMessageContainer,
+  #approveMessageContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 569px;
+    margin: 0px 20px;
+  }
+
+  #deleteMessage,
+  #approveMessage {
+    margin: 20px 0px;
+  }
+
+  #deleteMessageContainer #btnsContainer,
+  #approveMessageContainer #btnsContainer {
+    width: 114%;
+  }
+
+  #servesContainer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .one-serve-container {
+    height: auto;
+    overflow: auto;
+  }
+
+  .many-serve-container {
+    height: 600px;
+    overflow: auto;
+  }
+
+  .serve-container {
+    display: flex;
+    flex-direction: row;
+
+    background-color: rgb(234, 229, 223);
+    margin-bottom: 20px;
+  }
+
+  .left-section,
+  .middle-section,
+  .right-section {
+    display: flex;
+    flex-direction: column;
+
+    padding: 0px 10px;
+    border: 1px solid gray;
+  }
+
+  .left-section {
+    width: 250px;
+  }
+
+  .middle-section {
+    width: 200px;
+  }
+
+  .right-section {
+    width: 150px;
+  }
+
+  .left-section .serve-field-container {
+    padding: 10px 0px 52px 0px;
+  }
+
+  .left-section-first {
+    border-bottom: 1px solid gray;
+  }
+
+  .serve-address {
+    border-bottom: 1px solid gray;
+  }
+
+  .serve-additional-fields {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .serve-field-container {
+    padding: 10px 0px;
+  }
+
+  .serve-field-container > label {
+    font-size: 14px;
+  }
+
+  .serve-field-container > div {
+    margin-top: 5px;
+  }
+
+  #inputsContainerInModal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 400px;
+  }
+
+  #inputsContainerInModal #addressContainer {
+    font-size: 14px;
+    width: 375px;
+  }
+
+  #inputsContainerInModal #btnsContainer {
+    width: 130%;
+  }
+
+  #objectContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 50px;
+
+    max-height: 600px;
+  }
+
+  #allFieldsContainer {
+    max-height: 600px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 0px 20px;
+  }
+
+  #nameFieldContainer,
+  #phoneFieldContainer,
+  #addressFieldContainer,
+  #divisionFieldContainer,
+  #startDateContainer,
+  #endDateContainer,
+  #apartmentFieldContainer,
+  #personalServiceFieldContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  #dateFieldsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    margin-bottom: 10px;
+    width: 366px;
+  }
+
+  #startDateContainer,
+  #endDateContainer {
+    align-items: center;
+    margin: 0;
+  }
+
+  #phoneFieldContainer {
+    width: 364px;
+  }
+  #objectContent #allFieldsContainer input {
+    font-size: 14px;
+    width: 350px;
+    height: auto;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #startDateContainer input,
+  #endDateContainer input {
+    width: 120px !important;
+  }
+
+  #startDateContainer label,
+  #endDateContainer label {
+    font-size: 14px;
+  }
+
+  #divisionField {
+    width: 368px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #restFields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    font-size: 15px;
+
+    margin-bottom: 20px;
+  }
+
+  #activeField,
+  #noPaymentField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    margin-top: 5px;
+  }
+
+  #activeField input,
+  #noPaymentField input {
+    width: 20px !important;
+    margin: 0;
+    margin-right: 10px;
+  }
+
+  #allFieldsContainer #addressSelect {
+    width: 368px;
+    min-height: 100px;
+    padding: 8px;
+    border-radius: 5px;
+    border: solid 1px rgba(155, 155, 155, 0.7);
+    margin-top: 5px;
+  }
+
+  #allFieldsContainer #addressOuterContainer {
+    z-index: 900;
+    position: absolute;
+    background-color: field;
+
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 2px;
+  }
+
+  #allFieldsContainer #addressContainer {
+    overflow-y: auto;
+    max-height: 180px;
+    max-width: 600px;
+  }
+
+  #allFieldsContainer .address-options {
+    border: none;
+    overflow: hidden;
+    background-color: field;
+    border-bottom: solid 1px rgba(155, 155, 155, 0.7);
+    padding: 3px 5px;
+    cursor: pointer;
+  }
+
+  #objectContent #btnsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 133%;
+    padding: 20px 0px;
+    margin-top: 20px;
+    border-top: solid 1px rgb(189, 189, 189);
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .highlight-separate {
+    border-top: 1px solid black !important;
+  }
+
+  .highlight-separate-right {
+    border-right: 1px solid black !important;
+  }
+
+  #preLoadContainer {
+    height: 500px;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 200px;
+  }
+
+  #tableParametersContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  #tableParameters {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+
+    width: 330px;
+  }
+
+  #tableParameters > * {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    margin-right: 5px;
+    padding: 3px 0px;
+  }
+
+  #tableParameters > * > * {
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  #startDateOfPeriodContainer {
+    margin: 0px;
+  }
+
+  #tableParameters select {
+    height: 41px;
+    /* padding: 0px 4px; */
+    border-radius: 3px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(213 197 143 / 82%);
+    color: rgb(77, 77, 77);
+  }
+
+  #previousCurrenMonthContainer button,
+  #currentMonthContainer button {
+    height: 41px;
+    padding: 0px 5px;
+    border-radius: 3px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(205 188 126 / 36%);
+    color: rgb(75, 75, 75);
+  }
+
+  #tableParameters select option {
+    text-align: none;
+  }
+
+  #tableParameters input {
+    width: 102px;
+    height: 40px;
+    padding: 0px 5px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(205 188 126 / 36%);
+    color: rgb(75, 75, 75);
+    transition: box-shadow 0.5s;
+  }
+
+  #tableParameters input:focus {
+    border: 1px solid black;
+    outline: none;
+  }
+
+  #startDateOfPeriod {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-right: none !important;
+  }
+
+  #endDateOfPeriod {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+
+  .date-highlight {
+    box-shadow: 0px 0px 8px 1px rgb(122, 122, 122);
+  }
+
+  .fade-out-box {
+    box-shadow: 0px 0px 13px rgba(27, 160, 100, 0);
+    transition: box-shadow 0.8s;
+  }
+
+  #requestBtn {
+    padding: 11.5px 5px;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: rgb(28 100 121 / 60%);
+    color: rgb(247 243 243);
+
+    transition: all 0.4s;
+  }
+
+  #requestBtn:hover {
+    background-color: rgba(10, 127, 115, 0.66);
+    color: rgb(247 243 243);
+  }
+  #requestBtn:active {
+    background-color: rgba(228, 232, 173, 0.66);
+    color: rgb(74, 74, 74);
+  }
+
+  #tableContainer {
+    opacity: 0;
+    transition: all 0.8s;
+  }
+
+  .jexcel_filter {
+    margin-top: 5px;
+    align-items: center;
+  }
+
+  .jexcel_search input {
+    padding: 5px;
+  }
+
+  #customToolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0px;
+  }
+
+  #customToolbar > * {
+    background-color: rgb(25, 121, 100, 30%);
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 4px 5px 0px 5px;
+
+    margin-right: 5px;
+    transition: background-color 0.5s;
+    cursor: pointer;
+  }
+
+  #customToolbar > *:hover {
+    background-color: rgba(4, 106, 84, 0.473);
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 4px 5px 0px 5px;
+
+    margin-right: 5px;
+    cursor: pointer;
+  }
+
+  #customToolbar > *:active {
+    background-color: rgba(0, 64, 82, 0.516);
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 4px 5px 0px 5px;
+
+    margin-right: 5px;
+    cursor: pointer;
+  }
+
+  .jexcel_content::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+  }
+
+  #preLoadingImg {
+    width: 24px;
+    margin-bottom: 20px;
+  }
+
+  #btnsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 110.5%;
+    padding: 20px 0px;
+    margin-top: 20px;
+    border-top: solid 1px rgb(189, 189, 189);
+  }
+
+  #btnsContainer button {
+    margin: 0 30px 0 30px;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+  }
+
+  #cancelBtn {
+    background-color: rgba(83, 83, 83, 0.751);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #backBtn {
+    background-color: rgba(169, 169, 169, 0.751);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #saveBtn {
+    background-color: rgba(223, 220, 168, 0.899);
+    color: rgb(46, 46, 46);
+
+    cursor: pointer;
+  }
+
+  #inputsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #employeeSelect,
+  #objectSelect,
+  #employeeSearch,
+  #objectSearch {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: start;
+
+    border: 1px solid rgb(166, 166, 166);
+    border-radius: 3px;
+    padding: 5px;
+    width: 380px;
+    font-size: 15px;
+
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 20px;
+  }
+
+  #employeeSelect:hover,
+  #objectSelect:hover {
+    background-color: rgb(223, 223, 223);
+  }
+
+  .unactive-select {
     cursor: no-drop !important;
   }
 
