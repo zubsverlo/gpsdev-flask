@@ -9,6 +9,7 @@ import pandas as pd
 from trajectory_report.report.Report import OneEmployeeReport, Report
 from typing import Union, Optional, List
 import datetime as dt
+from numpy import isnan
 
 
 """
@@ -101,12 +102,21 @@ class MapMovements(OneEmployeeReport, MapsBase):
                  date: Union[dt.date, str],
                  division: Union[int, str]):
         super().__init__(name_id, date, division)
+
         self._objects = self._stmts\
             .drop_duplicates('object_id')\
             .loc[:, ['object', 'longitude', 'latitude', 'address']]
 
-        self._median_coordinates = [median(self.clusters.latitude),
-                                    median(self.clusters.longitude)]
+        median_lat = median(self.clusters.latitude)
+        median_lng = median(self.clusters.longitude)
+
+        # Атрибут для уведомления, когда карта есть, но перемещений нет
+        self.no_movements = True if not len(self.clusters) else False
+
+        self._median_coordinates = [
+            median_lat if not isnan(median_lat) else 55.7522,
+            median_lng if not isnan(median_lng) else 37.6156
+        ]
 
         points = pd.concat([self._clusters_points, self._objects_points])
         # Для формирования TDF колонка datetime должна быть заполнена.
@@ -143,12 +153,13 @@ class MapMovements(OneEmployeeReport, MapsBase):
             folium.features.Icon(icon='pause', prefix='fa', color='orange')
             for _ in range(len(clusters))
         ]
-        icons[0] = folium.features.Icon(
-            icon='play', prefix='fa', color='green'
-        )
-        icons[-1] = folium.features.Icon(
-            icon='stop', prefix='fa', color='red'
-        )
+        if icons:
+            icons[0] = folium.features.Icon(
+                icon='play', prefix='fa', color='green'
+            )
+            icons[-1] = folium.features.Icon(
+                icon='stop', prefix='fa', color='red'
+            )
         # Добавление иконок к кластерам
         clusters['icon'] = icons
         # Информация о времени (при наведении курсора)
@@ -167,7 +178,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
 
     def _create_map(self):
         # СОЗДАНИЕ КАРТЫ
-        map = folium.Map(self._median_coordinates, zoom_start=12)
+        map = folium.Map(self._median_coordinates, zoom_start=11)
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(map)
 
@@ -182,15 +193,16 @@ class MapMovements(OneEmployeeReport, MapsBase):
 
         # Antpath отображает маршрут через анимацию ползающих "муравьев"
         path = self.clusters.sort_values(by='datetime')
-        AntPath([i for i in zip(path.latitude,
-                                path.longitude)],
-                delay=1000,
-                weight=6,
-                dash_array=[9, 100],
-                color='#000000',
-                pulseColor='#FFFFFF',
-                hardwareAcceleration=True,
-                opacity=0.6).add_to(map)
+        if len(path):
+            AntPath([i for i in zip(path.latitude,
+                                    path.longitude)],
+                    delay=1000,
+                    weight=6,
+                    dash_array=[9, 100],
+                    color='#000000',
+                    pulseColor='#FFFFFF',
+                    hardwareAcceleration=True,
+                    opacity=0.6).add_to(map)
         return map
 
     @property
@@ -198,7 +210,10 @@ class MapMovements(OneEmployeeReport, MapsBase):
         report = None
         analytics = None
         if self.report is not None:
-            report = self.report[['object', 'attend_number', 'datetime', 'duration']]
+            report = self.report[
+                ['object', 'attend_number', 'datetime',
+                 'duration', 'attends_sum']
+            ]
             report['duration'] = report.duration.apply(lambda x: str(x)[-8:])
             report['datetime'] = report.datetime.apply(lambda x: str(x)[-8:])
             report = report.rename(columns={'datetime': "time"})
@@ -215,7 +230,8 @@ class MapMovements(OneEmployeeReport, MapsBase):
 
         resp = {
             'map': self.map_html,
-            'recommended_for_checkout': self.recommended_for_checkout
+            'recommended_for_checkout': self.recommended_for_checkout,
+            'no_movements': self.no_movements
         }
         if report:
             resp['report'] = report
@@ -296,3 +312,14 @@ class MapBindings(Report, MapsBase):
         points = pd.merge(points, objects, left_index=True, right_index=True)
 
         return points.reset_index()
+
+
+if __name__ == "__main__":
+    m = MapBindings("2023-11-20", "2023-11-30", "ПВТ1")
+    m.map.save('pvt1_11.html')
+    m = MapBindings("2023-11-20", "2023-11-30", "ПНИ12,30")
+    m.map.save('pni1230_11.html')
+    # m = MapMovements(584, "2023-10-31", "ПВТ1")
+    # m.map.save('11-08.html')
+    # m.as_json_dict
+    pass
