@@ -10,6 +10,8 @@ document.addEventListener("keydown", (e) => {
 
 // clear and hide Modal
 export function hideModal() {
+  const closeEvent = new Event("modalClose");
+  document.dispatchEvent(closeEvent);
   modal.style.display = "none";
   modalTitle.innerText = "";
   if (document.getElementById("modalForm")) {
