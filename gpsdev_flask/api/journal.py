@@ -2,8 +2,9 @@ from flask import Blueprint, jsonify, request, g
 from gpsdev_flask import db_session
 from gpsdev_flask.models import Journal
 from sqlalchemy import update
-from flask_login import login_required, current_user
+from flask_login import current_user
 from marshmallow import ValidationError
+from gpsdev_flask.api import api_login_required
 from gpsdev_flask.ma_schemas import JournalSchema
 from gpsdev_flask.api.error_responses import (not_allowed_403,
                                               not_found_404,
@@ -15,7 +16,7 @@ journal = Blueprint('journal', __name__)
 
 @journal.route('/', methods=['GET'])
 @journal.route('/<int:row_id>', methods=['GET', 'DELETE', 'PATCH'])
-@login_required
+@api_login_required
 def journal_main(row_id=None):
     if current_user.rang_id != 1:
         return not_allowed_403('You are not allowed to journal')
