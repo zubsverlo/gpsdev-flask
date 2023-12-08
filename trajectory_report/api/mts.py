@@ -73,7 +73,7 @@ def delete_subs(subs_to_remove: list):
 
 def update_name(subscriberID: int, new_name):
     """Обновляет имя сотрудника по subscriberID.
-    Нужно передать subscriberID, и строку с новым имененем"""
+    Нужно передать subscriberID и строку с новым имененем"""
     for token in TOKENS_MTS.values():
         subscribers = get_subs_by_token(token)
         for sub in subscribers:
