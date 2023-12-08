@@ -267,10 +267,13 @@ class HrManager:
         self._todo_open_close_journal_period()
         # commit на сессию
         self.session.commit()
+        # нужно сделать commit на connection, чтобы результат запроса был свеж.
+        self.connection.commit()
         # Перезаполнить df для актуализации данных
         self._fill_df()
-        self.redis_connection.delete("hrManagerDf")
-        self.__send_to_redis("hrManagerDf", self.df)
+        self.connection.close()
+        # self.redis_connection.delete("hrManagerDf")
+        # self.__send_to_redis("hrManagerDf", self.df)
 
     def __get_from_redis(self, key: str) -> Any:
         """"Fetch from redis by key, decompress and unpickle"""
@@ -284,7 +287,7 @@ class HrManager:
         self.redis_connection.set(key, bz2.compress(pickle.dumps(obj)))
         self.redis_connection.expireat(
             key,
-            int((dt.datetime.now()+dt.timedelta(minutes=1)).timestamp())
+            int((dt.datetime.now()+dt.timedelta(minutes=3)).timestamp())
         )
         return True
 
@@ -310,7 +313,7 @@ class HrManager:
         # Открытые текущие записи журнала
         # вынести в столбец: открыт ли период в journal
         self.journal_opened = self._get_journal_opened()
-        
+
         self.divisions = self._get_divisions()
 
         # Идея: совместить всё в одну таблицу, и в ней проводить анализ
@@ -336,7 +339,6 @@ class HrManager:
         df = pd.merge(df, self.employees[['name_id', 'phone']], on=['name_id'],
                       how='left')
         df['phone'] = df['phone_y']
-        
         self.df = df
 
     def _todo_del_quit_date(self) -> None:
@@ -372,9 +374,9 @@ class HrManager:
             & (self.df['mts_active'] == False)
         df = self.df.loc[close_journal_period]
         records = df.to_dict(orient='records')
-        
+
         close_period_date = dt.date.today()-dt.timedelta(days=1)
-        
+
         for record in records:
             upd = update(Journal)\
                 .where(Journal.name_id == record['name_id'])\
@@ -409,9 +411,9 @@ class HrManager:
             & (pd.notna(self.df['name_id']))
         df = self.df.loc[open_close_journal_period]
         records = df.to_dict(orient='records')
-        
+
         close_period_date = dt.date.today()-dt.timedelta(days=1)
-        
+
         for record in records:
             upd = update(Journal)\
                 .where(Journal.name_id == record['name_id'])\
@@ -543,6 +545,7 @@ class HrManager:
         df = self.df.loc[to_set_abandoned_quit]
         df = df[['name_id', 'name', 'division', 'division_name',
                  'hire_date', 'last_stmt_date', 'mts_active']]
+        df = df.sort_values(['division_name', 'last_stmt_date'])
         return df
 
     @property
@@ -556,6 +559,7 @@ class HrManager:
         df.loc[:, ['subscriberID']] = df['subscriberID_mts']
         df = df[['name_id', 'name', 'division', 'division_name', 'hire_date',
                  'quit_date', 'company', 'last_stmt_date', 'subscriberID']]
+        df = df.sort_values(['company', 'division_name', 'last_stmt_date'])
         return df
 
     @property
@@ -571,6 +575,7 @@ class HrManager:
         df = self.df.loc[no_statements]
         df = df[['name_id', 'name', 'division', 'division_name', 'hire_date',
                  'period_init']]
+        df = df.sort_values(['division_name', 'period_init'])
         return df
 
     @property
@@ -579,6 +584,7 @@ class HrManager:
         df = self.df.loc[mts_only]
         df.loc[:, ['subscriberID']] = df['subscriberID_mts']
         df = df[['name', 'company', 'subscriberID']]
+        df = df.sort_values(['company', 'name'])
         return df
 
     @property
@@ -592,12 +598,14 @@ class HrManager:
         df = self.df.loc[to_connect]
         df = df[['name_id', 'name', 'division', 'division_name', 'hire_date',
                  'no_statements', 'phone', 'last_stmt_date']]
+        df = df.sort_values(['division_name', 'hire_date'])
         return df
 
     def get_suggests_dict(self) -> dict:
-        self.df = self.__get_from_redis('hrManagerDf')
-        if self.df is None:
-            self.todo_all()
+        # self.df = self.__get_from_redis('hrManagerDf')
+        # if self.df is None:
+            # self.todo_all()
+        self.todo_all()
         abandoned = self.suggest_abandoned
         abandoned.loc[:, ['hire_date', 'last_stmt_date']] = abandoned\
             .loc[:, ['hire_date', 'last_stmt_date']]\
