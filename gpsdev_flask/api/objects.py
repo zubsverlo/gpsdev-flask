@@ -58,7 +58,6 @@ def objects_one(object_id=None):
     if request.method == "GET":
         obj = db_session.query(ObjectsSite)\
             .filter_by(object_id=object_id)\
-            .filter(ObjectsSite.division.in_(current_user.access_list))\
             .first()
         if not obj:
             return not_found_404()

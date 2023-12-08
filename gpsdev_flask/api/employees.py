@@ -12,6 +12,7 @@ from gpsdev_flask.api.error_responses import (not_found_404,
                                               validation_error_422)
 from gpsdev_flask.api import api_login_required
 import datetime as dt
+from trajectory_report.api.mts import update_name
 
 
 employees = Blueprint('employees', __name__)
@@ -64,6 +65,20 @@ def employees_one(name_id):
             employee = schema.load(request.get_json())
         except ValidationError as e:
             return validation_error_422(e.messages)
+
+        employee_from_db = db_session.query(Employees)\
+            .filter(Employees.division.in_(current_user.access_list)) \
+            .filter_by(name_id=name_id) \
+            .first()
+
+        if employee['name'] != employee_from_db.name:
+            # если сотрудник отслеживается - переименовать в МТС
+            sel = select(Journal.subscriberID)\
+                .where(Journal.name_id == name_id)\
+                .where(Journal.period_end == None)
+            subscriber_id = db_session.execute(sel).scalar_one_or_none()
+            if subscriber_id:
+                update_name(subscriber_id, employee['name'])
 
         db_session.execute(
             update(Employees)

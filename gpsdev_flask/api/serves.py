@@ -127,7 +127,7 @@ def check_coordinates():
             date=new_s['date'],
         ).first()
         if exists:
-            return validation_error_422(f"Служебная записка уже существует")
+            return validation_error_422("Служебная записка: Уже существует")
         db_session.add(Serves(name_id=new_s['name_id'],
                               object_id=new_s['object_id'],
                               date=new_s['date'],
@@ -137,4 +137,4 @@ def check_coordinates():
 
         db_session.commit()
         return jsonify({}), 201
-    return validation_error_422('Не подтверждено')
+    return validation_error_422('Адрес: Не подтверждено')
