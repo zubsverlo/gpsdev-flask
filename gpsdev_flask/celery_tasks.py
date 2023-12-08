@@ -43,8 +43,8 @@ app_celery.conf.beat_schedule = {
         'task': 'clusters',
         'schedule': crontab(minute='30', hour='*/3')
     },
-    'update-journal-every-3-mins': {
+    'update-journal-every-10-mins': {
         'task': 'journal',
-        'schedule': crontab(minute='*/3')
+        'schedule': crontab(minute='*/10')
     }
 }

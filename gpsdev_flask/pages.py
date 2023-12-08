@@ -10,14 +10,18 @@ pages = Blueprint('/pages', __name__)
 @pages.route('/login')
 def login():
     if not current_user.is_anonymous:
-        return redirect(url_for('/pages.home'))
+        if current_user.rang_id != 1:
+            return redirect(url_for('/pages.attends'))
+        return redirect(url_for('/pages.dashboard'))
     return render_template('login.html')
 
 
 @pages.route('/')
 @login_required
 def home():
-    return render_template('home.html')
+    if current_user.rang_id != 1:
+        return redirect(url_for('/pages.attends'))
+    return redirect(url_for('/pages.dashboard'))
 
 
 @pages.route('/attends')
