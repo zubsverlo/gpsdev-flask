@@ -217,6 +217,11 @@ $.ajax({
       modalForm = createForm();
       modalBody.appendChild(modalForm);
 
+      let quitDateField = document.getElementById("quitDateField");
+      quitDateField.disabled = true;
+      quitDateField.title =
+        "Чтобы уволить сотрудника, проставьте 'У' в таблице";
+
       let deleteAccess = localStorage.getItem("rang-id");
       if (deleteAccess == "1") {
         let deleteBtn = document.createElement("button");

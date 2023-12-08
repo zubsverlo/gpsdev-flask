@@ -1,0 +1,225 @@
+@media screen and (min-width: 900px) {
+  #preLoadContainer {
+    height: 500px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 200px;
+  }
+
+  #allTablesContainer {
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: all 0.8s;
+  }
+
+  .table-name-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    padding: 3px 0px;
+    font-weight: 600;
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin: 10px 0px 10px 0px;
+    cursor: pointer;
+  }
+
+  #toConnectTableBtn {
+    background-color: rgba(45, 137, 129, 0.5);
+  }
+
+  #delFromMtsTableBtn {
+    background-color: rgb(228, 228, 206);
+  }
+
+  #abandonedTableBtn {
+    background-color: rgb(17 55 68 / 14%);
+  }
+
+  #noStatementsTableBtn {
+    background-color: rgb(25 134 92 / 22%);
+  }
+
+  #mtsOnlyTableBtn {
+    background-color: rgb(173 177 147 / 29%);
+  }
+
+  .pre-table-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .greeting-text-container {
+    display: inline-block;
+  }
+
+  .greeting-text-btn {
+    font-size: 16px;
+    padding: 5px 8px;
+    background-color: rgb(228, 228, 206);
+    border: solid 1px gray;
+    border-radius: 3px;
+
+    cursor: pointer;
+  }
+
+  #greetingTextContainer {
+    position: absolute;
+    top: 145px;
+    left: 12px;
+    z-index: 800;
+  }
+
+  tr {
+    background-color: rgb(195 195 195);
+  }
+
+  .change-btn {
+    background-color: rgba(45, 137, 129, 0.4);
+    color: rgb(254, 244, 244);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+
+    cursor: pointer;
+  }
+
+  .delete-btn {
+    background-color: rgba(231, 219, 178, 0.7);
+    color: rgb(100, 100, 100);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  #preLoadContainer {
+    height: 400px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 100px;
+  }
+
+  #allTablesContainer {
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: all 0.8s;
+  }
+
+  .table-name-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    padding: 3px 0px;
+    font-weight: 600;
+    border: 2px solid gray;
+    border-radius: 5px;
+    margin: 10px 0px 10px 0px;
+    cursor: pointer;
+  }
+
+  #toConnectTableBtn {
+    background-color: rgba(45, 137, 129, 0.5);
+  }
+
+  #delFromMtsTableBtn {
+    background-color: rgb(228, 228, 206);
+  }
+
+  #abandonedTableBtn {
+    background-color: rgb(17 55 68 / 14%);
+  }
+
+  #noStatementsTableBtn {
+    background-color: rgb(25 134 92 / 22%);
+  }
+
+  #mtsOnlyTableBtn {
+    background-color: rgb(173 177 147 / 29%);
+  }
+
+  .pre-table-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .greeting-text-container {
+    display: inline-block;
+  }
+
+  .greeting-text-btn {
+    font-size: 16px;
+    padding: 5px 8px;
+    background-color: rgb(228, 228, 206);
+    border: solid 1px gray;
+    border-radius: 3px;
+
+    cursor: pointer;
+  }
+
+  #greetingTextContainer {
+    position: absolute;
+    top: 145px;
+    left: 12px;
+    z-index: 800;
+  }
+
+  tr {
+    background-color: rgb(195 195 195);
+  }
+
+  .change-btn {
+    background-color: rgba(45, 137, 129, 0.4);
+    color: rgb(254, 244, 244);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+
+    cursor: pointer;
+  }
+
+  .delete-btn {
+    background-color: rgba(231, 219, 178, 0.7);
+    color: rgb(100, 100, 100);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+  }
+}

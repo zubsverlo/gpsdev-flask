@@ -1381,6 +1381,7 @@ function getChangedStatementAndFrequencyParameters(
     let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
     let objectId = parseInt(attendsTable.getCellFromCoords(4, y).innerText);
     if (value == "В" && objectId == 1) return;
+    if (value == "Н/Б") value = "В";
 
     let parameters = {
       date: date,
@@ -2728,8 +2729,12 @@ function getServeParameters(servesList) {
   let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
 
   let comment = document.getElementById("serveReasonField").value;
-  let approval = document.getElementById("serveConfirmField").checked;
-
+  let approval;
+  if (!document.getElementById("serveConfirmField")) approval = 3;
+  document.getElementById("serveConfirmField")?.checked
+    ? (approval = 1)
+    : (approval = 3);
+  console.log(approval);
   if (comment == "") {
     return;
   }
@@ -2767,14 +2772,14 @@ function getServeParameters(servesList) {
       });
     }
 
-    if (localStorage.getItem("rang-id") >= 2) {
-      alertsToggle(
-        "Подтверждение служебных записок вам недоступно!",
-        "danger",
-        5000
-      );
-      return;
-    } else if (localStorage.getItem("rang-id") <= 2) {
+    // if (localStorage.getItem("rang-id") >= 2) {
+    //   alertsToggle(
+    //     "Подтверждение служебных записок вам недоступно!",
+    //     "danger",
+    //     5000
+    //   );
+    //   return;
+    if (localStorage.getItem("rang-id") <= 2) {
       if (servesList.length == 1) {
         approval == true
           ? (parameters["approval"] = 1)
@@ -2832,13 +2837,13 @@ function sendServe(parameters, servesList) {
           attendsTable.setValueFromCoords(
             servesList[0].cell.dataset.x,
             servesList[0].cell.dataset.y,
-            "C"
+            "С"
           );
           hideModal();
           alertsToggle("Служебная записка подтверждена!", "success", 6000);
         } else {
           if (servesList.length == 1) {
-            if (parameters[0].approval == 3) {
+            if (parameters[0].approval == 3 || !parameters[0].approval) {
               attendsTable.setValueFromCoords(
                 servesList[0].cell.dataset.x,
                 servesList[0].cell.dataset.y,
@@ -2856,7 +2861,7 @@ function sendServe(parameters, servesList) {
               alertsToggle("Служебная записка подтверждена!", "success", 6000);
             }
           } else {
-            if (parameters[0].approval == 3) {
+            if (parameters[0].approval == 3 || !parameters[0].approval) {
               servesList.forEach((s) => {
                 attendsTable.setValueFromCoords(
                   s.cell.dataset.x,

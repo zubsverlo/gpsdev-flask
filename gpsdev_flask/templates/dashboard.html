@@ -1,3 +1,146 @@
 {% extends 'header.html' %} {% block content %}
-<p>Hi there!</p>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+  rel="stylesheet"
+/>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<link
+  href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css"
+/>
+<link rel="stylesheet" href="../static/pages/dashboard/dashboard.css" />
+
+<script
+  src="https://code.jquery.com/jquery-3.7.0.min.js"
+  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+  crossorigin="anonymous"
+></script>
+
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+
+<div id="preLoadContainer">
+  <img src="../static/icons/dashboard.gif" id="preLoadImg" />
+</div>
+
+<div id="allTablesContainer">
+  <button id="toConnectTableBtn" class="table-name-btn">
+    Сотрудники на подключение
+  </button>
+  <div id="toConnectTableContainer" style="overflow: auto">
+    <table
+      id="toConnectTable"
+      style="overflow-x: auto; width: 100%; height: 100%"
+      class="stripe row-border hover"
+    >
+      <thead>
+        <tr>
+          <th>Name ID</th>
+          <th>Номер тел.</th>
+          <th>ФИО Сотрудника</th>
+          <th>Подразделение</th>
+          <th>Дата принятия</th>
+          <th>Последний выход</th>
+          <th>Уволить</th>
+          <th>Связаться</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <button id="delFromMtsTableBtn" class="table-name-btn">Удалить из МТС</button>
+  <div id="delFromMtsTableContainer" style="overflow: auto">
+    <table
+      id="delFromMtsTable"
+      style="overflow-x: auto; width: 100%; height: 100%"
+      class="stripe row-border hover"
+    >
+      <thead>
+        <tr>
+          <th>Name ID</th>
+          <th>ФИО Сотрудника</th>
+          <th>Подразделение</th>
+          <th>Дата принятия</th>
+          <th>Дата увольнения</th>
+          <th>Организация</th>
+          <th>Последний выход</th>
+          <th>Sub ID</th>
+          <th>Удалить</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <button id="abandonedTableBtn" class="table-name-btn">Заброшенные</button>
+  <div id="abandonedTableContainer" style="overflow: auto">
+    <table
+      id="abandonedTable"
+      style="overflow-x: auto; width: 100%; height: 100%"
+      class="stripe row-border hover"
+    >
+      <thead>
+        <tr>
+          <th>Name ID</th>
+          <th>ФИО Сотрудника</th>
+          <th>Подразделение</th>
+          <th>Дата принятия</th>
+          <th>Последний выход</th>
+          <th>Подкл. к МТС</th>
+          <th>Уволить</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <button id="noStatementsTableBtn" class="table-name-btn">
+    Без заполненных выходов
+  </button>
+  <div id="noStatementsTableContainer" style="overflow: auto">
+    <table
+      id="noStatementsTable"
+      style="overflow-x: auto; width: 100%; height: 100%"
+      class="stripe row-border hover"
+    >
+      <thead>
+        <tr>
+          <th>Name ID</th>
+          <th>ФИО Сотрудника</th>
+          <th>Подразделение</th>
+          <th>Дата принятия</th>
+          <th>Дата подкл.</th>
+          <th>Удалить</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <button id="mtsOnlyTableBtn" class="table-name-btn">Есть только в МТС</button>
+  <div id="mtsOnlyTableContainer" style="overflow: auto">
+    <table
+      id="mtsOnlyTable"
+      style="overflow-x: auto; width: 100%; height: 100%"
+      class="stripe row-border hover"
+    >
+      <thead>
+        <tr>
+          <th>ФИО Сотрудника</th>
+          <th>Организация</th>
+          <th>Sub ID</th>
+          <th>Удалить</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+
+<script type="module" src="../static/pages/dashboard/dashboard.js"></script>
+<script type="module" src="../static/alerts.js"></script>
+<script type="module" src="../static/modal.js"></script>
+<script type="module" src="../static/translation_dict.js"></script>
+
 {% endblock content %}
