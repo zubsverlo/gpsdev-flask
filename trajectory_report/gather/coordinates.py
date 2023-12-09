@@ -101,7 +101,7 @@ def append_coordinates_directly(data):
                 insert(Coordinates.__table__),
                 [dic for dic in list_to_append]
         )
-    conn.commit()
+        conn.commit()
 
 
 def get_dates_list(last_d):
@@ -241,7 +241,7 @@ async def fetch_all(tokens):
                         del loc['longitude']
                         del loc['latitude']
                         del loc['locationDate']
-            append_coordinates_directly(resp_no_exceptions)
+            append_coordinates(resp_no_exceptions)
 
 
 def fetch_coordinates():

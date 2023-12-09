@@ -11,10 +11,13 @@ services:
     restart: always
     environment:
       - ENV=production
+      - TZ=Europe/Moscow
 
   redis:
     image: redis
     restart: always
+    environment:
+      - TZ=Europe/Moscow
     # ports:
     #   - "6378:6379"
 
@@ -28,6 +31,7 @@ services:
       - redis
     environment:
       - ENV=production
+      - TZ=Europe/Moscow
     restart: always
     command: gunicorn --bind 0.0.0.0:5000 -w 9 run:app
 
@@ -36,6 +40,9 @@ services:
       context: .
       dockerfile: Dockerfile-nginx
     restart: always
+    environment:
+      - ENV=production
+      - TZ=Europe/Moscow
     volumes:
       - .:/app
     ports:
@@ -49,6 +56,9 @@ services:
       dockerfile: Dockerfile-celery
     depends_on:
       - redis
+    environment:
+      - ENV=production
+      - TZ=Europe/Moscow
     restart: always
     volumes:
       - .:/app
@@ -61,6 +71,9 @@ services:
       dockerfile: Dockerfile-celery
     depends_on:
       - redis
+    environment:
+      - ENV=production
+      - TZ=Europe/Moscow
     restart: always
     volumes:
       - .:/app

@@ -9,10 +9,14 @@ services:
     depends_on:
       - redis_dev
     restart: always
+    environment:
+      - TZ=Europe/Moscow
 
   redis_dev:
     image: redis
     restart: always
+    environment:
+      - TZ=Europe/Moscow
     # ports:
     #   - "6377:6379"
 
@@ -27,6 +31,8 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    environment:
+      - TZ=Europe/Moscow
 
   celery_dev:
     build:
@@ -39,6 +45,8 @@ services:
       - .:/app
     entrypoint: celery
     command: -A gpsdev_flask.celery_app.app_celery worker --loglevel=info
+    environment:
+      - TZ=Europe/Moscow
 #  celery-beat:
 #    build:
 #      context: .
