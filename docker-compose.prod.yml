@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.5"
 services:
   background:
     build:
@@ -15,8 +15,8 @@ services:
   redis:
     image: redis
     restart: always
-    ports:
-      - "6378:6379"
+    # ports:
+    #   - "6378:6379"
 
   flask:
     build:
@@ -29,8 +29,6 @@ services:
     environment:
       - ENV=production
     restart: always
-    ports:
-      - "5002:5000"
     command: gunicorn --bind 0.0.0.0:5000 -w 9 run:app
 
   nginx:
@@ -41,7 +39,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - 8080:80
+      - 80:80
     depends_on:
       - flask
 

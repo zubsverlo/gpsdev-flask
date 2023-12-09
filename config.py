@@ -20,11 +20,13 @@ class ProductionConfig(Config):
     FLASK_ENV = 'production'
     DB = os.getenv('DATABASE_PRODUCTION')
     ASYNC_DB = os.getenv('ASYNC_DATABASE_PRODUCTION')
+    REDIS = 'redis'
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
     DATABASE_ECHO = True
+    REDIS = 'redis_dev'
 
 
 class TestingConfig(Config):

@@ -21,7 +21,12 @@ function logOut() {
       if (!response.ok) {
         throw new Error("Выход не осуществлен. Попробуйте еще раз!");
       }
-      let keysToRemove = ["name", "phone"];
+      let keysToRemove = [
+        "name",
+        "phone",
+        "previous-selected-start-date",
+        "previous-selected-end-date",
+      ];
       for (key of keysToRemove) {
         localStorage.removeItem(key);
       }

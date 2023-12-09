@@ -6,7 +6,7 @@ from config import get_config
 
 def run_executor():
     config = get_config()
-    redis_session = Redis("redis")
+    redis_session = Redis(config.REDIS)
 
     engine = create_engine(config.DB,
                            echo=False,

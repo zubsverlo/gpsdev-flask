@@ -1,39 +1,39 @@
-version: "3.3"
+version: "3.5"
 services:
-  background:
+  background_dev:
     build:
       context: .
       dockerfile: Dockerfile-background-executor
     volumes:
       - .:/app
     depends_on:
-      - redis
+      - redis_dev
     restart: always
 
-  redis:
+  redis_dev:
     image: redis
     restart: always
-    ports:
-      - "6378:6379"
+    # ports:
+    #   - "6377:6379"
 
-  flask:
+  flask_dev:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - .:/app
     depends_on:
-      - redis
+      - redis_dev
     restart: always
     ports:
-      - "5001:5000"
+      - "5000:5000"
 
-  celery:
+  celery_dev:
     build:
       context: .
       dockerfile: Dockerfile-celery
     depends_on:
-      - redis
+      - redis_dev
     restart: always
     volumes:
       - .:/app
@@ -50,4 +50,3 @@ services:
 #      - .:/app
 #    entrypoint: celery
 #    command: -A gpsdev_flask.celery_app beat -l info
-

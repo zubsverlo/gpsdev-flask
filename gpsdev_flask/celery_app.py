@@ -1,7 +1,9 @@
 from celery import Celery
+from config import get_config
 
+app_config = get_config()
 app_celery = Celery('gpsdev_flask',
-                    broker='redis://redis',
+                    broker='redis://'+app_config.REDIS,
                     include=["gpsdev_flask.celery_tasks"])
 
 if __name__ == "__main__":
