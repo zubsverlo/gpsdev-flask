@@ -101,6 +101,7 @@ def append_coordinates_directly(data):
                 insert(Coordinates.__table__),
                 [dic for dic in list_to_append]
         )
+    conn.commit()
 
 
 def get_dates_list(last_d):
