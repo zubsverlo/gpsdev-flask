@@ -1,6 +1,6 @@
-import { alertsToggle } from "../../alerts.js";
-import { hideModal } from "../../modal.js";
-import { dictionary } from "../../translation_dict.js";
+import { alertsToggle } from "../../../v1/alerts.js";
+import { hideModal } from "../../../v1/modal.js";
+import { dictionary } from "../../../v1/translation_dict.js";
 
 let attendsTable;
 let currentRowOfTable;
@@ -510,7 +510,7 @@ async function addEmployeeInTable() {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 
@@ -1000,7 +1000,7 @@ function showDuplicates() {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 
@@ -1982,7 +1982,7 @@ async function contextMenuOneEmployeeMap(object, x, y, e) {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 
@@ -2071,7 +2071,7 @@ function drawMap(data, employeeName, parameters) {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 
@@ -2929,7 +2929,7 @@ async function contextMenuServesToWatch(servesToWatch) {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 
@@ -3322,7 +3322,7 @@ async function contextMenuAddObject(object, x, y, e, lastRowOfEmployee) {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 
@@ -3590,7 +3590,7 @@ async function contextMenuCreateObjectForm(object, x, y, e) {
   showModalInTable();
 
   let preLoadingImg = document.createElement("img");
-  preLoadingImg.src = "../static/icons/loading.png";
+  preLoadingImg.src = "../static/v1/icons/loading.png";
   preLoadingImg.id = "preLoadingImg";
   modalBody.prepend(preLoadingImg);
 

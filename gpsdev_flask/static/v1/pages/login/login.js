@@ -1,15 +1,15 @@
-import { alertsToggle } from "../../alerts.js";
-import { checkPattern } from "../../check_pattern.js";
+import { alertsToggle } from "../../../v1/alerts.js";
+import { checkPattern } from "../../../v1/check_pattern.js";
 
 const eyeBtn = document.getElementById("hideShow");
 
 eyeBtn.addEventListener("click", () => {
   const passField = document.getElementById("password");
   if (passField.type === "password") {
-    eyeBtn.src = "/static/icons/hide.png";
+    eyeBtn.src = "/static/v1/icons/hide.png";
     passField.type = "text";
   } else {
-    eyeBtn.src = "/static/icons/show.png";
+    eyeBtn.src = "/static/v1/icons/show.png";
     passField.type = "password";
   }
 });

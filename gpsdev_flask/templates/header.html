@@ -10,10 +10,14 @@
       href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Manrope:wght@200;300;400;500;700&family=Montserrat:wght@400;500;600;700&family=Raleway:wght@400;500;700&family=Roboto+Mono&family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../static/header.css" />
-    <link rel="stylesheet" href="../static/alerts.css" />
-    <link rel="stylesheet" href="../static/modal.css" />
-    <link rel="icon" type="image/x-icon" href="../static/icons/favicon.ico" />
+    <link rel="stylesheet" href="../static/v1/header.css" />
+    <link rel="stylesheet" href="../static/v1/alerts.css" />
+    <link rel="stylesheet" href="../static/v1/modal.css" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../static/v1/icons/favicon.ico"
+    />
 
     <title>{{title or 'GPSDEV'}}</title>
 
@@ -38,7 +42,7 @@
   <body>
     <header id="header">
       <div id="logoContainer">
-        <img id="logoImg" src="/static/icons/map.png" />
+        <img id="logoImg" src="/static/v1/icons/map.png" />
         <div id="logo">GPS</div>
       </div>
       <div id="middle">
@@ -66,7 +70,7 @@
         </div>
       </div>
       <div id="menuContainer">
-        <img src="/static/icons/menu (2).png" id="menuBtn" />
+        <img src="/static/v1/icons/menu (2).png" id="menuBtn" />
       </div>
       <div id="openMenuContainer">
         <div id="openMenu">
@@ -86,7 +90,7 @@
       </div>
       <div id="exitContainer">
         <img
-          src="/static/icons/door.png"
+          src="/static/v1/icons/door.png"
           id="exitBtn"
           title="Выход"
           onclick="logOut()"
@@ -113,5 +117,5 @@
     <div id="contentBlock">{% block content %}{% endblock content %}</div>
   </body>
 
-  <script src="../static/header.js"></script>
+  <script src="../static/v1/header.js"></script>
 </html>

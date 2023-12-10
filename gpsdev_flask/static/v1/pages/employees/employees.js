@@ -1,7 +1,7 @@
-import { alertsToggle } from "../../alerts.js";
-import { hideModal } from "../../modal.js";
-import { dictionary } from "../../translation_dict.js";
-import { checkPattern } from "../../check_pattern.js";
+import { alertsToggle } from "../../../v1/alerts.js";
+import { hideModal } from "../../../v1/modal.js";
+import { dictionary } from "../../../v1/translation_dict.js";
+import { checkPattern } from "../../../v1/check_pattern.js";
 
 let employeeTable;
 let currentRowOfTable;
@@ -13,6 +13,9 @@ modalForm.setAttribute("onSubmit", "return false");
 
 // create modal form inner elements
 function createForm() {
+  let allFieldsContainer = document.createElement("div");
+  allFieldsContainer.id = "allFieldsContainer";
+
   let nameFieldContainer = document.createElement("div");
   nameFieldContainer.id = "nameFieldContainer";
 
@@ -129,13 +132,14 @@ function createForm() {
   noTrackingContainer.append(noTrackingCheck, noTrackingCheckLabel);
   btnsContainer.append(cancelBtn, saveBtn);
 
-  modalForm.append(
+  allFieldsContainer.append(
     nameFieldContainer,
     phoneFieldContainer,
     divisionFieldContainer,
-    restFields,
-    btnsContainer
+    restFields
   );
+
+  modalForm.append(allFieldsContainer, btnsContainer);
 
   return modalForm;
 }

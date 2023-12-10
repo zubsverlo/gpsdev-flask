@@ -1,6 +1,6 @@
-import { alertsToggle } from "../../alerts.js";
-import { hideModal } from "../../modal.js";
-import { dictionary } from "../../translation_dict.js";
+import { alertsToggle } from "../../../v1/alerts.js";
+import { hideModal } from "../../../v1/modal.js";
+import { dictionary } from "../../../v1/translation_dict.js";
 
 let objectTable;
 let currentRowOfTable;
@@ -162,7 +162,8 @@ function createForm() {
 
   let apartmentFieldLabel = document.createElement("label");
   apartmentFieldLabel.id = "apartmentFieldLabel";
-  apartmentFieldLabel.innerText = "Номер квартиры, подъезд, код домофона и т.д";
+  apartmentFieldLabel.innerText =
+    "Номер квартиры, подъезд, код домофона и т.д.";
   apartmentFieldLabel.htmlFor = "apartmentField";
 
   let apartmentField = document.createElement("input");

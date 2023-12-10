@@ -9,12 +9,13 @@
       href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700&family=Raleway:wght@400;500;700&family=Roboto+Mono&family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="../static/v1/pages/login/login.css" />
+    <link rel="stylesheet" href="../static/v1/alerts.css" />
     <link
-      rel="stylesheet"
-      href="{{url_for('static', filename='pages/login/login.css')}}"
+      rel="icon"
+      type="image/x-icon"
+      href="../static/v1/icons/favicon.ico"
     />
-    <link rel="stylesheet" href="../static/alerts.css" />
-    <link rel="icon" type="image/x-icon" href="../static/icons/favicon.ico" />
     <title>Страница входа</title>
   </head>
   <body>
@@ -38,7 +39,7 @@
             <label id="passwordlable" for="password">Пароль</label>
             <br />
             <input type="password" id="password" required />
-            <img id="hideShow" src="../static/icons/show.png" />
+            <img id="hideShow" src="../static/v1/icons/show.png" />
           </div>
           <div id="btnContainer">
             <button id="loginBtn" type="submit">Вход</button>
@@ -47,10 +48,7 @@
       </div>
     </div>
 
-    <script
-      type="module"
-      src="{{url_for('static', filename='pages/login/login.js')}}"
-    ></script>
-    <script type="module" src="../static/check_pattern.js"></script>
+    <script type="module" src="../static/v1/pages/login/login.js"></script>
+    <script type="module" src="../static/v1/check_pattern.js"></script>
   </body>
 </html>

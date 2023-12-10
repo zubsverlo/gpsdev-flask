@@ -32,7 +32,7 @@ body {
     margin: 20px;
     border-radius: 35px;
 
-    background: url(../../icons/oie_png.png);
+    background: url(../../../v1/icons/oie_png.png);
     background-size: 150%;
     transition: background-size 0.8s;
   }
@@ -180,7 +180,7 @@ body {
     margin: 0px;
     border-radius: 25px;
 
-    background: url(../../icons/oie_png.png);
+    background: url(../../../v1/icons/oie_png.png);
     background-size: 150%;
     transition: background-size 0.8s;
   }

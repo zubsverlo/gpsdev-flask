@@ -1,6 +1,6 @@
-import { alertsToggle } from "../../alerts.js";
-import { hideModal } from "../../modal.js";
-import { dictionary } from "../../translation_dict.js";
+import { alertsToggle } from "../../../v1/alerts.js";
+import { hideModal } from "../../../v1/modal.js";
+import { dictionary } from "../../../v1/translation_dict.js";
 
 let journalTable;
 let currentRowOfTable;

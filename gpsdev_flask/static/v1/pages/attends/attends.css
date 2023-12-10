@@ -356,6 +356,7 @@
   }
 
   #duplicateTableContainer {
+    max-height: 76vh;
     margin-bottom: 20px;
   }
 
@@ -825,7 +826,7 @@
 
     padding: 0 50px;
 
-    max-height: 600px;
+    max-height: 76vh;
   }
 
   #allFieldsContainer {
@@ -1187,7 +1188,7 @@
     justify-content: space-between;
     align-items: center;
 
-    width: 110.5%;
+    width: 108.5%;
     padding: 20px 0px;
     margin-top: 20px;
     border-top: solid 1px rgb(189, 189, 189);
@@ -1227,6 +1228,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    max-height: 76vh;
+    padding: 0px 20px;
   }
 
   #employeeSelect,
@@ -1311,6 +1315,8 @@
     flex-direction: column;
     align-items: flex-start;
     width: 400px;
+    max-height: 600px;
+    overflow-y: auto;
   }
   #employeeList,
   #objectList {
@@ -1335,6 +1341,8 @@
   }
 
   #duplicateTableContainer {
+    max-height: 76vh;
+    padding: 0px 20px;
     margin-bottom: 20px;
   }
 
@@ -1407,6 +1415,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 0px 16px;
   }
 
   #symbolsCount {
@@ -1417,6 +1426,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 0px 14px;
   }
 
   #incomeFieldContainer {
@@ -1703,12 +1713,14 @@
 
   #deleteMessageContainer #btnsContainer,
   #approveMessageContainer #btnsContainer {
-    width: 114%;
+    width: 107%;
   }
 
   #servesContainer {
     display: flex;
     flex-direction: column;
+    max-height: 76vh;
+    padding: 0px 20px;
   }
 
   .one-serve-container {
@@ -1785,6 +1797,8 @@
     flex-direction: column;
     align-items: center;
     width: 400px;
+    padding: 0px 20px;
+    max-height: 76vh;
   }
 
   #inputsContainerInModal #addressContainer {
@@ -1793,7 +1807,7 @@
   }
 
   #inputsContainerInModal #btnsContainer {
-    width: 130%;
+    width: 110%;
   }
 
   #objectContent {
@@ -1804,7 +1818,7 @@
 
     padding: 0 50px;
 
-    max-height: 600px;
+    max-height: 76vh;
   }
 
   #allFieldsContainer {
@@ -1941,7 +1955,7 @@
     justify-content: space-between;
     align-items: center;
 
-    width: 133%;
+    width: 123.8%;
     padding: 20px 0px;
     margin-top: 20px;
     border-top: solid 1px rgb(189, 189, 189);

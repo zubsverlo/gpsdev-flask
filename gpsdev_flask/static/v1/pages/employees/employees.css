@@ -264,7 +264,15 @@
     align-items: center;
     justify-content: space-between;
 
-    padding: 0px 25px;
+    /* padding: 0px 25px; */
+    max-height: 76vh;
+  }
+
+  #allFieldsContainer {
+    max-height: 600px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 0px 40px;
   }
 
   #nameFieldContainer,
@@ -314,14 +322,16 @@
     width: 155px;
   }
 
-  #scheduleField {
+  #scheduleField,
+  #noTrackingContainer {
     display: flex;
     flex-direction: row;
     align-items: center;
     width: 320px;
   }
 
-  #scheduleField input {
+  #scheduleField input,
+  #noTrackingContainer input {
     width: 20px;
     margin: 0;
     margin-right: 10px;
@@ -347,7 +357,7 @@
     justify-content: space-between;
     align-items: center;
 
-    width: 112%;
+    width: 100%;
     padding: 20px 0px;
     margin-top: 20px;
     border-top: solid 1px rgb(189, 189, 189);
