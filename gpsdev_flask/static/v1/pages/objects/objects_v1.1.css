@@ -26,10 +26,12 @@
   }
 
   .new-obj-container {
-    display: inline-block;
+    display: flex;
+    flex-direction: row;
   }
 
-  .new-obj-btn {
+  .new-obj-btn,
+  .all-show-hide-btn {
     font-size: 16px;
     padding: 6px 9px;
     background-color: rgba(45, 137, 129, 0.5);
@@ -38,6 +40,32 @@
     border-radius: 3px;
 
     cursor: pointer;
+  }
+
+  .all-show-hide-btn {
+    background-color: rgba(215 213 155 / 50%);
+    color: rgb(110, 110, 110);
+    margin-left: 5px;
+  }
+
+  #allShowHideBtnsContainer {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid gray;
+    border-radius: 5px;
+  }
+
+  #allShowHideBtnsContainer button {
+    border: none;
+    border-left: 1px solid gray;
+    background-color: rgb(59 155 110 / 36%);
+
+    cursor: pointer;
+    transition: backgrond-color 0.8s;
+  }
+
+  #divisionBtn {
+    border-left: none !important;
   }
 
   tr {
@@ -95,7 +123,8 @@
   #startDateContainer,
   #endDateContainer,
   #apartmentFieldContainer,
-  #personalServiceFieldContainer {
+  #personalServiceFieldContainer,
+  #commentAreaContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -117,7 +146,8 @@
     margin: 0;
   }
 
-  #phoneFieldContainer {
+  #phoneFieldContainer,
+  #commentAreaContainer {
     width: 364px;
   }
 
@@ -351,10 +381,13 @@
   }
 
   .new-obj-container {
-    display: inline-block;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .new-obj-btn {
+  .new-obj-btn,
+  .all-show-hide-btn {
     font-size: 16px;
     padding: 5px 8px;
     background-color: rgba(45, 137, 129, 0.5);
@@ -363,6 +396,35 @@
     border-radius: 3px;
 
     cursor: pointer;
+  }
+
+  .all-show-hide-btn {
+    background-color: rgba(215 213 155 / 50%);
+    color: rgb(110, 110, 110);
+    margin-top: 5px;
+    margin-bottom: 1px;
+    padding: 5px 14px;
+  }
+
+  #allShowHideBtnsContainer {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid gray;
+    border-radius: 5px;
+  }
+
+  #allShowHideBtnsContainer button {
+    padding: 5px 19px;
+    border: none;
+    border-top: 1px solid gray;
+    background-color: rgb(59 155 110 / 36%);
+
+    cursor: pointer;
+    transition: backgrond-color 0.8s;
+  }
+
+  #divisionBtn {
+    border-top: none !important;
   }
 
   tr {
@@ -423,7 +485,8 @@
   #startDateContainer,
   #endDateContainer,
   #apartmentFieldContainer,
-  #personalServiceFieldContainer {
+  #personalServiceFieldContainer,
+  #commentAreaContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -432,7 +495,8 @@
     width: 320px;
   }
 
-  #phoneFieldContainer {
+  #phoneFieldContainer,
+  #commentAreaContainer {
     width: 320px;
   }
 

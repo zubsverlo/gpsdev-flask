@@ -4,6 +4,13 @@ import { dictionary } from "../../../v1/translation_dict.js";
 
 let objectTable;
 let currentRowOfTable;
+let columnsBtnsToggle = false;
+let columnIndexList = {
+  0: "division-column-toggle",
+  3: "appartment-column-toggle",
+  4: "phone-column-toggle",
+  7: "comment-column-toggle",
+};
 
 const closeModal = document.getElementById("closeModal");
 const modal = document.getElementById("modalContainer");
@@ -106,6 +113,20 @@ function createForm() {
   endDateField.id = "endDateField";
   endDateField.type = "date";
 
+  let commentAreaContainer = document.createElement("div");
+  commentAreaContainer.id = "commentAreaContainer";
+
+  let commentAreaLabel = document.createElement("div");
+  commentAreaLabel.id = "commentAreaLabel";
+  commentAreaLabel.innerText = "Комментарий:";
+  commentAreaLabel.htmlFor = "commentArea";
+
+  let commentArea = document.createElement("textarea");
+  commentArea.id = "commentArea";
+  commentArea.cols = "49";
+  commentArea.rows = "3";
+  commentArea.maxLength = 70;
+
   let phoneFieldContainer = document.createElement("div");
   phoneFieldContainer.id = "phoneFieldContainer";
 
@@ -202,6 +223,7 @@ function createForm() {
   switchAddressContainer.append(switchAddressLabelName, switchAddressLabel);
   startDateContainer.append(startDateLabel, startDateField);
   endDateContainer.append(endDateLabel, endDateField);
+  commentAreaContainer.append(commentAreaLabel, commentArea);
   phoneFieldContainer.append(phoneFieldLabel, phoneField);
   addressFieldContainer.append(
     addressFieldLabel,
@@ -226,6 +248,7 @@ function createForm() {
     divisionFieldContainer,
     restFields,
     dateFieldsContainer,
+    commentAreaContainer,
     phoneFieldContainer,
     addressFieldContainer,
     apartmentFieldContainer,
@@ -253,6 +276,7 @@ $.ajax({
   contentType: "application/json",
 })
   .done(function (data) {
+    console.log(data);
     objectTable = new DataTable("#objectTable", {
       aaData: data,
       scrollY: "70vh",
@@ -292,6 +316,73 @@ $.ajax({
             document.getElementById("saveBtn").onclick = createObject;
           },
         },
+        {
+          text: "Cтолбцы таблицы",
+          className: "all-show-hide-btn",
+          attr: {
+            id: "allShowHideBtn",
+          },
+          action: function () {
+            if (columnsBtnsToggle == true) {
+              let btnsContainer = document.getElementById(
+                "allShowHideBtnsContainer"
+              );
+              btnsContainer.remove();
+              columnsBtnsToggle = false;
+            } else {
+              let row = document.getElementsByClassName("new-obj-container")[0];
+
+              let allShowHideBtnsContainer = document.createElement("div");
+              allShowHideBtnsContainer.id = "allShowHideBtnsContainer";
+
+              let divisionBtn = document.createElement("button");
+              divisionBtn.id = "divisionBtn";
+              divisionBtn.innerText = "Подразделение";
+              divisionBtn.setAttribute("data-column", 0);
+              divisionBtn.onclick = showHideColumns;
+              localStorage.getItem(columnIndexList[0]) == "hide"
+                ? (divisionBtn.style.backgroundColor = "rgb(117 124 121 / 36%)")
+                : null;
+
+              let appartmentBtn = document.createElement("button");
+              appartmentBtn.id = "appartmentBtn";
+              appartmentBtn.innerText = "Квартира";
+              appartmentBtn.setAttribute("data-column", 3);
+              appartmentBtn.onclick = showHideColumns;
+              localStorage.getItem(columnIndexList[3]) == "hide"
+                ? (appartmentBtn.style.backgroundColor =
+                    "rgb(117 124 121 / 36%)")
+                : null;
+
+              let phoneBtn = document.createElement("button");
+              phoneBtn.id = "phoneBtn";
+              phoneBtn.innerText = "Контактные данные";
+              phoneBtn.setAttribute("data-column", 4);
+              phoneBtn.onclick = showHideColumns;
+              localStorage.getItem(columnIndexList[4]) == "hide"
+                ? (phoneBtn.style.backgroundColor = "rgb(117 124 121 / 36%)")
+                : null;
+
+              let commentBtn = document.createElement("button");
+              commentBtn.id = "commentBtn";
+              commentBtn.innerText = "Комментарий";
+              commentBtn.setAttribute("data-column", 7);
+              commentBtn.onclick = showHideColumns;
+              localStorage.getItem(columnIndexList[7]) == "hide"
+                ? (commentBtn.style.backgroundColor = "rgb(117 124 121 / 36%)")
+                : null;
+
+              allShowHideBtnsContainer.append(
+                divisionBtn,
+                appartmentBtn,
+                phoneBtn,
+                commentBtn
+              );
+              row.append(allShowHideBtnsContainer);
+              columnsBtnsToggle = true;
+            }
+          },
+        },
       ],
 
       columns: [
@@ -300,6 +391,9 @@ $.ajax({
         { data: "address" },
         { data: "apartment_number" },
         { data: "phone" },
+        { data: "admission_date" },
+        { data: "denial_date" },
+        { data: "comment" },
         {
           // add column with change buttons to all rows in table
           data: null,
@@ -311,7 +405,15 @@ $.ajax({
 
     $("#preLoadContainer")[0].style.display = "none";
     $("#tableContainer")[0].style.opacity = 1;
+    document.getElementById("allShowHideBtn").title =
+      "Скрыть/показать некоторые столбцы";
     $("#objectTable").DataTable().draw();
+    Object.keys(columnIndexList).forEach((k) => {
+      let localStorageState = localStorage.getItem(columnIndexList[k]);
+      if (localStorageState == "hide") {
+        objectTable.column(k).visible(false);
+      }
+    });
   })
   .fail(function (xhr, status, error) {
     let json = xhr.responseJSON;
@@ -369,6 +471,7 @@ $("#objectTable").on("click", "button", function (e) {
   let address = document.getElementById("addressField");
   let startDate = document.getElementById("startDateField");
   let endDate = document.getElementById("endDateField");
+  let comment = document.getElementById("commentArea");
   let apartment = document.getElementById("apartmentField");
   let personalService = document.getElementById("personalServiceField");
   let saveBtn = document.getElementById("saveBtn");
@@ -379,6 +482,7 @@ $("#objectTable").on("click", "button", function (e) {
   );
   data.no_payments ? (noPayments.checked = true) : null;
   data.active ? (active.checked = true) : null;
+  comment.value = data.comment;
   phone.value = data.phone;
   address.value = data.address;
   address.setAttribute("lat", data.latitude);
@@ -397,6 +501,28 @@ $("#objectTable").on("click", "button", function (e) {
 });
 
 closeModal.addEventListener("click", hideModal);
+
+function showHideColumns(e) {
+  e.preventDefault();
+
+  let columnIdx = e.target.getAttribute("data-column");
+  let column = objectTable.column(columnIdx);
+
+  if (Object.keys(columnIndexList).includes(columnIdx)) {
+    if (
+      localStorage.getItem(columnIndexList[columnIdx]) == "show" ||
+      localStorage.getItem(columnIndexList[columnIdx]) == null
+    ) {
+      localStorage.setItem(columnIndexList[columnIdx], "hide");
+      e.target.style.backgroundColor = "rgb(117 124 121 / 36%)";
+    } else if (localStorage.getItem(columnIndexList[columnIdx]) == "hide") {
+      localStorage.setItem(columnIndexList[columnIdx], "show");
+      e.target.style.backgroundColor = "rgb(59 155 110 / 36%)";
+    }
+  }
+
+  column.visible(!column.visible());
+}
 
 function switchAddress() {
   let checkbox = document.getElementById("switchAddressBtn");
@@ -572,6 +698,7 @@ function createObject() {
   let noPayments = document.getElementById("noPaymentCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
+  let comment = document.getElementById("commentArea").value;
 
   if (longitude == null || latitude == null) {
     alertsToggle("Выберите адрес из списка!", "danger", 3000);
@@ -599,6 +726,7 @@ function createObject() {
     ? (parameters["personal_service_after_revision"] = personalService)
     : null;
   phone != "" ? (parameters["phone"] = phone) : null;
+  comment != "" ? (parameters["comment"] = comment) : null;
 
   console.log(parameters);
   sendNewObject(parameters);
@@ -669,6 +797,7 @@ function changeObject() {
   let noPayments = document.getElementById("noPaymentCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
+  let comment = document.getElementById("commentArea").value;
 
   if (longitude == null || latitude == null) {
     alertsToggle("Выберите адрес из списка!", "danger", 3000);
@@ -689,6 +818,7 @@ function changeObject() {
     no_payments: noPayments,
     active: active,
     phone: phone,
+    comment: comment,
     apartment_number: apartment,
     personal_service_after_revision: personalService,
   };
