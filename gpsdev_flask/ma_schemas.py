@@ -128,6 +128,12 @@ class ObjectSchema(Schema):
     division_name = fields.Pluck(
         DivisionSchema, 'division', attribute='division_ref', dump_only=True
         )
+    comment = fields.String(
+        validate=validate.Length(
+            max=200,
+            error="Комментарий быть в пределах 200 символов"
+        )
+    )
 
     @validates('division')
     def validate_division(self, value):

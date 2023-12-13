@@ -173,6 +173,7 @@ class ObjectsSite(Base):
     apartment_number: Mapped[str] = mapped_column(CHAR(length=50))
     personal_service_after_revision: Mapped[str] = mapped_column(CHAR(length=70))
     division_ref: Mapped['Division'] = relationship('Division', lazy='joined')
+    comment: Mapped[str] = mapped_column(CHAR(length=200))
 
     def __repr__(self):
         return f"ObjID: {self.object_id}, Name: {self.name}"
