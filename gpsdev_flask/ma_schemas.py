@@ -402,6 +402,10 @@ class FrequencySchema(Schema):
     division_id = fields.Integer(required=True)
     employee_id = fields.Integer(required=True)
     object_id = fields.Integer(required=True)
-    frequency = fields.Integer(validate=validate.Range(max=4),
-                               required=True,
-                               allow_none=True)
+    frequency = fields.String(
+        validate=validate.Length(
+            max=250, 
+            error="Длина для кол-ва выходов не более 3 символов!"
+            ),
+        required=True,
+        allow_none=True)

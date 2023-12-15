@@ -186,6 +186,7 @@ class Frequency(Base):
     employee_id: Mapped[int]
     object_id: Mapped[int]
     frequency: Mapped[int]
+    frequency_str: Mapped[str] = mapped_column(CHAR(length=3))
     __table_args__ = (
         Index('frequency_index', 'division_id', 'employee_id', 'object_id'),
         UniqueConstraint('division_id', 'employee_id', 'object_id',

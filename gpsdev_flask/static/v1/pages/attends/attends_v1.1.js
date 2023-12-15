@@ -1286,25 +1286,6 @@ function tableKeyEvents(e) {
       let toSetValue = [];
       let i = 0;
 
-      //if only frequency column selected
-      if (
-        attendsTable.selectedCell[0] == frequencyColumnIndex &&
-        attendsTable.selectedCell[2] == frequencyColumnIndex
-      ) {
-        if (e.code == "Delete") {
-          //delete pressed
-          for (i of selectedElements) {
-            if (i.innerText != "") toSetValue.push(i);
-          }
-          attendsTable.setValue(toSetValue, "");
-        } else if (e.key >= 0 && e.key <= 4) {
-          //key 0-4 pressed
-          for (i of selectedElements) {
-            if (i.innerText == "") toSetValue.push(i);
-          }
-          attendsTable.setValue(toSetValue, e.key);
-        }
-      }
       //if selection starts from date cells
       if (jexcel.current.selectedCell[0] > amountOfColumns) {
         if (e.code == "Delete") {
@@ -1357,13 +1338,10 @@ function tableKeyEvents(e) {
 }
 
 let listOfChangedStatements = [];
-let listOfChangedFrequencies = [];
 
 let listOfStatementsToSend = [];
-let listOfFrequenciesToSend = [];
 
 let fetchStatementsPending = false;
-let fetchFrequencyPending = false;
 
 function getChangedStatementAndFrequencyParameters(
   instance,
@@ -1393,24 +1371,6 @@ function getChangedStatementAndFrequencyParameters(
 
     listOfChangedStatements.push(parameters);
     console.log(listOfChangedStatements);
-  } else if (x == frequencyColumnIndex) {
-    let divisionId = parseInt(
-      localStorage.getItem("previous-selected-division")
-    );
-    let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
-    let objectId = parseInt(attendsTable.getCellFromCoords(4, y).innerText);
-
-    value == "" ? (value = null) : null;
-
-    let parameters = {
-      division_id: divisionId,
-      employee_id: employeeId,
-      object_id: objectId,
-      frequency: value,
-    };
-
-    listOfChangedFrequencies.push(parameters);
-    console.log(listOfChangedFrequencies);
   }
 }
 
@@ -1423,17 +1383,6 @@ setInterval(() => {
   fetchStatementsPending = true;
 
   sendChangedStatements();
-}, 1000);
-
-setInterval(() => {
-  if (fetchFrequencyPending) return;
-  if (!listOfFrequenciesToSend.length) {
-    listOfFrequenciesToSend = [...listOfChangedFrequencies];
-    listOfChangedFrequencies = [];
-  }
-  fetchFrequencyPending = true;
-
-  sendChangedFrequencies();
 }, 1000);
 
 function sendChangedStatements() {
@@ -1509,33 +1458,85 @@ window.addEventListener("offline", () => {
   serverUnavailable = true;
 });
 
-function sendChangedFrequencies() {
-  if (!listOfFrequenciesToSend.length) {
-    fetchFrequencyPending = false;
-    return;
+$("#attendsTable")[0].addEventListener("dblclick", editFrequencies);
+
+function editFrequencies(e) {
+  let cellToChange = e.target;
+
+  if (cellToChange.dataset.x == frequencyColumnIndex) {
+    let modalTitle = document.getElementById("modalTitle");
+    let modalBody = document.getElementById("modalBody");
+
+    modalTitle.innerText = "Количество выходов";
+
+    showModalInTable();
+
+    let frequencyAreaContainer = document.createElement("div");
+    frequencyAreaContainer.id = "frequencyAreaContainer";
+
+    let frequencyLabel = document.createElement("label");
+    frequencyLabel.id = "frequencyLabel";
+    frequencyLabel.innerText = `Макс. 3 символа: "1", "1/2", "2-3" и т.д.`;
+
+    let frequencyArea = document.createElement("input");
+    frequencyArea.id = "frequencyArea";
+    frequencyArea.name = "frequency";
+    frequencyArea.maxLength = 3;
+    frequencyArea.value = cellToChange.innerText;
+    frequencyArea.dataset.x = cellToChange.dataset.x;
+    frequencyArea.dataset.y = cellToChange.dataset.y;
+
+    let btnsContainer = document.createElement("div");
+    btnsContainer.id = "btnsContainer";
+
+    let cancelBtn = document.createElement("button");
+    cancelBtn.id = "cancelBtn";
+    cancelBtn.type = "button";
+    cancelBtn.innerText = "Отменить";
+    cancelBtn.onclick = hideModal;
+
+    let saveBtn = document.createElement("button");
+    saveBtn.id = "saveBtn";
+    saveBtn.type = "submit";
+    saveBtn.innerText = "Сохранить";
+    saveBtn.onclick = getFrequency;
+
+    btnsContainer.append(cancelBtn, saveBtn);
+    frequencyAreaContainer.append(frequencyArea, frequencyLabel, btnsContainer);
+    modalBody.append(frequencyAreaContainer);
+
+    frequencyArea.focus();
   }
-  if (!window.navigator.onLine) {
-    fetchFrequencyPending = false;
-    return;
-  }
+}
+
+function getFrequency() {
+  let frequencyArea = document.getElementById("frequencyArea");
+  let x = frequencyArea.dataset.x;
+  let y = frequencyArea.dataset.y;
+  let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
+  let objectId = parseInt(attendsTable.getCellFromCoords(4, y).innerText);
+
+  let parameters = {
+    frequency: frequencyArea.value,
+    division_id: divisionId,
+    employee_id: employeeId,
+    object_id: objectId,
+  };
+  sendFrequency(parameters, x, y);
+}
+
+function sendFrequency(parameters, x, y) {
   fetch("/api/frequency", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(listOfFrequenciesToSend),
+    body: JSON.stringify(parameters),
   })
     .then((response) => {
       if (response.ok) {
-        if (serverUnavailable) {
-          alertsToggle(
-            "Соединение с сервером восстанолено. Изменения сохранены!",
-            "success",
-            5000
-          );
-          serverUnavailable = false;
-        }
-        console.log("Изменения сохранены");
-        listOfFrequenciesToSend = [];
-        fetchFrequencyPending = false;
+        attendsTable.setValueFromCoords(x, y, parameters.frequency.trim());
+        hideModal();
+        alertsToggle("Количество обновлено!", "success", 2000);
       }
       return Promise.reject(response);
     })
@@ -1549,23 +1550,17 @@ function sendChangedFrequencies() {
               ? dictionary[nameField]
               : nameField;
             let newD = newNameField + ": " + splitD[1];
-            fetchFrequencyPending = false;
             console.log(newD);
+            alertsToggle(newD, "danger", 5000);
           });
         });
       }
       if (response.status >= 500) {
-        fetchFrequencyPending = false;
-        serverUnavailable = true;
-        let currentSeconds = parseInt(new Date().getTime() / 1000);
-        if (currentSeconds - serverErrorTimer >= 5 || serverErrorTimer == 0) {
-          serverErrorTimer = currentSeconds;
-          alertsToggle(
-            "Ошибка сервера! Изменения не сохранены. Повторное подключение...",
-            "danger",
-            4000
-          );
-        }
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
       }
       if (response.status == 403) {
         let currentLocation = location.href.split("/").pop();
@@ -1820,6 +1815,8 @@ $("#attendsTable")[0].addEventListener("mouseover", (e) => {
     currentCell.title = currentCell.innerText;
   } else if (currentCell.dataset.x == incomeColumnIndex) {
     currentCell.title = currentCell.innerText + "\n*Двойной клик для изменения";
+  } else if (currentCell.dataset.x == frequencyColumnIndex) {
+    currentCell.title = "Двойной клик для изменения";
   }
 });
 

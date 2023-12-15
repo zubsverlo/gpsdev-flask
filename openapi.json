@@ -1512,7 +1512,7 @@
         "summary": "Кратность посещений ПСУ в таблице посещений",
         "description": "Добавить или изменить кратность посещений в таблице",
         "requestBody": {
-          "description": "Список из измененных объектов, при удалении указать null в frequency.",
+          "description": "Измененный объект, при удалении указать null в frequency.",
           "content": {
             "application/json": {
               "schema": {
@@ -2026,8 +2026,8 @@
             "example": 12
           },
           "frequency": {
-            "type": "integer",
-            "example": 2
+            "type": "string",
+            "example": "2-3"
           },
           "income": {
             "type": "number",
@@ -2173,9 +2173,9 @@
             "type": "integer"
           },
           "frequency": {
-            "type": "integer",
+            "type": "string",
             "nullable": true,
-            "maximum": 4
+            "maximum": 3
           }
         },
         "required": ["division_id", "employee_id", "frequency", "object_id"]

@@ -240,7 +240,7 @@ def frequency(division: Optional[int] = None,
               **kwargs) -> Select:
     sel: Select = select(Frequency.employee_id.label('name_id'),
                          Frequency.object_id,
-                         Frequency.frequency)
+                         Frequency.frequency_str.label('frequency'))
     if isinstance(division, int):
         sel = sel.where(Frequency.division_id == division)
     if isinstance(division, str):
