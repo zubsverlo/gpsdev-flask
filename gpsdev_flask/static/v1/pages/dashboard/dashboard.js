@@ -22,6 +22,7 @@ $.ajax({
       aaData: data.to_connect,
       scrollY: "70vh",
       scrollX: "100%",
+      order: [[0, "desc"]],
       scrollResize: true,
       scrollCollapse: true,
       paging: false,
