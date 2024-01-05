@@ -49,6 +49,10 @@ let monthDict = [
 
 let previousMonthDate = new Date().getMonth() - 1;
 let currentMonthDate = new Date().getMonth();
+if (previousMonthDate == -1) {
+  previousMonthDate = 11;
+  console.log(previousMonthDate);
+}
 let previousMonthName = monthDict[previousMonthDate];
 let currentMonthName = monthDict[currentMonthDate];
 
