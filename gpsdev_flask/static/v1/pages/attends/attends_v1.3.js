@@ -645,7 +645,7 @@ function createContentInModal() {
   employeeSelect.setAttribute("input-type", "employee");
   employeeSelect.onclick = createEmployeesList;
   employeeSelect.addEventListener("click", (e) => {
-    currentSelect = e.target;
+    currentSelect = e.currentTarget;
   });
 
   let objectSelect = document.createElement("button");
@@ -656,7 +656,7 @@ function createContentInModal() {
   objectSelect.classList.add("unactive-select");
   objectSelect.onclick = createObjectsList;
   objectSelect.addEventListener("click", (e) => {
-    currentSelect = e.target;
+    currentSelect = e.currentTarget;
   });
 
   let fieldOfSelection = document.createElement("div");
@@ -902,8 +902,8 @@ function returnBack() {
 
   let employeeListContainer = document.getElementById("employeeListContainer");
   let objectListContainer = document.getElementById("objectListContainer");
-  employeeListContainer ? (employeeListContainer.innerHTML = "") : null;
-  objectListContainer ? (objectListContainer.innerHTML = "") : null;
+  employeeListContainer ? employeeListContainer.remove() : null;
+  objectListContainer ? objectListContainer.remove() : null;
 
   let backBtn = document.getElementById("backBtn");
   backBtn.remove();
