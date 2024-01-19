@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 import requests
 from gpsdev_flask.api import api_login_required
 from gpsdev_flask import config
@@ -6,9 +6,10 @@ from gpsdev_flask import config
 address_lookup = Blueprint('address_lookup', __name__)
 
 
-@address_lookup.route('<string:address>', methods=['GET'])
+@address_lookup.route('/', methods=['GET'])
 @api_login_required
-def api_address_lookup(address):
+def api_address_lookup():
+    address = request.args.get('q')
     url = 'https://nominatim.openstreetmap.org/search'
     params = {'format': 'json',
               'q': address,
@@ -23,9 +24,10 @@ def api_address_lookup(address):
     return jsonify(r), 200
 
 
-@address_lookup.route('google/<string:address>', methods=['GET'])
+@address_lookup.route('/google/', methods=['GET'])
 @api_login_required
-def api_address_google(address):
+def api_address_google():
+    address = request.args.get('q')
     url = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json'
     params = {'input': address,
               'language': 'RU',

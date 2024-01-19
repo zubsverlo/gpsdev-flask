@@ -569,8 +569,8 @@ function getAddressList() {
 
   url =
     localStorage.getItem("address-sorce") === "1"
-      ? `api/address-lookup/google/${adValue}`
-      : `api/address-lookup/${adValue}`;
+      ? `api/address-lookup/google?q=${adValue}`
+      : `api/address-lookup/?q=${adValue}`;
   fetch(url, {
     method: "GET",
     headers: {
