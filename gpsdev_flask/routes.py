@@ -15,6 +15,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from gpsdev_flask.api.comment import comment
 from gpsdev_flask.api.frequency import frequency
 from gpsdev_flask.api.dashboard import dashboard
+from gpsdev_flask.api.map import map
 
 
 def register_blueprints(app):
@@ -36,6 +37,7 @@ def register_blueprints(app):
     app.register_blueprint(comment, url_prefix='/api/comment')
     app.register_blueprint(frequency, url_prefix='/api/frequency')
     app.register_blueprint(dashboard, url_prefix='/api/dashboard')
+    app.register_blueprint(map, url_prefix='/api/map')
 
 
 def register_swagger(app):

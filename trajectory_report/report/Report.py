@@ -210,9 +210,10 @@ class Report(ReportBase):
                  name_ids: Optional[List[int]] = None,
                  object_ids: Optional[List[int]] = None,
                  counts: bool = False,
+                 **kwargs
                  ):
         data = report_data_factory(date_from, date_to, division,
-                                   name_ids, object_ids)
+                                   name_ids, object_ids, **kwargs)
         self._date_from = dt.date.fromisoformat(str(date_from))
         self._date_to = dt.date.fromisoformat(str(date_to))
 

@@ -1,5 +1,5 @@
 import folium
-from folium.plugins import AntPath
+from folium.plugins import AntPath, Geocoder, Search
 from branca.element import Figure
 import math
 import skmob
@@ -10,6 +10,7 @@ from trajectory_report.report.Report import OneEmployeeReport, Report
 from typing import Union, Optional, List
 import datetime as dt
 from numpy import isnan
+from geopandas import GeoDataFrame, GeoSeries
 
 
 """
@@ -183,6 +184,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
         e.add_child(map)
 
         # Накидываем на карту все образовавшиеся точки.
+        
         for row in self._points.itertuples():
             folium.Marker(
                 (row.lat, row.lng),
@@ -312,14 +314,79 @@ class MapBindings(Report, MapsBase):
         points = pd.merge(points, objects, left_index=True, right_index=True)
 
         return points.reset_index()
+    
+
+class MapObjectsOnly(Report, MapsBase):
+    def __init__(self,
+                 date_from: Union[dt.date, str],
+                 date_to: Union[dt.date, str],
+                 division: Optional[Union[int, str]] = None,
+                 name_ids: Optional[List[int]] = None,
+                 object_ids: Optional[List[int]] = None
+                 ):
+        super().__init__(date_from, 
+                         date_to, 
+                         division, 
+                         name_ids, 
+                         object_ids,
+                         objects_with_address=True)
+        
+        self._objects = self._stmts\
+            .drop_duplicates('object_id')\
+            .loc[self._stmts.object_id != 1] \
+            .loc[:, ['object', 'longitude', 'latitude', 'address']]
+            
+            
+        self._median_coordinates = [55.7522, 37.6156]
+        points = self._objects.copy()
+        points['datetime'] = dt.datetime.now().isoformat(timespec='minutes')
+        self._points = self._concatenate_points(points)
+        self.geojson = GeoDataFrame(self._points.loc[:, ["object", "address"]], 
+                         geometry=GeoSeries.from_xy(x=self._points.lng, y=self._points.lat)).to_json()
+        self.map = self._create_map()
+        
+        pass
+    
+    @property
+    def _objects_points(self) -> pd.DataFrame:
+        # Объекты
+        objects = self._objects
+        objects['icon'] = [folium.features.Icon(icon='user',
+                                                prefix='fa',
+                                                color='black') for _ in
+                           range(len(objects))]
+        objects['tooltip'] = objects['object']
+        objects['popup'] = objects['object'] + '\n' + objects['address']
+        return objects
+    
+    def _create_map(self):
+        # СОЗДАНИЕ КАРТЫ
+        map = folium.Map(self._median_coordinates, zoom_start=11)
+        e = Figure(height="100%")  # todo: поменять на "100%"
+        e.add_child(map)
+        icon = folium.features.Icon(icon='user', prefix='fa', color='black')
+        Geocoder(placeholder="Найти адрес").add_to(map)
+        object_layer = folium.GeoJson(
+            self.geojson, show=False, overlay=False, 
+            marker=folium.Marker(icon=icon),
+            popup=folium.GeoJsonPopup(["object", "address"], labels=False),
+            tooltip=folium.GeoJsonTooltip(['object'], labels=False)
+            ).add_to(map)
+        Search(object_layer,
+               search_label='object',
+               placeholder="Поиск по ПСУ",
+               collapsed=True,
+               auto_collapse= True
+               ).add_to(map)
+        return map
 
 
 if __name__ == "__main__":
-    m = MapBindings("2023-11-20", "2023-11-30", "ПВТ1")
-    m.map.save('pvt1_11.html')
-    m = MapBindings("2023-11-20", "2023-11-30", "ПНИ12,30")
-    m.map.save('pni1230_11.html')
-    # m = MapMovements(584, "2023-10-31", "ПВТ1")
-    # m.map.save('11-08.html')
-    # m.as_json_dict
+    divisions = ["ПВТ1", "ПНИ12,30"]
+    start_date, end_date = "2023-01-01", "2023-01-23"
+    for division in divisions:        
+        # m = MapBindings(start_date, end_date, division)
+        # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
+        m = MapObjectsOnly(start_date, end_date, division)
+        m.map.save(f'{division}_{start_date}-{end_date}_подопечные.html')
     pass

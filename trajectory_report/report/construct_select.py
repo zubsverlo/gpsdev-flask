@@ -20,9 +20,22 @@ def statements(date_from: dt.date,
                date_to: dt.date,
                division: Optional[Union[int, str]] = None,
                name_ids: Optional[List[int]] = None,
-               object_ids: Optional[List[int]] = None) -> Select:
+               object_ids: Optional[List[int]] = None,
+               objects_with_address: bool = False) -> Select:
     """Получить записи с заявленными выходами"""
-    sel = select(
+    if objects_with_address:
+        sel = select(
+            Statements.name_id,
+            Employees.name,
+            Statements.object_id,
+            ObjectsSite.name.label('object'),
+            ObjectsSite.longitude,
+            ObjectsSite.latitude,
+            ObjectsSite.address,
+            Statements.date,
+            Statements.statement)
+    else:
+        sel = select(
         Statements.name_id,
         Employees.name,
         Statements.object_id,
@@ -30,7 +43,8 @@ def statements(date_from: dt.date,
         ObjectsSite.longitude,
         ObjectsSite.latitude,
         Statements.date,
-        Statements.statement) \
+        Statements.statement)
+    sel = sel\
         .join(Employees) \
         .join(ObjectsSite) \
         .where(Statements.date >= date_from) \

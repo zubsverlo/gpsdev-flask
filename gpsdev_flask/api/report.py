@@ -3,7 +3,7 @@ from gpsdev_flask import db_session
 from gpsdev_flask.models import ObjectsSite
 from sqlalchemy import select
 from flask import jsonify, send_file, request
-from trajectory_report.report import Report, ReportWithAdditionalColumns
+from trajectory_report.report import ReportWithAdditionalColumns
 from trajectory_report.exceptions import ReportException
 from gpsdev_flask.ma_schemas import ReportSchema
 from marshmallow import ValidationError

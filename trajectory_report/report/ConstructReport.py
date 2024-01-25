@@ -272,7 +272,8 @@ class DatabaseReportDataGetter:
             date_to: Union[dt.date, str],
             division: Optional[Union[int, str]] = None,
             name_ids: Optional[List[int]] = None,
-            object_ids: Optional[List[int]] = None
+            object_ids: Optional[List[int]] = None,
+            objects_with_address: bool = False
     ) -> dict:
         """Формирует select и запрашивает их из БД"""
         date_from = dt.date.fromisoformat(str(date_from))
@@ -286,7 +287,8 @@ class DatabaseReportDataGetter:
                 date_to=date_to,
                 division=division,
                 name_ids=name_ids,
-                object_ids=object_ids
+                object_ids=object_ids,
+                objects_with_address=objects_with_address
             ), conn)
             if not len(stmts):
                 raise ReportException(f'Не заполнена таблица выходов в период '
