@@ -1,0 +1,150 @@
+@media screen and (min-width: 900px) {
+  .highlight-separate {
+    border-top: 1px solid black !important;
+  }
+
+  .highlight-separate-right {
+    border-right: 1px solid black !important;
+  }
+
+  #preLoadContainer {
+    height: 500px;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.8s;
+  }
+
+  #preLoadImg {
+    width: 200px;
+  }
+
+  #mapParametersContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  #mapParameters {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  #mapParameters > * {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+  }
+
+  #mapParameters > * > * {
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  #startDateOfPeriodContainer {
+    margin: 0px;
+  }
+
+  #mapParameters select {
+    height: 41px;
+    /* padding: 0px 4px; */
+    border-radius: 3px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(213 197 143 / 82%);
+    color: rgb(77, 77, 77);
+  }
+
+  #previousCurrenMonthContainer button,
+  #currentMonthContainer button {
+    height: 41px;
+    padding: 0px 5px;
+    border-radius: 3px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(205 188 126 / 36%);
+    color: rgb(75, 75, 75);
+  }
+
+  #mapParameters select option {
+    text-align: none;
+  }
+
+  #mapParameters input {
+    width: 102px;
+    height: 40px;
+    padding: 0px 5px;
+
+    text-align: center;
+    font-weight: 500;
+
+    border: 1px solid gray;
+    background-color: rgb(205 188 126 / 36%);
+    color: rgb(75, 75, 75);
+    transition: box-shadow 0.5s;
+  }
+
+  #mapParameters input:focus {
+    border: 1px solid black;
+    outline: none;
+  }
+
+  #startDateOfPeriod {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-right: none !important;
+  }
+
+  #endDateOfPeriod {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+
+  .date-highlight {
+    box-shadow: 0px 0px 8px 1px rgb(122, 122, 122);
+  }
+
+  .fade-out-box {
+    box-shadow: 0px 0px 13px rgba(27, 160, 100, 0);
+    transition: box-shadow 0.8s;
+  }
+
+  #requestBtn {
+    padding: 11.5px 5px;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: rgb(28 100 121 / 60%);
+    color: rgb(247 243 243);
+
+    transition: all 0.4s;
+  }
+
+  #requestBtn:hover {
+    background-color: rgba(10, 127, 115, 0.66);
+    color: rgb(247 243 243);
+  }
+  #requestBtn:active {
+    background-color: rgba(228, 232, 173, 0.66);
+    color: rgb(74, 74, 74);
+  }
+
+  #mapContainer {
+    display: none;
+    height: 80vh;
+    margin-top: 12px;
+    border: 2px solid gray;
+    border-radius: 2px;
+  }
+}

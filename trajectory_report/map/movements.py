@@ -255,8 +255,14 @@ class MapBindings(Report, MapsBase):
                  division: Optional[Union[int, str]] = None,
                  name_ids: Optional[List[int]] = None,
                  object_ids: Optional[List[int]] = None,
+                 **kwargs
                  ):
-        super().__init__(date_from, date_to, division, name_ids, object_ids)
+        super().__init__(date_from,
+                         date_to,
+                         division,
+                         name_ids,
+                         object_ids,
+                         **kwargs)
 
         self.points = self._points_from_stmts()
 
@@ -322,27 +328,30 @@ class MapObjectsOnly(Report, MapsBase):
                  date_to: Union[dt.date, str],
                  division: Optional[Union[int, str]] = None,
                  name_ids: Optional[List[int]] = None,
-                 object_ids: Optional[List[int]] = None
+                 object_ids: Optional[List[int]] = None,
+                 **kwargs
                  ):
-        super().__init__(date_from, 
-                         date_to, 
-                         division, 
-                         name_ids, 
+        super().__init__(date_from,
+                         date_to,
+                         division,
+                         name_ids,
                          object_ids,
-                         objects_with_address=True)
+                         objects_with_address=True,
+                         **kwargs)
         
         self._objects = self._stmts\
             .drop_duplicates('object_id')\
             .loc[self._stmts.object_id != 1] \
             .loc[:, ['object', 'longitude', 'latitude', 'address']]
             
-            
         self._median_coordinates = [55.7522, 37.6156]
         points = self._objects.copy()
         points['datetime'] = dt.datetime.now().isoformat(timespec='minutes')
         self._points = self._concatenate_points(points)
-        self.geojson = GeoDataFrame(self._points.loc[:, ["object", "address"]], 
-                         geometry=GeoSeries.from_xy(x=self._points.lng, y=self._points.lat)).to_json()
+        self.geojson = GeoDataFrame(
+            self._points.loc[:, ["object", "address"]], 
+            geometry=GeoSeries.from_xy(x=self._points.lng, y=self._points.lat)
+            ).to_json()
         self.map = self._create_map()
         
         pass

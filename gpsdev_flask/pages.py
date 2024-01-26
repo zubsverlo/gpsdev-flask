@@ -64,3 +64,9 @@ def dashboard():
 def swagger():
     with open('openapi.json', 'r') as f:
         return jsonify(json.load(f))
+
+
+@pages.route('/maps')
+@login_required
+def maps():
+    return render_template('maps.html', title='Карты')

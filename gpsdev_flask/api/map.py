@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask import jsonify, request
-from trajectory_report.map.movements import MapObjectsOnly
+from trajectory_report.map.movements import MapObjectsOnly, MapBindings
 from trajectory_report.exceptions import ReportException
 from gpsdev_flask.ma_schemas import ReportSchema
 from marshmallow import ValidationError
@@ -24,3 +24,17 @@ def get_objects_map():
     except ReportException as e:
         return report_error_422(str(e))
     return jsonify({"map": objects_map})
+
+
+@map.route('/bindings', methods=['POST'])
+@api_login_required
+def get_bindings_map():
+    try:
+        report_request = ReportSchema().load(request.get_json())
+    except ValidationError as e:
+        return validation_error_422(e.messages)
+    try:
+        bindings_map = MapBindings(**report_request).map_html
+    except ReportException as e:
+        return report_error_422(str(e))
+    return jsonify({"map": bindings_map})

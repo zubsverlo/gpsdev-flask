@@ -1,0 +1,83 @@
+{% extends 'header.html' %} {% block content %}
+
+<link
+  href="https://fonts.googleapis.com/icon?family=Material+Icons"
+  rel="stylesheet"
+/>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+/>
+<link
+  href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css"
+/>
+<link rel="stylesheet" href="../static/v1/pages/maps/maps.css" />
+
+<link
+  rel="stylesheet"
+  href="https://bossanova.uk/jspreadsheet/v4/jexcel.css"
+  type="text/css"
+/>
+<link
+  rel="stylesheet"
+  href="https://jsuites.net/v4/jsuites.css"
+  type="text/css"
+/>
+<script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
+<script src="https://jsuites.net/v4/jsuites.js"></script>
+
+<script
+  src="https://code.jquery.com/jquery-3.7.0.min.js"
+  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+  crossorigin="anonymous"
+></script>
+
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+
+<div id="mapParametersContainer">
+  <form id="mapParameters">
+    <div id="divisionSelectContainer">
+      <select id="divisionSelect"></select>
+    </div>
+    <div id="previousCurrenMonthContainer">
+      <button
+        id="previousCurrentMonth"
+        title="Предыдущий и текущий месяцы"
+      ></button>
+    </div>
+    <div id="currentMonthContainer">
+      <button id="currentMonth" title="Текущий месяц"></button>
+    </div>
+    <div id="startDateOfPeriodContainer">
+      <input id="startDateOfPeriod" type="date" />
+    </div>
+    <div id="endDateOfPeriodContainer">
+      <input id="endDateOfPeriod" type="date" />
+    </div>
+    <div id="objectsOrBoundSelectContainer">
+      <select id="objectsOrBoundSelect">
+        <option counts="false">Подопечные</option>
+        <option counts="true">Привязка</option>
+      </select>
+    </div>
+    <div id="requestBtnContainer">
+      <button id="requestBtn">Запросить</button>
+    </div>
+  </form>
+</div>
+
+<div id="preLoadContainer">
+  <img src="../static/v1/icons/pre_load_destination.gif" id="preLoadImg" />
+</div>
+
+<div id="mapContainer" style="max-width: 100%"></div>
+
+<script type="module" src="../static/v1/pages/maps/maps.js"></script>
+<script type="module" src="../static/v1/alerts.js"></script>
+<script type="module" src="../static/v1/modal.js"></script>
+<script type="module" src="../static/v1/translation_dict.js"></script>
+
+{% endblock content %}
