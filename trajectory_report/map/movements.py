@@ -270,6 +270,8 @@ class MapBindings(Report, MapsBase):
             location=[55.50703, 37.58213],
             zoom_start=12, tiles='cartodbpositron',
         )
+        e = Figure(height="100%")  # todo: поменять на "100%"
+        e.add_child(self.map)
         self._create_map()
 
     def save_map(self):
