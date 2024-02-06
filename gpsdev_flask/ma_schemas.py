@@ -92,6 +92,13 @@ class EmployeesSchema(Schema):
         if data.get('phone'):
             data['phone'] = ''.join(re.findall(r"[0-9]", data['phone']))
         return data
+    
+    @pre_load
+    def load_name(self, data, **kwargs):
+        name = data.get('name')
+        if name:
+            data['name'] = " ".join(name.split())
+        return data
 
 
 class ObjectSchema(Schema):
@@ -172,6 +179,13 @@ class ObjectSchema(Schema):
             raise ValidationError(
                 "Уже используется в указанном подразделении"
             )
+    
+    @pre_load
+    def load_name(self, data, **kwargs):
+        name = data.get('name')
+        if name:
+            data['name'] = " ".join(name.split())
+        return data
 
 
 class JournalSchema(Schema):
