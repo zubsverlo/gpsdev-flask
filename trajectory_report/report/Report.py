@@ -264,17 +264,6 @@ class Report(ReportBase):
         )
         # Основная задача отчета - показать длительность и кол-во посещений:
         stmts_jrnl_clstrs = self._set_count_and_duration(stmts_jrnl_clstrs)
-        # Отчет сопровождается таблицей дубликатов выходов. Это когда к одному
-        # подопечному было зафиксировано более одного выхода.
-        # Строки с самым большим кол-вом посещений всегда будут в начале.
-        duplicated_attends = stmts_jrnl_clstrs \
-            .groupby(by=['object', 'object_id', 'date']) \
-            .agg({'duration': 'count', 'name': lambda x: ", ".join(list(x))}) \
-            .reset_index() \
-            .query("duration > 1") \
-            .loc[:, ['object', 'date', 'duration', 'name']] \
-            .sort_values(by=['duration', 'object', 'date'],
-                         ascending=[False, True, True])
 
         # Относительно сформировавшегося отчета фильтруются служебные записки.
         # Здесь же состояние записки (int) расшифровывается ("С"/"ПРОВ")
@@ -300,8 +289,26 @@ class Report(ReportBase):
             right_on=['name_id', 'object_id', 'date']
         )
         # Готовый отчет в вертикальном виде
-        self.duplicated_attends = duplicated_attends
         self.report = self._merge_into_one_column(stmts_jrnl_clstrs)
+        
+        # Отчет сопровождается таблицей дубликатов выходов. Это когда к одному
+        # подопечному было зафиксировано более одного выхода.
+        # Строки с самым большим кол-вом посещений всегда будут в начале.
+        # Подтвержденная служебная записка приравнивается к выходу, поэтому
+        # учитывается в дубликатах.
+        self.duplicated_attends = self.report\
+            .query("result != 'Н/Б'")\
+            .query("object_id != 1")\
+            .query("result != 'ПРОВ'")\
+            .groupby(by=['object', 'object_id', 'date']) \
+            .agg({'result': 'count', 'name': lambda x: ", ".join(list(x))}) \
+            .reset_index() \
+            .query("result > 1") \
+            .loc[:, ['object', 'date', 'result', 'name']] \
+            .sort_values(by=['result', 'object', 'date'],
+                         ascending=[False, True, True])\
+            .rename(columns={'result': 'duration'})
+        
         return self
 
     def _create_stmts_with_journal_j_exist_vector(self) -> pd.DataFrame:
@@ -896,7 +903,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2023-11-01', '2023-11-30', "Коньково")
+    r = ReportWithAdditionalColumns('2024-01-01', '2024-01-31', "ПВТ9,ПНИ25")
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
     # a = r.as_json_dict
