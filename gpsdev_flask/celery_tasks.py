@@ -4,6 +4,7 @@ from trajectory_report.gather.coordinates import fetch_coordinates
 from trajectory_report.gather.clusters import make_clusters
 from trajectory_report.gather.journal import update_journal
 from celery.schedules import crontab
+from trajectory_report.notificators.telegram import empty_locations_notify
 
 
 @app_celery.task
@@ -32,7 +33,12 @@ def clusters():
 def journal():
     update_journal()
     redis_session.expireat('journal', 0)
-
+    
+    
+@app_celery.task(name='no_locations_notify')
+def no_locations_notify():
+    empty_locations_notify()
+    
 
 app_celery.conf.beat_schedule = {
     'fetch-coords-every-2-mins': {
@@ -46,5 +52,9 @@ app_celery.conf.beat_schedule = {
     'update-journal-every-10-mins': {
         'task': 'journal',
         'schedule': crontab(minute='*/10')
+    },
+    'empty-locations-notify-every-40th-minute': {
+        'task': 'no_locations_notify',
+        'schedule': crontab(minute='*/40', hour='9-18')
     }
 }

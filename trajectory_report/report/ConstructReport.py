@@ -273,7 +273,8 @@ class DatabaseReportDataGetter:
             division: Optional[Union[int, str]] = None,
             name_ids: Optional[List[int]] = None,
             object_ids: Optional[List[int]] = None,
-            objects_with_address: bool = False
+            objects_with_address: bool = False,
+            check_for_empty_locations: bool = False
     ) -> dict:
         """Формирует select и запрашивает их из БД"""
         date_from = dt.date.fromisoformat(str(date_from))
@@ -317,6 +318,18 @@ class DatabaseReportDataGetter:
             income = pd.read_sql(cs.income(object_ids), conn)
             no_payments = pd.read_sql(cs.no_payments(object_ids), conn)
             no_payments = no_payments.object_id.tolist()
+            empty_locations: list = []
+            employees_with_phone: pd.DataFrame = pd.DataFrame(
+                columns=['name_id', 'name', 'phone']
+            )
+            if check_for_empty_locations and includes_current_date:
+                empty_locations = [
+                    i for i in conn.execute(cs.empty_locations()).scalars()
+                ]
+                employees_with_phone = pd.read_sql(
+                    cs.employees_with_nameid_name_phone(name_ids),
+                    conn
+                    )
 
         if includes_current_date:
             try:
@@ -336,6 +349,8 @@ class DatabaseReportDataGetter:
         data['_frequency'] = frequency
         data['_income'] = income
         data['_no_payments'] = no_payments
+        data['_empty_locations'] = empty_locations
+        data['_employees_with_phone'] = employees_with_phone
         return data
 
 
