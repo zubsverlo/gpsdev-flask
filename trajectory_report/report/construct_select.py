@@ -2,8 +2,7 @@
 import datetime as dt
 from typing import Optional, List, Union
 
-from sqlalchemy import select, Select
-
+from sqlalchemy import select, Select, func
 from trajectory_report.models import (Statements,
                                       Employees,
                                       Division,
@@ -276,3 +275,20 @@ def no_payments(object_ids: List[int], **kwargs) -> Select:
         .where(ObjectsSite.no_payments == True)\
         .where(ObjectsSite.object_id.in_(object_ids))
     return sel
+
+
+def empty_locations() -> Select:
+    last_loc = (func.max(Coordinates.locationDate)).label('last_loc')
+    prev_hour = dt.datetime.now() - dt.timedelta(minutes=40)
+    sel: Select = select(
+        Coordinates.subscriberID)\
+        .where(Coordinates.requestDate >= prev_hour)\
+        .group_by(Coordinates.subscriberID)\
+        .having(last_loc == None)
+    return sel
+
+def employees_with_nameid_name_phone(name_ids: List[int]) -> Select:
+    sel: Select = select(Employees.name_id, Employees.name, Employees.phone)\
+        .where(Employees.name_id.in_(name_ids))
+    return sel
+        

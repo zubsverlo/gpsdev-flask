@@ -226,6 +226,9 @@ class Report(ReportBase):
         self._frequency = data.get('_frequency')
         self._income = data.get('_income')
         self._no_payments = data.get('_no_payments')
+        # Опциональные данные для анализа последних локаций сотрудников
+        self._empty_locations = data.get('_empty_locations')
+        self._employees_with_phone = data.get('_employees_with_phone')
 
         self._counts = counts
 
@@ -262,6 +265,13 @@ class Report(ReportBase):
         stmts_jrnl_clstrs = self._consolidate_time_periods_vectorized(
             stmts_jrnl_clstrs
         )
+        
+        # df с subscriberID и name_id всех сотрудников из отчета. 
+        # Используется для уведомлений об отсутствии отслеживания сотрудника
+        self.employees_subsid = stmts_jrnl_clstrs\
+            .drop_duplicates(['name_id'])\
+            .loc[:, ['subscriberID', 'name_id']]
+        
         # Основная задача отчета - показать длительность и кол-во посещений:
         stmts_jrnl_clstrs = self._set_count_and_duration(stmts_jrnl_clstrs)
 
@@ -309,6 +319,28 @@ class Report(ReportBase):
                          ascending=[False, True, True])\
             .rename(columns={'result': 'duration'})
         
+        # name_id сотрудников, у которых остались "Н/Б" на сегодня.
+        # Из этих сотрудников формируется список на оповещение, в случае, если
+        # локации не поступают
+        candidates_to_notify = self.report\
+            .query("result == 'Н/Б'")\
+            .query("date == @dt.date.today()")\
+            .drop_duplicates('name_id')
+            
+        candidates_to_notify = pd.merge(
+            candidates_to_notify,
+            self._employees_with_phone,
+            on=['name_id', 'name']
+        )
+            
+        self.employees_to_notify: pd.DataFrame = pd.merge(
+            candidates_to_notify, 
+            self.employees_subsid, 
+            on='name_id'
+            )\
+                .query("subscriberID in @self._empty_locations")\
+                .loc[:, ['name', 'phone']]
+                
         return self
 
     def _create_stmts_with_journal_j_exist_vector(self) -> pd.DataFrame:
@@ -678,9 +710,10 @@ class ReportWithAdditionalColumns(Report):
                  name_ids: Optional[List[int]] = None,
                  object_ids: Optional[List[int]] = None,
                  counts: bool = False,
+                 **kwargs
                  ):
         super().__init__(date_from, date_to, division, name_ids,
-                         object_ids, counts)
+                         object_ids, counts, **kwargs)
 
     @property
     def horizontal_report(self) -> pd.DataFrame:
@@ -903,9 +936,11 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2024-01-01', '2024-01-31', "ПВТ9,ПНИ25")
+    # r = ReportWithAdditionalColumns('2024-02-01', '2024-02-28', "ПВТ1", check_for_empty_locations=True)
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
+    r = ReportWithAdditionalColumns(dt.date.today(), dt.date.today(), "ПВТ6", check_for_empty_locations=True)
+    print(r.employees_to_notify)
     # a = r.as_json_dict
     print(e-s)
     pass
