@@ -53,8 +53,8 @@ app_celery.conf.beat_schedule = {
         'task': 'journal',
         'schedule': crontab(minute='*/10')
     },
-    'empty-locations-notify-every-40th-minute': {
+    'empty-locations-notify-every-30-minutes': {
         'task': 'no_locations_notify',
-        'schedule': crontab(minute='*/40', hour='9-18')
+        'schedule': crontab(minute='*/30', hour='9-22')
     }
 }
