@@ -279,7 +279,7 @@ def no_payments(object_ids: List[int], **kwargs) -> Select:
 
 def empty_locations() -> Select:
     last_loc = (func.max(Coordinates.locationDate)).label('last_loc')
-    prev_hour = dt.datetime.now() - dt.timedelta(minutes=40)
+    prev_hour = dt.datetime.now() - dt.timedelta(hours=1)
     sel: Select = select(
         Coordinates.subscriberID)\
         .where(Coordinates.requestDate >= prev_hour)\
