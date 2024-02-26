@@ -7,13 +7,14 @@ from gpsdev_flask.models import User
 from gpsdev_flask.query_handler import BackgroundQueriesHandler, TASKS_QUEUE
 from redis import Redis
 from config import get_config
-
+# from gpsdev_flask.models import Base
 
 config = get_config()
 db_session = create_db_session(config)
 login_manager = LoginManager()
 bcrypt = Bcrypt()
 redis_session = Redis(config.REDIS)
+# Base.metadata.create_all(db_session.get_bind())
 
 
 def create_app():

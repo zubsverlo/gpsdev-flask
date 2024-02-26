@@ -273,10 +273,17 @@ class DatabaseReportDataGetter:
             division: Optional[Union[int, str]] = None,
             name_ids: Optional[List[int]] = None,
             object_ids: Optional[List[int]] = None,
-            objects_with_address: bool = False,
-            check_for_empty_locations: bool = False
+            objects_with_address: bool = False, # отображ. адресов на карте
+            check_for_empty_locations: bool = False # уведомл. об отсут. локац.
     ) -> dict:
-        """Формирует select и запрашивает их из БД"""
+        """Запрашивает данные для формирования отчета из БД.
+        
+        objects_with_address - дополнительно запросить адреса ПСУ для 
+        отображения на карте
+        
+        check_for_empty_locations - дополнительно проверить, есть ли сотрудники
+        без локаций за последнее время, о которых нужно уведомить
+        """
         date_from = dt.date.fromisoformat(str(date_from))
         date_to = dt.date.fromisoformat(str(date_to))
         includes_current_date: bool = dt.date.today() <= date_to
@@ -294,6 +301,7 @@ class DatabaseReportDataGetter:
             if not len(stmts):
                 raise ReportException(f'Не заполнена таблица выходов в период '
                                       f'с {date_from} до {date_to}')
+            
             name_ids = stmts.name_id.unique().tolist()
             object_ids = stmts.object_id.unique().tolist()
             
@@ -304,6 +312,7 @@ class DatabaseReportDataGetter:
 
             schedules = pd.read_sql(cs.employee_schedules(name_ids), conn)
             serves = pd.read_sql(cs.serves(date_from, date_to, name_ids), conn)
+            
             clusters = pd.read_sql(cs.clusters(date_from, date_to, subs_ids),
                                    conn)
             if includes_current_date:
@@ -313,6 +322,7 @@ class DatabaseReportDataGetter:
                 )
                 current_locations['date'] = current_locations['locationDate'] \
                     .apply(lambda x: x.date())
+                    
             comment = pd.read_sql(cs.comment(division, name_ids), conn)
             frequency = pd.read_sql(cs.frequency(division, name_ids), conn)
             income = pd.read_sql(cs.income(object_ids), conn)

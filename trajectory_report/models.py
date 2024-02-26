@@ -1,7 +1,9 @@
 # (модели базы данных)
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, String, Index, CHAR, UniqueConstraint, REAL
+from sqlalchemy import (ForeignKey, String, Index, CHAR, UniqueConstraint, 
+                        REAL, SMALLINT, VARCHAR
+                        )
 import datetime as dt
 
 """
@@ -206,3 +208,22 @@ class Comment(Base):
         UniqueConstraint('division_id', 'employee_id', 'object_id',
                          name='_comment_and_frequency')
     )
+
+
+class OwnTracksLocation(Base):
+    __tablename__ = 'owntracks_location'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    employee_id: Mapped[int]
+    bssid: Mapped[str] = mapped_column(VARCHAR(32), nullable=True)
+    ssid: Mapped[str] = mapped_column(VARCHAR(32), nullable=True)
+    acc: Mapped[int] = mapped_column(nullable=True)
+    batt: Mapped[int] = mapped_column(SMALLINT(), nullable=True)
+    bs: Mapped[int] = mapped_column(SMALLINT())
+    conn: Mapped[str] = mapped_column(CHAR(1), nullable=True)
+    created_at: Mapped[int] = mapped_column(nullable=True)
+    lat: Mapped[float] = mapped_column(REAL)
+    lon: Mapped[float] = mapped_column(REAL)
+    m: Mapped[int] = mapped_column(SMALLINT(), nullable=True)
+    t: Mapped[str] = mapped_column(CHAR(1), nullable=True)
+    tst: Mapped[int] = mapped_column(nullable=True)
+    vel: Mapped[int] = mapped_column(SMALLINT(), nullable=True)

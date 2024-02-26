@@ -423,3 +423,35 @@ class FrequencySchema(Schema):
             ),
         required=True,
         allow_none=True)
+
+
+class OwnTracksLocationSchema(Schema):
+    id = fields.Integer(dump_only=True)
+    employee_id = fields.Integer(required=False)
+    bssid = fields.String(validate=validate.Length(max=32), data_key="BSSID")
+    ssid = fields.String(validate=validate.Length(max=32), data_key="SSID")
+    acc = fields.Integer()
+    batt = fields.Integer()
+    bs = fields.Integer()
+    conn = fields.String(validate=validate.Length(max=1))
+    created_at = fields.Integer(required=False)
+    lat = fields.Float(required=True)
+    lon = fields.Float(required=True)
+    m = fields.Integer()
+    t = fields.String(validate=validate.Length(max=1))
+    tst = fields.Integer(required=True)
+    vel = fields.Integer()
+    
+    @post_dump
+    def datetimes(self, data, **kwargs):
+        timezone = dt.timezone(dt.timedelta(hours=2))
+        if data.get('created_at'):
+            data['created_at'] = dt.datetime\
+                .fromtimestamp(data['created_at'], tz=timezone)\
+                .isoformat()
+
+        if data.get('tst'):
+            data['tst'] = dt.datetime\
+                .fromtimestamp(data['tst'], tz=timezone)\
+                .isoformat()
+        return data

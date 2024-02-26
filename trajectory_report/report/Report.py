@@ -936,11 +936,11 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    # r = ReportWithAdditionalColumns('2024-02-01', '2024-02-28', "ПВТ1", check_for_empty_locations=True)
+    r = ReportWithAdditionalColumns('2024-02-01', '2024-02-28', "ПВТ1", check_for_empty_locations=True)
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
-    r = ReportWithAdditionalColumns(dt.date.today(), dt.date.today(), "ПВТ6", check_for_empty_locations=True)
-    print(r.employees_to_notify)
+    # r = ReportWithAdditionalColumns(dt.date.today(), dt.date.today(), "ПВТ6", check_for_empty_locations=True)
+    # print(r.employees_to_notify)
     # a = r.as_json_dict
     print(e-s)
     pass

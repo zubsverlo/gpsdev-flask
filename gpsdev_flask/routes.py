@@ -16,6 +16,7 @@ from gpsdev_flask.api.comment import comment
 from gpsdev_flask.api.frequency import frequency
 from gpsdev_flask.api.dashboard import dashboard
 from gpsdev_flask.api.map import map
+from gpsdev_flask.api.owntracks_location import owntracks_location
 
 
 def register_blueprints(app):
@@ -38,6 +39,7 @@ def register_blueprints(app):
     app.register_blueprint(frequency, url_prefix='/api/frequency')
     app.register_blueprint(dashboard, url_prefix='/api/dashboard')
     app.register_blueprint(map, url_prefix='/api/map')
+    app.register_blueprint(owntracks_location, url_prefix='/api/owntracks-location')
 
 
 def register_swagger(app):

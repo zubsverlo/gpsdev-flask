@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Column, CHAR, Table, ForeignKey
+from sqlalchemy import Column, CHAR, VARCHAR, Table, ForeignKey, SMALLINT
 from flask_login import UserMixin
 from trajectory_report.models import (
     Base, Serves, Statements, Division, Schedule, Coordinates, Clusters,
-    Journal, Employees, ObjectsSite, Comment, Frequency)
+    Journal, Employees, ObjectsSite, Comment, Frequency, OwnTracksLocation)
 from typing import List
 
 
@@ -45,3 +45,26 @@ class User(Base, UserMixin):
 
     def __repr__(self):
         return f"User({self.name}, access: {self.access})"
+
+"""
+{
+    '_type': 'location', 
+    'BSSID': '40:ed:00:57:69:c0', \\ if available, identifies the access point
+    'SSID': 'sosed', \\ if available, is the unique name of the WLAN
+    'acc': 100, \\ точность локации
+    'alt': 63, \\ высота над уровнем моря
+    'batt': 93, \\ процент заряда батареи
+    'bs': 1, \\ Battery Status 0=unknown, 1=unplugged, 2=charging, 3=full 
+    'conn': 'w', \\ Internet connectivity status: w - WiFi; o - offline; m - mobile data
+    'created_at': 1708332621, \\ the time at which the message is constructed (vs. tst which is the timestamp of the GPS fix) 
+    'lat': 35.3369338, 
+    'lon': 33.2674035, 
+    'm': 1, \\ режим сбора координат: significant=1, move=2
+    't': 'p', \\ триггер локации 
+    'tid': 'su', \\ Tracker ID used to display the initials of a user
+    'topic': 'owntracks/ilia/begonia', \\ contains the original publish topic
+    'tst': 1708332621, \\ UNIX epoch timestamp in seconds of the location fix
+    'vac': 100, \\ vertical accuracy of the alt element
+    'vel': 0 \\  velocity (integer/kmh/optional)
+}
+"""
