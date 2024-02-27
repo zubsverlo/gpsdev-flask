@@ -109,6 +109,18 @@ function createForm() {
   noTrackingCheck.id = "noTrackingCheck";
   noTrackingCheck.type = "checkbox";
 
+  let stafferContainer = document.createElement("div");
+  stafferContainer.id = "stafferContainer";
+
+  let stafferCheckLabel = document.createElement("label");
+  stafferCheckLabel.id = "stafferCheckLabel";
+  stafferCheckLabel.htmlFor = "stafferCheck";
+  stafferCheckLabel.innerText = "Устроен по ТК";
+
+  let stafferCheck = document.createElement("input");
+  stafferCheck.id = "stafferCheck";
+  stafferCheck.type = "checkbox";
+
   let btnsContainer = document.createElement("div");
   btnsContainer.id = "btnsContainer";
 
@@ -126,10 +138,16 @@ function createForm() {
   nameFieldContainer.append(nameFieldLabel, nameField);
   phoneFieldContainer.append(phoneFieldLabel, phoneField);
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
-  restFields.append(dateFields, scheduleField, noTrackingContainer);
+  restFields.append(
+    dateFields,
+    scheduleField,
+    noTrackingContainer,
+    stafferContainer
+  );
   dateFields.append(hireDateLabel, hireDateField, quitDateLabel, quitDateField);
   scheduleField.append(scheduleCheck, scheduleCheckLabel);
   noTrackingContainer.append(noTrackingCheck, noTrackingCheckLabel);
+  stafferContainer.append(stafferCheck, stafferCheckLabel);
   btnsContainer.append(cancelBtn, saveBtn);
 
   allFieldsContainer.append(
@@ -150,6 +168,7 @@ $.ajax({
   contentType: "application/json",
 })
   .done(function (data) {
+    console.log(data);
     employeeTable = new DataTable("#employeeTable", {
       aaData: data,
       scrollX: "100%",
@@ -195,6 +214,12 @@ $.ajax({
         { data: "schedule_name" },
         { data: "hire_date" },
         { data: "quit_date" },
+        {
+          data: "staffer",
+          render: function (data) {
+            return data ? "Да" : "";
+          },
+        },
         {
           // add column with change buttons to all rows in table
           data: null,
@@ -245,6 +270,7 @@ $.ajax({
       let quitDate = document.getElementById("quitDateField");
       let scheduleCheck = document.getElementById("scheduleCheck");
       let noTrackingCheck = document.getElementById("noTrackingCheck");
+      let stafferCheck = document.getElementById("stafferCheck");
       let saveBtn = document.getElementById("saveBtn");
 
       name.value = data.name;
@@ -256,6 +282,7 @@ $.ajax({
       quitDate.value = data.quit_date;
       data.schedule == 2 ? (scheduleCheck.checked = true) : null;
       noTrackingCheck.checked = data.no_tracking;
+      stafferCheck.checked = data.staffer;
 
       saveBtn.onclick = changeEmployee;
     });
@@ -305,6 +332,8 @@ function createEmployee(e) {
 
   let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
 
+  let stafferCheck = document.getElementById("stafferCheck").checked;
+
   if (
     name == "" ||
     phone.value == "" ||
@@ -320,6 +349,7 @@ function createEmployee(e) {
     division: divisionId,
     hire_date: hireDate,
     no_tracking: noTrackingCheck,
+    staffer: stafferCheck,
   };
 
   quitDate ? (parameters["quit_date"] = quitDate) : null;
@@ -395,6 +425,8 @@ function changeEmployee() {
 
   let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
 
+  let stafferCheck = document.getElementById("stafferCheck").checked;
+
   if (
     name == "" ||
     phone == "" ||
@@ -412,6 +444,7 @@ function changeEmployee() {
     quit_date: quitDate == "" ? null : quitDate,
     schedule: !scheduleCheck ? 1 : 2,
     no_tracking: noTrackingCheck,
+    staffer: stafferCheck,
   };
 
   sendEditEmployee(parameters);

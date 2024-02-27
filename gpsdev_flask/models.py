@@ -3,7 +3,8 @@ from sqlalchemy import Column, CHAR, VARCHAR, Table, ForeignKey, SMALLINT
 from flask_login import UserMixin
 from trajectory_report.models import (
     Base, Serves, Statements, Division, Schedule, Coordinates, Clusters,
-    Journal, Employees, ObjectsSite, Comment, Frequency, OwnTracksLocation)
+    Journal, Employees, ObjectsSite, Comment, Frequency, OwnTracksLocation,
+    PermitStatements)
 from typing import List
 
 

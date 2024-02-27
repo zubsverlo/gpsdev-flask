@@ -124,7 +124,8 @@
   }
 
   #scheduleField,
-  #noTrackingContainer {
+  #noTrackingContainer,
+  #stafferContainer {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -133,7 +134,8 @@
   }
 
   #scheduleField input,
-  #noTrackingContainer input {
+  #noTrackingContainer input,
+  #stafferContainer input {
     width: 20px;
     margin: 0;
     margin-right: 10px;
@@ -323,7 +325,8 @@
   }
 
   #scheduleField,
-  #noTrackingContainer {
+  #noTrackingContainer,
+  #stafferContainer {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -331,7 +334,8 @@
   }
 
   #scheduleField input,
-  #noTrackingContainer input {
+  #noTrackingContainer input,
+  #stafferContainer input {
     width: 20px;
     margin: 0;
     margin-right: 10px;

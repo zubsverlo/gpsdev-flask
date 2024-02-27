@@ -282,7 +282,7 @@
       "post": {
         "tags": ["Employees"],
         "summary": "Создать нового сотрудника",
-        "description": "## Создать нового пользователя\n\n| Параметр    |  Описание    |\n| ----------- | ------------ |\n| `name`      | ФИО сотрудника  |\n| `phone`     | Номер телефона для связи с сотрудником |\n| `division`  | id подразделения, к которому относится сотрудник |\n| `hire_date` | Дата приема на работу |\n| `quit_date` | Дата увольнения (сотрудник добавляется в список на отключение от отслеживания) |\n| `schedule`  | Должность сотрудника. 1 - \"Соцработник\", 2 - \"Ванщик\" |\n| `no_tracking` | Если для сотрудника не подразумевается отслеживание, то должен быть true. По умолчанию false. |\n",
+        "description": "## Создать нового пользователя\n\n| Параметр    |  Описание    |\n| ----------- | ------------ |\n| `name`      | ФИО сотрудника  |\n| `phone`     | Номер телефона для связи с сотрудником |\n| `division`  | id подразделения, к которому относится сотрудник |\n| `hire_date` | Дата приема на работу |\n| `quit_date` | Дата увольнения (сотрудник добавляется в список на отключение от отслеживания) |\n| `schedule`  | Должность сотрудника. 1 - \"Соцработник\", 2 - \"Ванщик\" |\n| `no_tracking` | Если для сотрудника не подразумевается отслеживание, то должен быть true. По умолчанию false. |\n `staffer` | true, если сотрудник оформлен по ТК. По умолчанию false. |\n",
         "requestBody": {
           "description": "JSON по схеме сотрудника",
           "content": {
@@ -359,7 +359,7 @@
       "patch": {
         "tags": ["Employees"],
         "summary": "Изменить сотрудника",
-        "description": "## Изменение свойств сотрудника\n\n| Параметр    |  Описание    |\n| ----------- | ------------ |\n| `name`      | ФИО сотрудника  |\n| `phone`     | Номер телефона для связи с сотрудником |\n| `division`  | id подразделения, к которому относится сотрудник |\n| `hire_date` | Дата приема на работу |\n| `quit_date` | Дата увольнения (сотрудник добавляется в список на отключение от отслеживания) |\n| `schedule`  | Должность сотрудника. 1 - \"Соцработник\", 2 - \"Ванщик\" |\n| `no_tracking` | Если для сотрудника не подразумевается отслеживание, то должен быть true. По умолчанию false. |\n",
+        "description": "## Изменение свойств сотрудника\n\n| Параметр    |  Описание    |\n| ----------- | ------------ |\n| `name`      | ФИО сотрудника  |\n| `phone`     | Номер телефона для связи с сотрудником |\n| `division`  | id подразделения, к которому относится сотрудник |\n| `hire_date` | Дата приема на работу |\n| `quit_date` | Дата увольнения (сотрудник добавляется в список на отключение от отслеживания) |\n| `schedule`  | Должность сотрудника. 1 - \"Соцработник\", 2 - \"Ванщик\" |\n| `no_tracking` | Если для сотрудника не подразумевается отслеживание, то должен быть true. По умолчанию false. |\n `staffer` | true, если сотрудник оформлен по ТК. По умолчанию false. |\n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -634,6 +634,82 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/objects/statements-permit/{object_id}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "object_id",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Object's name_id"
+        }
+      ],
+      "post": {
+        "tags": ["Objects"],
+        "summary": "Запрет проставления выходов для подопечного",
+        "description": "",
+        "requestBody": {
+          "description": "A JSON User object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "allow": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Запрет на проставление выходов применен/отменен"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
                 }
               }
             }
@@ -1112,7 +1188,7 @@
         },
         "responses": {
           "200": {
-            "description": "## Отчет\nПараметры отчета - см. схему.  \n`duplicated_attends` - данные о дублирующихся выходах, то есть когда к одному подопечному одновременно выходило 2 и более сотрудников в один день.\n`horizontal_report` - состоит из списка столбцов `columns` и данных `data`, которые являются списком со значениями для каждого столбца.\n",
+            "description": "## Отчет\nПараметры отчета - см. схему.  \n`duplicated_attends` - данные о дублирующихся выходах, то есть когда к одному подопечному одновременно выходило 2 и более сотрудников в один день.\n`horizontal_report` - состоит из списка столбцов `columns` и данных `data`, которые являются списком со значениями для каждого столбца.\n`no_payments` - подопечные, которые не доплачивают; выделяются в таблице цветом.\n`staffers` - сотрудники, устроенные по ТК; подсвечиваются в таблице цветом.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1145,6 +1221,18 @@
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/ReportDuplicatedAttends"
+                      }
+                    },
+                    "no_payments": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "staffers": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
                       }
                     }
                   }
@@ -1822,6 +1910,10 @@
             "format": "date"
           },
           "no_tracking": {
+            "type": "boolean",
+            "default": false
+          },
+          "staffer": {
             "type": "boolean",
             "default": false
           }

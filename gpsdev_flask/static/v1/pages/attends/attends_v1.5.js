@@ -244,6 +244,7 @@ const formatDict = {
 
 let duplicateData = null;
 let noPaymentsData = null;
+let staffersData = null;
 
 //request table data from server and create table
 function getTable(parameters) {
@@ -259,6 +260,7 @@ function getTable(parameters) {
       console.log("data: ", data);
       duplicateData = data.duplicated_attends;
       noPaymentsData = data.no_payments;
+      staffersData = data.staffers;
       let columns = data.horizontal_report.columns;
       let newColumns = [];
 
@@ -1131,6 +1133,7 @@ function updateDataInTable(parameters, table, selectedCells, searchValue) {
       console.log("data: ", data);
       duplicateData = data.duplicated_attends;
       noPaymentsData = data.no_payments;
+      staffersData = data.staffers;
       table.destroyMerged();
       table.setData(data.horizontal_report.data);
       let newSearch = document.getElementsByClassName("jexcel_search")[0];
@@ -1251,6 +1254,7 @@ const cellsColors = {
   ПРОВ: "#ffa62c",
   "БОЛЬНИЧНЫЙ/ОТПУСК/УВОЛ.": "#fce5cd",
   no_payments: "#d8abc9",
+  staffers: "#c7d1f6",
   Н: "#cfd09e",
 };
 
@@ -1266,6 +1270,9 @@ function coloredTable(instance, cell, col, row, val, label, cellName) {
   } else if (col == 4 && noPaymentsData.includes(val)) {
     instance.jexcel.getCellFromCoords(3, row).style.backgroundColor =
       cellsColors["no_payments"];
+  } else if (col == 1 && staffersData.includes(val)) {
+    instance.jexcel.getCellFromCoords(0, row).style.backgroundColor =
+      cellsColors["staffers"];
   }
 }
 
@@ -1416,8 +1423,15 @@ function sendChangedStatements() {
         console.log("Изменения сохранены");
         listOfStatementsToSend = [];
         fetchStatementsPending = false;
+        return response.json();
       }
       return Promise.reject(response);
+    })
+    .then((data) => {
+      if (data.message) {
+        alertsToggle(data.message, "success", 6000);
+        console.log(data.message);
+      }
     })
     .catch((response) => {
       if (response.status === 422) {
@@ -1962,6 +1976,38 @@ function createContextMenu(object, x, y, e) {
       title: "Данные о подопечном",
       onclick: () => {
         contextMenuCreateObjectForm(object, x, y, e);
+      },
+    };
+    contextMenuList.push(ctxmObject);
+  }
+
+  // блокировка выходов
+  if (
+    x > amountOfColumns &&
+    y &&
+    localStorage.getItem("rang-id") <= 2 &&
+    oneCell
+  ) {
+    let ctxmObject = {
+      title: "Выходы -> Заблокировать",
+      onclick: () => {
+        contextMenuStatementsPermit(object, x, y, e, false);
+      },
+    };
+    contextMenuList.push(ctxmObject);
+  }
+
+  //разблокировка выходов
+  if (
+    x > amountOfColumns &&
+    y &&
+    localStorage.getItem("rang-id") <= 2 &&
+    oneCell
+  ) {
+    let ctxmObject = {
+      title: "Выходы -> Разблокировать",
+      onclick: () => {
+        contextMenuStatementsPermit(object, x, y, e, true);
       },
     };
     contextMenuList.push(ctxmObject);
@@ -3916,4 +3962,76 @@ function fillFormWithData(data) {
   endDate.value = data.denial_date;
   apartment.value = data.apartment_number;
   personalService.value = data.personal_service_after_revision;
+}
+
+function contextMenuStatementsPermit(object, x, y, e, state) {
+  if (state == false) {
+    if (
+      !confirm("При блокировке удалятся выходы к ПСУ за этот день. Продолжить?")
+    )
+      return;
+  }
+
+  let objectId = attendsTable.getCellFromCoords(
+    objectIdColumnIndex,
+    y
+  ).innerText;
+
+  let date = attendsTable.getColumnOptions(x).title;
+
+  let parameters = {
+    date: date,
+    allow: state,
+  };
+
+  sendStatementsPermit(parameters, objectId);
+}
+
+function sendStatementsPermit(parameters, objectId) {
+  let url = `/api/objects/statements-permit/${objectId}`;
+  fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parameters),
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      }
+      return Promise.reject(response);
+    })
+    .then((data) => {
+      if (parameters.allow == false) {
+        let refreshTableBtn = document.getElementById("refreshTableBtn");
+        refreshTableBtn.click();
+      }
+      alertsToggle(data.message, "success", 6000);
+    })
+    .catch((response) => {
+      if (response.status === 422) {
+        response.json().then((json) => {
+          Object.values(json.detail).forEach((d) => {
+            let splitD = d.split(":");
+            let nameField = splitD[0];
+            let newNameField = dictionary[nameField]
+              ? dictionary[nameField]
+              : nameField;
+            let newD = newNameField + ": " + splitD[1];
+            alertsToggle(newD, "danger", 5000);
+            console.log(newD);
+          });
+        });
+      }
+      if (response.status >= 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
+    });
 }

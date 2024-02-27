@@ -146,6 +146,7 @@ class Employees(Base):
     bath_attendant: Mapped[bool]
     division: Mapped[int] = mapped_column(ForeignKey('division.id'))
     schedule: Mapped[int] = mapped_column(ForeignKey('schedule.id'))
+    staffer: Mapped[bool]
     division_ref: Mapped['Division'] = relationship('Division', lazy='joined')
     schedule_ref: Mapped['Schedule'] = relationship('Schedule', lazy='joined')
 
@@ -227,3 +228,18 @@ class OwnTracksLocation(Base):
     t: Mapped[str] = mapped_column(CHAR(1), nullable=True)
     tst: Mapped[int] = mapped_column(nullable=True)
     vel: Mapped[int] = mapped_column(SMALLINT(), nullable=True)
+    
+
+class PermitStatements(Base):
+    __tablename__ = 'permit_statements'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    object_id: Mapped[int] = mapped_column(
+        ForeignKey('objects_site.object_id')
+    )
+    date: Mapped[dt.date]
+    
+    __table_args__ = (
+        Index('object_id', 'date'),
+        UniqueConstraint('object_id', 'date',
+                         name='_permit_statements_unique_constraint')
+    )

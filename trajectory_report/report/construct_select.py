@@ -292,3 +292,8 @@ def employees_with_nameid_name_phone(name_ids: List[int]) -> Select:
         .where(Employees.name_id.in_(name_ids))
     return sel
         
+def staffers(name_ids: List[int]) -> Select:
+    sel: Select = select(Employees.name_id)\
+        .where(Employees.name_id.in_(name_ids))\
+        .where(Employees.staffer == True)
+    return sel

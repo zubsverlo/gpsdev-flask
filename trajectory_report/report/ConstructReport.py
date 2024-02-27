@@ -323,11 +323,14 @@ class DatabaseReportDataGetter:
                 current_locations['date'] = current_locations['locationDate'] \
                     .apply(lambda x: x.date())
                     
+            staffers = [i for i in 
+                        conn.execute(cs.staffers(name_ids)).scalars()]
+            
             comment = pd.read_sql(cs.comment(division, name_ids), conn)
             frequency = pd.read_sql(cs.frequency(division, name_ids), conn)
             income = pd.read_sql(cs.income(object_ids), conn)
-            no_payments = pd.read_sql(cs.no_payments(object_ids), conn)
-            no_payments = no_payments.object_id.tolist()
+            no_payments = [i for i in 
+                        conn.execute(cs.no_payments(object_ids)).scalars()]
             empty_locations: list = []
             employees_with_phone: pd.DataFrame = pd.DataFrame(
                 columns=['name_id', 'name', 'phone']
@@ -361,6 +364,7 @@ class DatabaseReportDataGetter:
         data['_no_payments'] = no_payments
         data['_empty_locations'] = empty_locations
         data['_employees_with_phone'] = employees_with_phone
+        data['_staffers'] = staffers
         return data
 
 

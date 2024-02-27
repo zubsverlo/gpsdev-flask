@@ -226,6 +226,7 @@ class Report(ReportBase):
         self._frequency = data.get('_frequency')
         self._income = data.get('_income')
         self._no_payments = data.get('_no_payments')
+        self._staffers = data.get('_staffers')
         # Опциональные данные для анализа последних локаций сотрудников
         self._empty_locations = data.get('_empty_locations')
         self._employees_with_phone = data.get('_employees_with_phone')
@@ -699,7 +700,8 @@ class Report(ReportBase):
                         'data': h_report
                     },
                 'duplicated_attends': dups,
-                'no_payments': self._no_payments}
+                'no_payments': self._no_payments,
+                'staffers': self._staffers}
 
 
 class ReportWithAdditionalColumns(Report):
@@ -936,7 +938,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = ReportWithAdditionalColumns('2024-02-01', '2024-02-28', "ПВТ1", check_for_empty_locations=True)
+    r = ReportWithAdditionalColumns('2024-02-01', '2024-02-28', "ПВТ1")
     # o = OneEmployeeReport(658, "2023-09-25", "Зеленоград")
     e = time.perf_counter()
     # r = ReportWithAdditionalColumns(dt.date.today(), dt.date.today(), "ПВТ6", check_for_empty_locations=True)

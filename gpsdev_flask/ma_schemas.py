@@ -58,6 +58,7 @@ class EmployeesSchema(Schema):
     schedule = fields.Integer(load_default=1)
     no_tracking = fields.Boolean(load_default=False)
     bath_attendant = fields.Boolean(load_default=False)
+    staffer = fields.Boolean(load_default=False)
 
     @validates('name')
     def validate_name(self, name):
@@ -455,3 +456,8 @@ class OwnTracksLocationSchema(Schema):
                 .fromtimestamp(data['tst'], tz=timezone)\
                 .isoformat()
         return data
+    
+
+class ObjectStatementPermit(Schema):
+    allow = fields.Bool(required=True)
+    date = fields.Date(required=True)
