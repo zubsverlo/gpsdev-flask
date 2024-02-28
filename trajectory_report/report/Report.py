@@ -506,7 +506,7 @@ class Report(ReportBase):
         report['object_id'] = report['object_id'].astype(int)
         return report
 
-    def xlsx(self, list_no_payments: list | None = None) -> io.BytesIO:
+    def xlsx(self, list_no_payments: list[int] | None = None) -> io.BytesIO:
         """Переводит отчет в xlsx файл (объект BytesIO)"""
         document = io.BytesIO()
         writer = pd.ExcelWriter(document, engine='xlsxwriter')
@@ -566,6 +566,7 @@ class Report(ReportBase):
         no_payments = book.add_format({'bg_color': '#d8abc9',
                                        'align': 'left'})
         align_left = book.add_format({'align': 'left'})
+        staffers = book.add_format({'bg_color': '#c7d1f6'})
 
         if list_no_payments:
             a = self.horizontal_report[['object', 'object_id']].reset_index()
@@ -575,6 +576,18 @@ class Report(ReportBase):
                 item_format = no_payments if t.to_format else align_left
                 book.get_worksheet_by_name('Sheet1')\
                     .write(t.Index+1, 2, t.object, item_format)
+        
+        staffers_format_set = set()
+        if self._staffers:
+            a = self.horizontal_report[['name', 'name_id']].reset_index()
+            a['to_format'] = a['name_id']\
+                .apply(lambda x: x in self._staffers)
+            for t in a.itertuples():
+                if t.to_format:
+                    staffers_format_set.add(t.name)
+                item_format = staffers if t.to_format else None
+                book.get_worksheet_by_name('Sheet1')\
+                    .write(t.Index+1, 0, t.name, item_format)
 
         # book.get_worksheet_by_name('Sheet1')\
         #     .conditional_format('C1:ET1000',
@@ -663,22 +676,32 @@ class Report(ReportBase):
             book.get_worksheet_by_name('Sheet1').set_row(
                 i, 15, align_rows_format)
 
-        merge_format = book.add_format({
-            'align': 'center',
-            'valign': 'vcenter',
-        })
-        merge_format.set_text_wrap()
-        merge_format.set_bottom(1)
         rows_format = book.add_format({
             'align': 'center',
             'valign': 'vcenter',
         })
         rows_format.set_bottom(1)
+        
+        def merge_format_getter(staffers=False):
+            format_ = book.add_format({
+            'align': 'center',
+            'valign': 'vcenter',
+            })
+            format_.set_text_wrap()
+            format_.set_bottom(1)
+            if staffers:
+                format_.set_bg_color('#c7d1f6')
+            return format_
+        
         for i in to_merge:
             book.get_worksheet_by_name('Sheet1').set_row(i[2], 15,
                                                          rows_format)
+            if i[1] in staffers_format_set:
+                book.get_worksheet_by_name('Sheet1') \
+                .merge_range(i[0], i[1], merge_format_getter(staffers=True))
+                continue
             book.get_worksheet_by_name('Sheet1') \
-                .merge_range(i[0], i[1], merge_format)
+                .merge_range(i[0], i[1], merge_format_getter())
 
         book.get_worksheet_by_name('Sheet1').autofilter("A1:B1000")
 
