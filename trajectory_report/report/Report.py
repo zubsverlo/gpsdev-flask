@@ -308,9 +308,7 @@ class Report(ReportBase):
         # Подтвержденная служебная записка приравнивается к выходу, поэтому
         # учитывается в дубликатах.
         self.duplicated_attends = self.report\
-            .query("result != 'Н/Б'")\
             .query("object_id != 1")\
-            .query("result != 'ПРОВ'")\
             .groupby(by=['object', 'object_id', 'date']) \
             .agg({'result': 'count', 'name': lambda x: ", ".join(list(x))}) \
             .reset_index() \
