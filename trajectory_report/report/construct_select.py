@@ -35,14 +35,15 @@ def statements(date_from: dt.date,
             Statements.statement)
     else:
         sel = select(
-        Statements.name_id,
-        Employees.name,
-        Statements.object_id,
-        ObjectsSite.name.label('object'),
-        ObjectsSite.longitude,
-        ObjectsSite.latitude,
-        Statements.date,
-        Statements.statement)
+            Statements.name_id,
+            Employees.name,
+            Statements.object_id,
+            ObjectsSite.name.label('object'),
+            ObjectsSite.longitude,
+            ObjectsSite.latitude,
+            Statements.date,
+            Statements.statement
+        )
     sel = sel\
         .join(Employees) \
         .join(ObjectsSite) \
@@ -60,23 +61,64 @@ def statements(date_from: dt.date,
     return sel
 
 
-def employees(**kwargs) -> Select:
-    """Все сотрудники"""
-    sel: Select = select(
-        Employees.name_id,
-        Employees.name
-    )
+def statements_extended(
+    date_from: dt.date,
+    date_to: dt.date,
+    division: Optional[Union[int, str]] = None,
+    name_ids: Optional[List[int]] = None,
+    object_ids: Optional[List[int]] = None
+) -> Select:
+    """Получить записи с заявленными выходами"""
+    
+    sel = select(
+        Statements.name_id,
+        Statements.object_id,
+        Statements.date,
+        Statements.statement
+    )\
+        .where(Statements.date >= date_from) \
+        .where(Statements.date <= date_to).select_from(Statements)
+    if isinstance(division, int):
+        sel = sel.where(Statements.division == division)
+    if isinstance(division, str):
+        sel = sel.join(Division, Statements.division == Division.id)
+        sel = sel.where(Division.division == division)
+    if name_ids:
+        sel = sel.where(Statements.name_id.in_(name_ids))
+    if object_ids:
+        sel = sel.where(Statements.object_id.in_(object_ids))
     return sel
 
 
-def objects(**kwargs) -> Select:
+def employees(ids: list[int] | None = None, **kwargs) -> Select:
+    """Все сотрудники"""
+    sel: Select = select(
+        Employees.name_id,
+        Employees.name,
+        Employees.bath_attendant,
+        Employees.name,
+        Employees.schedule,
+        Employees.phone,
+        Employees.staffer
+    )
+    if ids:
+        sel = sel.where(Employees.name_id.in_(ids))
+    return sel
+
+
+def objects(ids: list[int] | None = None, **kwargs) -> Select:
     """Все объекты (подопечные)"""
     sel: Select = select(
         ObjectsSite.object_id,
         ObjectsSite.name.label('object'),
         ObjectsSite.latitude,
-        ObjectsSite.longitude
+        ObjectsSite.longitude,
+        ObjectsSite.address,
+        ObjectsSite.no_payments,
+        ObjectsSite.income
     )
+    if ids:
+        sel = sel.where(ObjectsSite.object_id.in_(ids))
     return sel
 
 
@@ -147,8 +189,8 @@ def serves(date_from: dt.date,
     return sel
 
 
-def current_locations(subscriber_ids: Optional[List[int]] = None,
-                      **kwargs) -> Select:
+def current_locations_mts(subscriber_ids: Optional[List[int]] = None,
+                          **kwargs) -> Select:
     """get current locations by subscriber_ids"""
     sel: Select = select(Coordinates.subscriberID,
                          Coordinates.locationDate,
@@ -173,7 +215,8 @@ def clusters(date_from: dt.date,
         Clusters.longitude,
         Clusters.latitude,
         Clusters.leaving_datetime,
-        Clusters.cluster) \
+        Clusters.cluster
+    ) \
         .where(Clusters.date >= date_from)
 
     if date_to:
@@ -200,6 +243,27 @@ def statements_one_emp(date: dt.date,
     ) \
         .join(Employees) \
         .join(ObjectsSite) \
+        .where(Statements.date == date) \
+        .where(Statements.name_id == name_id).select_from(Statements)
+    if isinstance(division, int):
+        sel = sel.where(Statements.division == division)
+    if isinstance(division, str):
+        sel = sel.join(Division, Statements.division == Division.id)
+        sel = sel.where(Division.division == division)
+    return sel
+
+
+def statements_one_emp_extended(
+    date: dt.date,
+    name_id: int,
+    division: int | str | None
+) -> Select:
+    sel = select(
+        Statements.name_id,
+        Statements.object_id,
+        Statements.date,
+        Statements.statement
+    ) \
         .where(Statements.date == date) \
         .where(Statements.name_id == name_id).select_from(Statements)
     if isinstance(division, int):
@@ -287,11 +351,13 @@ def empty_locations() -> Select:
         .having(last_loc == None)
     return sel
 
+
 def employees_with_nameid_name_phone(name_ids: List[int]) -> Select:
     sel: Select = select(Employees.name_id, Employees.name, Employees.phone)\
         .where(Employees.name_id.in_(name_ids))
     return sel
-        
+
+
 def staffers(name_ids: List[int]) -> Select:
     sel: Select = select(Employees.name_id)\
         .where(Employees.name_id.in_(name_ids))\

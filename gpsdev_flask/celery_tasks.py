@@ -33,12 +33,12 @@ def clusters():
 def journal():
     update_journal()
     redis_session.expireat('journal', 0)
-    
-    
+
+
 @app_celery.task(name='no_locations_notify')
 def no_locations_notify():
     empty_locations_notify()
-    
+
 
 app_celery.conf.beat_schedule = {
     'fetch-coords-every-2-mins': {
