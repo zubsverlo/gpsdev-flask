@@ -17,24 +17,30 @@ def get_dates_range() -> List[dt.date]:
             # Если кластеры ещё не производились - задать день 2 месяца назад
             date = dt.date.today() - dt.timedelta(days=60)
         # Список дат, по которым нужно произвести кластеры координат.
-        return [date + dt.timedelta(days=i)
-                for i in range(1, (dt.date.today() - date).days)]
+        return [
+            date + dt.timedelta(days=i)
+            for i in range(1, (dt.date.today() - date).days)
+        ]
 
 
 def get_coordinates(date: dt.date) -> pd.DataFrame:
-    """ Собирает все координаты за указанный день """
-    sel = select(Coordinates.subscriberID,
-                 Coordinates.requestDate,
-                 Coordinates.locationDate,
-                 Coordinates.longitude,
-                 Coordinates.latitude) \
-        .where(Coordinates.requestDate > date) \
-        .where(Coordinates.requestDate < date + dt.timedelta(days=1)) \
+    """Собирает все координаты за указанный день"""
+    sel = (
+        select(
+            Coordinates.subscriberID,
+            Coordinates.requestDate,
+            Coordinates.locationDate,
+            Coordinates.longitude,
+            Coordinates.latitude,
+        )
+        .where(Coordinates.requestDate > date)
+        .where(Coordinates.requestDate < date + dt.timedelta(days=1))
         .where(Coordinates.locationDate != None)
+    )
     return pd.read_sql(sel, DB_ENGINE.connect())
 
 
-def make_clusters():
+def make_clusters_mts():
     # Получить список дат для формирования кластеров
     dates = get_dates_range()
     print(dates)
@@ -44,11 +50,10 @@ def make_clusters():
         # Сформировать кластеры
         clusters = prepare_clusters(coords)
         # Сохранить кластеры в БД
-        clusters.to_sql(Clusters.__tablename__,
-                        DB_ENGINE,
-                        if_exists='append',
-                        index=False)
-        print(f'Clusters for {date} have been uploaded.')
+        clusters.to_sql(
+            Clusters.__tablename__, DB_ENGINE, if_exists="append", index=False
+        )
+        print(f"Clusters for {date} have been uploaded.")
 
 
 if __name__ == "__main__":

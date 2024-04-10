@@ -1,7 +1,7 @@
 from gpsdev_flask.celery_app import app_celery
 from gpsdev_flask import redis_session
 from trajectory_report.gather.coordinates import fetch_coordinates
-from trajectory_report.gather.clusters import make_clusters
+from trajectory_report.gather.clusters_mts import make_clusters_mts
 from trajectory_report.gather.journal import update_journal
 from celery.schedules import crontab
 from trajectory_report.notificators.telegram import empty_locations_notify
@@ -17,44 +17,44 @@ def set_json_cache(table, json_response):
     redis_session.set(table, json_response)
 
 
-@app_celery.task(name='update_coordinates')
+        select(
 def update_coordinates():
     fetch_coordinates()
-    redis_session.expireat('current_locations', 0)
+    redis_session.expireat("current_locations", 0)
 
 
-@app_celery.task(name='clusters')
+@app_celery.task(name="clusters")
 def clusters():
-    make_clusters()
-    redis_session.expireat('clusters', 0)
+    make_clusters_mts()
+    redis_session.expireat("clusters", 0)
 
 
-@app_celery.task(name='journal')
+@app_celery.task(name="journal")
 def journal():
     update_journal()
-    redis_session.expireat('journal', 0)
+    redis_session.expireat("journal", 0)
 
 
-@app_celery.task(name='no_locations_notify')
+@app_celery.task(name="no_locations_notify")
 def no_locations_notify():
     empty_locations_notify()
 
 
 app_celery.conf.beat_schedule = {
-    'fetch-coords-every-2-mins': {
-        'task': 'update_coordinates',
-        'schedule': crontab(minute='*/2')
+    "fetch-coords-every-2-mins": {
+        "task": "update_coordinates",
+        "schedule": crontab(minute="*/2"),
     },
-    'fetch-clusters-every-three-hours': {
-        'task': 'clusters',
-        'schedule': crontab(minute='30', hour='*/3')
+    "fetch-clusters-every-three-hours": {
+        "task": "clusters",
+        "schedule": crontab(minute="30", hour="*/3"),
     },
-    'update-journal-every-10-mins': {
-        'task': 'journal',
-        'schedule': crontab(minute='*/10')
+    "update-journal-every-10-mins": {
+        "task": "journal",
+        "schedule": crontab(minute="*/10"),
     },
-    'empty-locations-notify-every-hour': {
-        'task': 'no_locations_notify',
-        'schedule': crontab(minute='0', hour='9-22')
-    }
+    "empty-locations-notify-every-hour": {
+        "task": "no_locations_notify",
+        "schedule": crontab(minute="0", hour="9-22"),
+    },
 }
