@@ -1,6 +1,7 @@
 from trajectory_report.models import OwnTracksCluster, OwnTracksLocation
-from sqlalchemy import select, func
-from trajectory_report.database import DB_ENGINE
+from sqlalchemy import select, func, delete
+from sqlalchemy.exc import OperationalError
+from trajectory_report.database import DB_ENGINE, REDIS_CONN
 import datetime as dt
 from typing import List
 import pandas as pd
@@ -40,25 +41,51 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
     return coords
 
 
-def make_clusters_owntracks():
+def remake_clusters():
+    """Удаление кластеров за определенный день и формирование заново
+    В случае, если локации по сотруднику пришли с запозданием, дата локации
+    попадает в Redis для того, чтобы переформировать созданные кластеры.
+    Фукнция удаляет кластеры по каждой из дат в этом списке и формирует заново
+    """
+    dates = []
+    while True:
+        date = REDIS_CONN.spop("owntracks_cluster_dates")
+        print(date)
+        if not date:
+            break
+        date = dt.date.fromisoformat(date.decode())
+        stmt = delete(OwnTracksCluster).where(OwnTracksCluster.date == date)
+        try:
+            with DB_ENGINE.connect() as conn:
+                conn.execute(stmt)
+                conn.commit()
+            dates.append(date)
+        except OperationalError:
+            REDIS_CONN.sadd("owntracks_cluster_dates", str(date))
+    if dates:
+        make_clusters_owntracks(dates)
+
+
+def make_clusters_owntracks(dates: list[dt.date] | None = None):
     # Получить список дат для формирования кластеров
-    dates = get_dates_range()
+    if not dates:
+        dates = get_dates_range()
     print(dates)
     for date in dates:
         # Получить координаты
         coords = get_coordinates(date)
         # Сформировать кластеры
-        clusters = prepare_clusters(coords)
+        clusters = prepare_clusters(coords, owntracks=True)
         # Сохранить кластеры в БД
-        # clusters.to_sql(
-        #     OwnTracksCluster.__tablename__,
-        #     DB_ENGINE,
-        #     if_exists="append",
-        #     index=False,
-        # )
+        clusters.to_sql(
+            OwnTracksCluster.__tablename__,
+            DB_ENGINE,
+            if_exists="append",
+            index=False,
+        )
         print(f"Clusters for {date} have been uploaded.")
-        print(clusters.empty)
 
 
 if __name__ == "__main__":
     make_clusters_owntracks()
+    remake_clusters()

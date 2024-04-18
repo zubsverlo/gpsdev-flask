@@ -7,11 +7,12 @@ dotenv.load_dotenv()
 if os.getenv("ENV") == "production":
     DB = os.getenv("DATABASE_PRODUCTION")
     ASYNC_DB = os.getenv("ASYNC_DATABASE_PRODUCTION")
+    REDIS = os.getenv("REDIS")
 else:
     DB = os.getenv("DATABASE_DEVELOPMENT")
     ASYNC_DB = os.getenv("ASYNC_DATABASE_DEVELOPMENT")
+    REDIS = os.getenv("REDIS_DEVELOPMENT")
 
-REDIS = "redis"
 
 TOKENS_MTS = {
     "ГССП": os.getenv("TOKEN_MTS_GSSP"),

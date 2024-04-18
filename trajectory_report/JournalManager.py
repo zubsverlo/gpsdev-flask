@@ -37,10 +37,6 @@ import pandas as pd
 from collections import defaultdict
 from numpy import nan
 from sqlalchemy import func, distinct
-from time import perf_counter
-from typing import Any
-import pickle
-import bz2
 
 
 class JournalManager:
@@ -295,8 +291,9 @@ class HrManager:
         # Проделать все автоматические операции с журналом и сотрудниками
         self._todo_del_quit_date()
         self._todo_set_quit_date()
-        self._todo_close_journal_period()
+        self._todo_close_journal_period_mts()
         self._todo_open_journal_period()
+        self._todo_change_journal_period_from_owntracks_to_mts()
         self._todo_open_close_journal_period()
         # commit на сессию
         self.session.commit()
@@ -307,21 +304,6 @@ class HrManager:
         self.connection.close()
         # self.redis_connection.delete("hrManagerDf")
         # self.__send_to_redis("hrManagerDf", self.df)
-
-    def __get_from_redis(self, key: str) -> Any:
-        """ "Fetch from redis by key, decompress and unpickle"""
-        fetched = self.redis_connection.get(key)
-        if not fetched:
-            return None
-        return pickle.loads(bz2.decompress(fetched))
-
-    def __send_to_redis(self, key: str, obj: Any) -> bool:
-        """Compress, pickle and set as a key"""
-        self.redis_connection.set(key, bz2.compress(pickle.dumps(obj)))
-        self.redis_connection.expireat(
-            key, int((dt.datetime.now() + dt.timedelta(minutes=3)).timestamp())
-        )
-        return True
 
     def _fill_df(self) -> None:
         # Все сотрудники (для изменений и отслеживания инфо по ним)
@@ -373,6 +355,7 @@ class HrManager:
                 "mts_active": False,
                 "journal_opened": False,
                 "no_statements": False,
+                "owntracks": False,
             }
         )
         df = pd.merge(df, self.divisions, on="division", how="left")
@@ -417,12 +400,14 @@ class HrManager:
             )
             self.session.execute(upd)
 
-    def _todo_close_journal_period(self) -> None:
+    def _todo_close_journal_period_mts(self) -> None:
         # Если запись в журнале открыта, но в списке мтс отсутствует - значит
         # закрыть её (либо текущей датой, либо датой последнего выхода при
         # наличии выходов)
-        close_journal_period = (self.df["journal_opened"] == True) & (
-            self.df["mts_active"] == False
+        close_journal_period = (
+            (self.df["journal_opened"] == True)
+            & (self.df["mts_active"] == False)
+            & (self.df["owntracks"] == False)
         )
         df = self.df.loc[close_journal_period]
         records = df.to_dict(orient="records")
@@ -450,6 +435,37 @@ class HrManager:
         df = self.df.loc[open_journal_period]
         records = df.to_dict(orient="records")
         for record in records:
+            ins = insert(Journal).values(
+                name_id=record["name_id"],
+                subscriberID=record["subscriberID_mts"],
+                period_init=dt.date.today(),
+            )
+            self.session.execute(ins)
+
+    def _todo_change_journal_period_from_owntracks_to_mts(self) -> None:
+        # subscriberID для добавления в journal вместо записи owntracks
+        change_journal_period = (
+            (self.df["mts_active"] == True)
+            & (self.df["journal_opened"] == True)
+            & (self.df["owntracks"] == True)
+            & (pd.isna(self.df["quit_date"]))
+            & (pd.notna(self.df["name_id"]))
+        )
+        df = self.df.loc[change_journal_period]
+        records = df.to_dict(orient="records")
+        close_period_date = dt.date.today() - dt.timedelta(days=1)
+
+        for record in records:
+            upd = (
+                update(Journal)
+                .where(Journal.name_id == record["name_id"])
+                .where(Journal.period_init == record["period_init"])
+                .where(Journal.owntracks == True)
+                .where(Journal.period_end == None)
+                .values(period_end=close_period_date)
+            )
+            self.session.execute(upd)
+
             ins = insert(Journal).values(
                 name_id=record["name_id"],
                 subscriberID=record["subscriberID_mts"],
@@ -486,6 +502,31 @@ class HrManager:
             )
             self.session.execute(upd)
             self.session.execute(ins)
+
+    def _todo_close_journal_period_owntracks(self) -> None:
+        # Если запись в журнале открыта, но в списке мтс отсутствует - значит
+        # закрыть её (либо текущей датой, либо датой последнего выхода при
+        # наличии выходов)
+        close_journal_period = (
+            (self.df["journal_opened"] == True)
+            & (self.df["mts_active"] == False)
+            & (self.df["owntracks"] == True)
+            & (self.df["quit_date"] <= dt.date.today())
+        )
+        df = self.df.loc[close_journal_period]
+        records = df.to_dict(orient="records")
+
+        close_period_date = dt.date.today() - dt.timedelta(days=1)
+
+        for record in records:
+            upd = (
+                update(Journal)
+                .where(Journal.name_id == record["name_id"])
+                .where(Journal.period_init == record["period_init"])
+                .where(Journal.subscriberID == record["subscriberID"])
+                .values(period_end=close_period_date)
+            )
+            self.session.execute(upd)
 
     def _get_employees(self) -> pd.DataFrame:
         sel = select(
@@ -586,14 +627,15 @@ class HrManager:
                 Journal.subscriberID,
                 Journal.period_init,
                 Journal.period_end,
+                Journal.owntracks,
                 Employees.name,
                 Employees.division,
                 Employees.hire_date,
                 Employees.quit_date,
                 Employees.no_tracking,
             )
-            .where(Journal.period_end == None)
             .join(Employees, Journal.name_id == Employees.name_id)
+            .where(Journal.period_end == None)
         )
         df = pd.read_sql(sel, self.connection)
         df["journal_opened"] = True
@@ -604,6 +646,7 @@ class HrManager:
                 "period_init",
                 "period_end",
                 "journal_opened",
+                "owntracks",
                 "name",
                 "division",
                 "quit_date",
@@ -644,6 +687,7 @@ class HrManager:
                 "hire_date",
                 "last_stmt_date",
                 "mts_active",
+                "owntracks",
             ]
         ]
         df = df.sort_values(["division_name", "last_stmt_date"])
@@ -684,9 +728,9 @@ class HrManager:
         # Или напомнить куратору, что сотрудник так и не проставлен в таблице.
         # Обязательно указывать кол-во дней с даты подключения, чтобы оценить
         # степень заброшенности сотрудника.
-        no_statements = (self.df["mts_active"] == True) & (
-            self.df["no_statements"] == True
-        )
+        no_statements = (
+            (self.df["mts_active"] == True) | (self.df["owntracks"] == True)
+        ) & (self.df["no_statements"] == True)
         df = self.df.loc[no_statements]
         df = df[
             [
@@ -696,6 +740,8 @@ class HrManager:
                 "division_name",
                 "hire_date",
                 "period_init",
+                "mts_active",
+                "owntracks",
             ]
         ]
         df = df.sort_values(["division_name", "period_init"])
@@ -717,6 +763,7 @@ class HrManager:
         # последнего проставленного выхода.
         to_connect = (
             (self.df["mts_active"] == False)
+            & (self.df["owntracks"] == False)
             & (self.df["no_tracking"] == False)
             & (pd.isna(self.df["quit_date"]))
         )
@@ -786,5 +833,6 @@ class HrManager:
 if __name__ == "__main__":
     j = HrManager()
     j.todo_all()
-    j.get_suggests_dict()
+    j = HrManager()
+    j = j.get_suggests_dict()
     pass

@@ -1,8 +1,8 @@
 from flask import Blueprint
-from gpsdev_flask import db_session
+from gpsdev_flask import db_session, redis_session
 from gpsdev_flask.models import OwnTracksLocation
 from sqlalchemy import select, update, delete
-from flask import jsonify, request, g
+from flask import jsonify, request, g, current_app
 from marshmallow import ValidationError, EXCLUDE
 from gpsdev_flask.api.error_responses import (
     not_found_404,
@@ -23,6 +23,7 @@ from trajectory_report.config import (
     CLUSTERS_CONFIG_MTS,
 )
 from jose import jwt, JWTError
+import datetime as dt
 
 
 owntracks_location = Blueprint("owntracks_location", __name__)
@@ -105,6 +106,11 @@ def post_location():
         print(e.messages)
         return validation_error_422(e.messages)
     loc = OwnTracksLocation(**obj, employee_id=1)
+    if loc.created_at.date() < dt.date.today():
+        # переформировать кластеры, если локации пришли позже
+        redis_session.sadd(
+            "owntracks_cluster_dates", str(loc.created_at.date())
+        )
     db_session.add(loc)
     db_session.commit()
     print(request.get_json())

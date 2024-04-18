@@ -16,20 +16,28 @@ def prepare_clusters(
     """
     Формирование остановок из DataFrame с координатами.
     """
-    stay_locations_config = (
-        STAY_LOCATIONS_CONFIG_MTS
-        if not owntracks
-        else STAY_LOCATIONS_CONFIG_OWNTRACKS
-    )
-    clusters_confing = (
-        CLUSTERS_CONFIG_MTS if not owntracks else CLUSTERS_CONFIG_OWNTRACKS
-    )
+
+    # Чтобы указать правильные столбцы для формирования tdf, в зависимости от
+    # источника локаций, используется dict
+    # По умолчанию это МТС
     extension_dict = {
-        "user_id": "subscriberID" if not owntracks else "employee_id",
-        "datetime": "locationDate" if not owntracks else "created_at",
-        "latitude": "latitude" if not owntracks else "lat",
-        "longitude": "longitude" if not owntracks else "lon",
+        "user_id": "subscriberID",
+        "datetime": "locationDate",
+        "latitude": "latitude",
+        "longitude": "longitude",
     }
+    stay_locations_config = STAY_LOCATIONS_CONFIG_MTS
+    clusters_confing = CLUSTERS_CONFIG_MTS
+
+    if owntracks:
+        extension_dict = {
+            "user_id": "employee_id",
+            "datetime": "created_at",
+            "latitude": "lat",
+            "longitude": "lon",
+        }
+        stay_locations_config = STAY_LOCATIONS_CONFIG_OWNTRACKS
+        clusters_confing = CLUSTERS_CONFIG_OWNTRACKS
 
     tdf = TrajDataFrame(
         coordinates,
