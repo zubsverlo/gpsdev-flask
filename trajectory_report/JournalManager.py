@@ -638,6 +638,11 @@ class HrManager:
             .where(Journal.period_end == None)
         )
         df = pd.read_sql(sel, self.connection)
+        # нужно поменять запрос на полный журнал, а потом отфильтровать все
+        # записи, чтобы осталась только последняя открытая запись
+        # (max period_init). Тогда не будет задвоений,
+        # а journal_opened оставить только для реально открытых записей
+        # df = df.groupby('name_id')
         df["journal_opened"] = True
         return df[
             [
