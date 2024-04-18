@@ -244,6 +244,7 @@ const formatDict = {
 
 let duplicateData = null;
 let noPaymentsData = null;
+let holidayAttendData = null;
 let staffersData = null;
 
 //request table data from server and create table
@@ -260,6 +261,7 @@ function getTable(parameters) {
       console.log("data: ", data);
       duplicateData = data.duplicated_attends;
       noPaymentsData = data.no_payments;
+      holidayAttendData = data.holiday_attend_needed;
       staffersData = data.staffers;
       let columns = data.horizontal_report.columns;
       let newColumns = [];
@@ -1133,6 +1135,7 @@ function updateDataInTable(parameters, table, selectedCells, searchValue) {
       console.log("data: ", data);
       duplicateData = data.duplicated_attends;
       noPaymentsData = data.no_payments;
+      holidayAttendData = data.holiday_attend_needed;
       staffersData = data.staffers;
       table.destroyMerged();
       table.setData(data.horizontal_report.data);
@@ -1254,6 +1257,7 @@ const cellsColors = {
   ПРОВ: "#ffa62c",
   "БОЛЬНИЧНЫЙ/ОТПУСК/УВОЛ.": "#fce5cd",
   no_payments: "#d8abc9",
+  holiday_attend: "#acacec",
   staffers: "#c7d1f6",
   Н: "#cfd09e",
 };
@@ -1267,9 +1271,28 @@ function coloredTable(instance, cell, col, row, val, label, cellName) {
     } else if (cell.innerText > 3) {
       cell.style.backgroundColor = cellsColors["3"];
     } else if (val == "") cell.style.backgroundColor = "";
-  } else if (col == 4 && noPaymentsData.includes(val)) {
-    instance.jexcel.getCellFromCoords(3, row).style.backgroundColor =
-      cellsColors["no_payments"];
+  } else if (
+    col == 4 &&
+    (noPaymentsData.includes(val) || holidayAttendData.includes(val))
+  ) {
+    if (noPaymentsData.includes(val) && !holidayAttendData.includes(val)) {
+      instance.jexcel.getCellFromCoords(3, row).style.backgroundColor =
+        cellsColors["no_payments"];
+    } else if (
+      !noPaymentsData.includes(val) &&
+      holidayAttendData.includes(val)
+    ) {
+      instance.jexcel.getCellFromCoords(3, row).style.backgroundColor =
+        cellsColors["holiday_attend"];
+    } else if (
+      noPaymentsData.includes(val) &&
+      holidayAttendData.includes(val)
+    ) {
+      instance.jexcel.getCellFromCoords(
+        3,
+        row
+      ).style.background = `linear-gradient(90deg,${cellsColors["no_payments"]} 50%,${cellsColors["holiday_attend"]} 50%)`;
+    }
   } else if (col == 1 && staffersData.includes(val)) {
     instance.jexcel.getCellFromCoords(0, row).style.backgroundColor =
       cellsColors["staffers"];

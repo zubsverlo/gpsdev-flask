@@ -86,6 +86,17 @@ function createForm() {
   noPaymentCheckLabel.htmlFor = "noPaymentCheck";
   noPaymentCheckLabel.innerText = "Частично платная основа, но не доплачивает";
 
+  let holidayAttendNeedField = document.createElement("div");
+  holidayAttendNeedField.id = "holidayAttendNeedField";
+
+  let holidayAttendNeedCheck = document.createElement("input");
+  holidayAttendNeedCheck.id = "holidayAttendNeedCheck";
+  holidayAttendNeedCheck.type = "checkbox";
+
+  let holidayAttendNeedCheckLabel = document.createElement("label");
+  holidayAttendNeedCheckLabel.htmlFor = "holidayAttendNeedCheck";
+  holidayAttendNeedCheckLabel.innerText = "Требуется посещение по выходным";
+
   let dateFieldsContainer = document.createElement("div");
   dateFieldsContainer.id = "dateFieldsContainer";
 
@@ -237,9 +248,13 @@ function createForm() {
   );
 
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
-  restFields.append(activeField, noPaymentField);
+  restFields.append(activeField, noPaymentField, holidayAttendNeedField);
   activeField.append(activeCheck, activeCheckLabel);
   noPaymentField.append(noPaymentCheck, noPaymentCheckLabel);
+  holidayAttendNeedField.append(
+    holidayAttendNeedCheck,
+    holidayAttendNeedCheckLabel
+  );
   dateFieldsContainer.append(startDateContainer, endDateContainer);
   btnsContainer.append(cancelBtn, saveBtn);
 
@@ -466,6 +481,7 @@ $("#objectTable").on("click", "button", function (e) {
   name.setAttribute("object-id", data.object_id);
   let options = document.getElementById("divisionField").childNodes;
   let noPayments = document.getElementById("noPaymentCheck");
+  let holidayAttend = document.getElementById("holidayAttendNeedCheck");
   let active = document.getElementById("activeCheck");
   let phone = document.getElementById("phoneField");
   let address = document.getElementById("addressField");
@@ -480,6 +496,7 @@ $("#objectTable").on("click", "button", function (e) {
   options.forEach((o) =>
     data.division_name === o.innerText ? (o.selected = true) : null
   );
+  data.holiday_attend_needed ? (holidayAttend.checked = true) : null;
   data.no_payments ? (noPayments.checked = true) : null;
   data.active ? (active.checked = true) : null;
   comment.value = data.comment;
@@ -696,6 +713,7 @@ function createObject() {
   let apartment = document.getElementById("apartmentField").value;
   let personalService = document.getElementById("personalServiceField").value;
   let noPayments = document.getElementById("noPaymentCheck").checked;
+  let holidayAttend = document.getElementById("holidayAttendNeedCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
   let comment = document.getElementById("commentArea").value;
@@ -719,6 +737,7 @@ function createObject() {
   endDate ? (parameters["denial_date"] = endDate) : null;
 
   noPayments ? (parameters["no_payments"] = noPayments) : null;
+  holidayAttend ? (parameters["holiday_attend_needed"] = holidayAttend) : null;
   active ? (parameters["active"] = active) : null;
 
   apartment != "" ? (parameters["apartment_number"] = apartment) : null;
@@ -795,6 +814,7 @@ function changeObject() {
   let apartment = document.getElementById("apartmentField").value;
   let personalService = document.getElementById("personalServiceField").value;
   let noPayments = document.getElementById("noPaymentCheck").checked;
+  let holidayAttend = document.getElementById("holidayAttendNeedCheck").checked;
   let active = document.getElementById("activeCheck").checked;
   let phone = document.getElementById("phoneField").value;
   let comment = document.getElementById("commentArea").value;
@@ -816,6 +836,7 @@ function changeObject() {
     longitude: longitude,
     address: address,
     no_payments: noPayments,
+    holiday_attend_needed: holidayAttend,
     active: active,
     phone: phone,
     comment: comment,

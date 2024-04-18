@@ -193,7 +193,8 @@
   }
 
   #activeField,
-  #noPaymentField {
+  #noPaymentField,
+  #holidayAttendNeedField {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -202,7 +203,8 @@
   }
 
   #activeField input,
-  #noPaymentField input {
+  #noPaymentField input,
+  #holidayAttendNeedField input {
     width: 20px;
     margin: 0;
     margin-right: 10px;
@@ -533,7 +535,8 @@
   }
 
   #activeField,
-  #noPaymentField {
+  #noPaymentField,
+  #holidayAttendNeedField {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -542,7 +545,8 @@
   }
 
   #activeField input,
-  #noPaymentField input {
+  #noPaymentField input,
+  #holidayAttendNeedField input {
     width: 20px;
     margin: 0;
     margin-right: 10px;
