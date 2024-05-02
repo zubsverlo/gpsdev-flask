@@ -14,6 +14,8 @@ from trajectory_report.models import (
     Clusters,
     Comment,
     Frequency,
+    OwnTracksCluster,
+    OwnTracksLocation,
 )
 
 
@@ -173,6 +175,7 @@ def journal(name_ids: Optional[List[int]] = None, **kwargs) -> Select:
         Journal.subscriberID,
         Journal.period_init,
         Journal.period_end,
+        Journal.owntracks,
     )
     if name_ids:
         sel = sel.where(Journal.name_id.in_(name_ids))
@@ -219,6 +222,21 @@ def current_locations_mts(
     return sel
 
 
+def current_locations_owntracks(
+    employee_ids: Optional[List[int]] = None, **kwargs
+) -> Select:
+    """get current locations by subscriber_ids"""
+    sel: Select = select(
+        OwnTracksLocation.employee_id.label("name_id"),
+        OwnTracksLocation.created_at,
+        OwnTracksLocation.lon,
+        OwnTracksLocation.lat,
+    ).where(OwnTracksLocation.created_at > dt.date.today())
+    if employee_ids:
+        sel = sel.where(OwnTracksLocation.employee_id.in_(employee_ids))
+    return sel
+
+
 def clusters(
     date_from: dt.date,
     date_to: Optional[dt.date] = None,
@@ -240,6 +258,29 @@ def clusters(
         sel = sel.where(Clusters.date < date_to + dt.timedelta(days=1))
     if subscriber_ids:
         sel = sel.where(Clusters.subscriberID.in_(subscriber_ids))
+    return sel
+
+
+def clusters_owntracks(
+    date_from: dt.date,
+    date_to: Optional[dt.date] = None,
+    employee_ids: Optional[List[int]] = None,
+    **kwargs
+) -> Select:
+    sel: Select = select(
+        OwnTracksCluster.employee_id.label("name_id"),
+        OwnTracksCluster.date,
+        OwnTracksCluster.datetime,
+        OwnTracksCluster.longitude,
+        OwnTracksCluster.latitude,
+        OwnTracksCluster.leaving_datetime,
+        OwnTracksCluster.cluster,
+    ).where(OwnTracksCluster.date >= date_from)
+
+    if date_to:
+        sel = sel.where(OwnTracksCluster.date < date_to + dt.timedelta(days=1))
+    if employee_ids:
+        sel = sel.where(OwnTracksCluster.employee_id.in_(employee_ids))
     return sel
 
 
@@ -311,12 +352,28 @@ def locations_one_emp(date: dt.date, subscriber_id: int) -> Select:
     return sel
 
 
+def locations_one_emp_owntracks(date: dt.date, employee_id: int) -> Select:
+    sel: Select = (
+        select(
+            OwnTracksLocation.employee_id,
+            OwnTracksLocation.created_at,
+            OwnTracksLocation.lon,
+            OwnTracksLocation.lat,
+        )
+        .where(OwnTracksLocation.created_at > date)
+        .where(OwnTracksLocation.created_at < date + dt.timedelta(days=1))
+        .where(OwnTracksLocation.employee_id == employee_id)
+    )
+    return sel
+
+
 def journal_one_emp(name_id: int) -> Select:
     sel: Select = select(
         Journal.name_id,
         Journal.subscriberID,
         Journal.period_init,
         Journal.period_end,
+        Journal.owntracks,
     ).where(Journal.name_id == name_id)
     return sel
 
@@ -386,6 +443,14 @@ def empty_locations() -> Select:
         .group_by(Coordinates.subscriberID)
         .having(last_loc == None)
     )
+    return sel
+
+
+def empty_locations_owntracks() -> Select:
+    prev_hour = dt.datetime.now() - dt.timedelta(hours=1)
+    sel: Select = select(
+        OwnTracksLocation.employee_id.distinct().label("name_id")
+    ).where(OwnTracksLocation.created_at >= prev_hour)
     return sel
 
 

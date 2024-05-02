@@ -105,7 +105,7 @@ def post_location():
     except ValidationError as e:
         print(e.messages)
         return validation_error_422(e.messages)
-    loc = OwnTracksLocation(**obj, employee_id=1)
+    loc = OwnTracksLocation(**obj, employee_id=1293)
     if loc.created_at.date() < dt.date.today():
         # переформировать кластеры, если локации пришли позже
         redis_session.sadd(

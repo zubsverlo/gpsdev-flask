@@ -493,7 +493,7 @@ class OwnTracksLocationSchema(Schema):
 
     @pre_load
     def datetimes(self, data, **kwargs):
-        timezone = dt.timezone(dt.timedelta(hours=2))
+        timezone = dt.timezone(dt.timedelta(hours=3))
         if data.get("created_at"):
             data["created_at"] = dt.datetime.fromtimestamp(
                 data["created_at"], tz=timezone
