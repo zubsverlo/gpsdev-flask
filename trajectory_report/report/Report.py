@@ -249,7 +249,7 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
         super().__init__(name_id, date, division)
         self.report = self._build_report()
         self.owntracks_location_analysis()
-        self.analytics = self._location_analysis()
+        # self.analytics = self._location_analysis()
 
     def _build_report(self) -> pd.DataFrame | None:
         stmts_clstrs = pd.merge(
@@ -305,24 +305,28 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
         df = df.reset_index()
         return df
 
-    def owntracks_location_analysis(self) -> pd.DataFrame:
+    def owntracks_location_analysis(self) -> None:
         locs = self._locations.copy()
+        if not self.owntracks:
+            locs = locs[pd.notna(locs["locationDate"])]
+            locs = locs.rename(columns={"locationDate": "created_at"})
+            locs = locs.sort_values("created_at")
+            locs = locs.drop_duplicates("created_at")
         locs["shifted"] = locs.created_at.shift(-1)
         locs["difference"] = locs.shifted - locs.created_at
         locs["long_period"] = locs.difference > dt.timedelta(minutes=25)
-        locs["changing_of_available"] = (
-            locs.long_period != locs.long_period.shift()
-        ).cumsum()
-        min_and_max = (
-            locs.groupby(by=["changing_of_available", "long_period"])
-            .agg(
-                min=pd.NamedAgg(column="created_at", aggfunc=min),
-                max=pd.NamedAgg(column="shifted", aggfunc=max),
-            )
-            .reset_index()
+
+        self.offline_periods = locs[locs["long_period"]]
+
+        self.start_time = locs["created_at"].min()
+        self.end_time = locs["created_at"].max()
+        self.locations_frequency = (
+            locs[locs["long_period"] == False]["difference"]
+            .mean()
+            .to_pytimedelta()
+            .__str__()
+            .split(".")[0]
         )
-        #
-        min_and_max["duration"] = min_and_max["max"] - min_and_max["min"]
         pass
 
     def _location_analysis(self) -> pd.DataFrame:
@@ -1362,7 +1366,8 @@ class OneEmployeeReportExtended:
 if __name__ == "__main__":
     s = time.perf_counter()
     # r = Report('2024-02-01', '2024-02-29', "ПВТ1")
-    o = OneEmployeeReport(1293, "2024-03-10", "Коньково")
+    # o = OneEmployeeReport(1293, "2024-03-10", "Коньково")
+    o = OneEmployeeReport(949, "2024-03-10", "ПВТ1")
     e = time.perf_counter()
     # a = r.as_json_dict
     print(e - s)

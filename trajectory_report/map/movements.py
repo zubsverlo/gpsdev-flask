@@ -76,12 +76,13 @@ class MapsBase:
         return x
 
     def _concatenate_points(self, df) -> pd.DataFrame:
-        df = skmob.TrajDataFrame(df,
-                                 latitude='latitude',
-                                 longitude='longitude')
+        df = skmob.TrajDataFrame(
+            df, latitude="latitude", longitude="longitude"
+        )
         df = clustering.cluster(df, cluster_radius_km=0.005)
-        df = df.groupby(by='cluster', group_keys=False)\
-            .apply(lambda x: self._tie_clusters(x))
+        df = df.groupby(by="cluster", group_keys=False).apply(
+            lambda x: self._tie_clusters(x)
+        )
         return pd.DataFrame(df)
 
     @property
@@ -98,15 +99,18 @@ class MapMovements(OneEmployeeReport, MapsBase):
     map - объект Folium
     map_html - код html для отображения карты
     """
-    def __init__(self,
-                 name_id: int,
-                 date: Union[dt.date, str],
-                 division: Union[int, str]):
+
+    def __init__(
+        self,
+        name_id: int,
+        date: Union[dt.date, str],
+        division: Union[int, str],
+    ):
         super().__init__(name_id, date, division)
 
-        self._objects = self._stmts\
-            .drop_duplicates('object_id')\
-            .loc[:, ['object', 'longitude', 'latitude', 'address']]
+        self._objects = self._stmts.drop_duplicates("object_id").loc[
+            :, ["object", "longitude", "latitude", "address"]
+        ]
 
         median_lat = median(self.clusters.latitude)
         median_lng = median(self.clusters.longitude)
@@ -116,7 +120,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
 
         self._median_coordinates = [
             median_lat if not isnan(median_lat) else 55.7522,
-            median_lng if not isnan(median_lng) else 37.6156
+            median_lng if not isnan(median_lng) else 37.6156,
         ]
 
         points = pd.concat([self._clusters_points, self._objects_points])
@@ -124,7 +128,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
         # В _objects_points не может быть datetime.
         # Но в данном случае не имеет значения, каким временем, поэтому
         # просто заполним случайным оразом
-        points['datetime'] = points['datetime'].ffill()
+        points["datetime"] = points["datetime"].ffill()
         self._points = self._concatenate_points(points)
 
         self.map = self._create_map()
@@ -133,47 +137,52 @@ class MapMovements(OneEmployeeReport, MapsBase):
     def _objects_points(self) -> pd.DataFrame:
         # Объекты
         objects = self._objects
-        objects['icon'] = [folium.features.Icon(icon='user',
-                                                prefix='fa',
-                                                color='black') for _ in
-                           range(len(objects))]
-        objects['tooltip'] = objects['object']
-        objects['popup'] = objects['object'] + '\n' + objects['address']
+        objects["icon"] = [
+            folium.features.Icon(icon="user", prefix="fa", color="black")
+            for _ in range(len(objects))
+        ]
+        objects["tooltip"] = objects["object"]
+        objects["popup"] = objects["object"] + "\n" + objects["address"]
         return objects
 
     @property
     def _clusters_points(self) -> pd.DataFrame:
         clusters = self.clusters
-        clusters['popup'] = clusters['leaving_datetime'] - clusters['datetime']
+        clusters["popup"] = clusters["leaving_datetime"] - clusters["datetime"]
 
-        clusters = clusters.sort_values(by='datetime')
+        clusters = clusters.sort_values(by="datetime")
 
         # Первая и последняя иконка - это начало и конец пути. Остальные -
         # "пауза".
         icons = [
-            folium.features.Icon(icon='pause', prefix='fa', color='orange')
+            folium.features.Icon(icon="pause", prefix="fa", color="orange")
             for _ in range(len(clusters))
         ]
         if icons:
             icons[0] = folium.features.Icon(
-                icon='play', prefix='fa', color='green'
+                icon="play", prefix="fa", color="green"
             )
             icons[-1] = folium.features.Icon(
-                icon='stop', prefix='fa', color='red'
+                icon="stop", prefix="fa", color="red"
             )
         # Добавление иконок к кластерам
-        clusters['icon'] = icons
+        clusters["icon"] = icons
         # Информация о времени (при наведении курсора)
-        clusters['tooltip'] = clusters['datetime'] \
-            .apply(lambda x: x.strftime('%H:%M'))
+        clusters["tooltip"] = clusters["datetime"].apply(
+            lambda x: x.strftime("%H:%M")
+        )
         # Подробная информация (при нажатии на точку)
-        clusters['popup'] = clusters.apply(lambda x: (
-            "Время:\n"
-            f"{x['tooltip']}\n"
-            "Длительность:\n"
-            f"{str(x['popup'])[-8:]}"), axis=1)
+        clusters["popup"] = clusters.apply(
+            lambda x: (
+                "Время:\n"
+                f"{x['tooltip']}\n"
+                "Длительность:\n"
+                f"{str(x['popup'])[-8:]}"
+            ),
+            axis=1,
+        )
         clusters = clusters[
-            ['datetime', 'latitude', 'longitude', 'icon', 'popup', 'tooltip']
+            ["datetime", "latitude", "longitude", "icon", "popup", "tooltip"]
         ]
         return clusters
 
@@ -184,27 +193,28 @@ class MapMovements(OneEmployeeReport, MapsBase):
         e.add_child(map)
 
         # Накидываем на карту все образовавшиеся точки.
-        
+
         for row in self._points.itertuples():
             folium.Marker(
                 (row.lat, row.lng),
                 popup=row.popup,
                 tooltip=row.tooltip,
-                icon=row.icon
+                icon=row.icon,
             ).add_to(map)
 
         # Antpath отображает маршрут через анимацию ползающих "муравьев"
-        path = self.clusters.sort_values(by='datetime')
+        path = self.clusters.sort_values(by="datetime")
         if len(path):
-            AntPath([i for i in zip(path.latitude,
-                                    path.longitude)],
-                    delay=1000,
-                    weight=6,
-                    dash_array=[9, 100],
-                    color='#000000',
-                    pulseColor='#FFFFFF',
-                    hardwareAcceleration=True,
-                    opacity=0.6).add_to(map)
+            AntPath(
+                [i for i in zip(path.latitude, path.longitude)],
+                delay=1000,
+                weight=6,
+                dash_array=[9, 100],
+                color="#000000",
+                pulseColor="#FFFFFF",
+                hardwareAcceleration=True,
+                opacity=0.6,
+            ).add_to(map)
         return map
 
     @property
@@ -213,32 +223,39 @@ class MapMovements(OneEmployeeReport, MapsBase):
         analytics = None
         if self.report is not None:
             report = self.report[
-                ['object', 'attend_number', 'datetime',
-                 'duration', 'attends_sum']
+                [
+                    "object",
+                    "attend_number",
+                    "datetime",
+                    "duration",
+                    "attends_sum",
+                ]
             ]
-            report['duration'] = report.duration.apply(lambda x: str(x)[-8:])
-            report['datetime'] = report.datetime.apply(lambda x: str(x)[-8:])
-            report = report.rename(columns={'datetime': "time"})
-            report = report.to_dict(orient='records')
+            report["duration"] = report.duration.apply(lambda x: str(x)[-8:])
+            report["datetime"] = report.datetime.apply(lambda x: str(x)[-8:])
+            report = report.rename(columns={"datetime": "time"})
+            report = report.to_dict(orient="records")
         if self.analytics is not None:
-            analytics = self.analytics[['available', 'min', 'max', 'duration']]
-            analytics['start'] = analytics['min'].apply(lambda x: str(x)[-8:])
-            analytics['end'] = analytics['max'].apply(lambda x: str(x)[-8:])
-            analytics['duration'] = analytics['duration'].apply(lambda x: str(x)[-8:])
+            analytics = self.analytics[["available", "min", "max", "duration"]]
+            analytics["start"] = analytics["min"].apply(lambda x: str(x)[-8:])
+            analytics["end"] = analytics["max"].apply(lambda x: str(x)[-8:])
+            analytics["duration"] = analytics["duration"].apply(
+                lambda x: str(x)[-8:]
+            )
             # analytics['status'] = analytics['available'].apply(lambda x: 'ON' if x else "OFF")
-            analytics['status'] = analytics['available']
+            analytics["status"] = analytics["available"]
             analytics = analytics[["start", "end", "duration", "status"]]
-            analytics = analytics.to_dict(orient='records')
+            analytics = analytics.to_dict(orient="records")
 
         resp = {
-            'map': self.map_html,
-            'recommended_for_checkout': self.recommended_for_checkout,
-            'no_movements': self.no_movements
+            "map": self.map_html,
+            # 'recommended_for_checkout': self.recommended_for_checkout,
+            "no_movements": self.no_movements,
         }
         if report:
-            resp['report'] = report
+            resp["report"] = report
         if analytics:
-            resp['analytics'] = analytics
+            resp["analytics"] = analytics
         return resp
 
 
@@ -249,36 +266,36 @@ class MapBindings(Report, MapsBase):
     отображает на карте подопечных.
     Помогает увидеть, в каком районе у сотрудника находятся подопечные.
     """
-    def __init__(self,
-                 date_from: Union[dt.date, str],
-                 date_to: Union[dt.date, str],
-                 division: Optional[Union[int, str]] = None,
-                 name_ids: Optional[List[int]] = None,
-                 object_ids: Optional[List[int]] = None,
-                 **kwargs
-                 ):
-        super().__init__(date_from,
-                         date_to,
-                         division,
-                         name_ids,
-                         object_ids,
-                         **kwargs)
+
+    def __init__(
+        self,
+        date_from: Union[dt.date, str],
+        date_to: Union[dt.date, str],
+        division: Optional[Union[int, str]] = None,
+        name_ids: Optional[List[int]] = None,
+        object_ids: Optional[List[int]] = None,
+        **kwargs,
+    ):
+        super().__init__(
+            date_from, date_to, division, name_ids, object_ids, **kwargs
+        )
 
         self.points = self._points_from_stmts()
 
         self.map = folium.Map(
             location=[55.50703, 37.58213],
-            zoom_start=12, tiles='cartodbpositron',
+            zoom_start=12,
+            tiles="cartodbpositron",
         )
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(self.map)
         self._create_map()
 
     def save_map(self):
-        self.map.save('/home/user/Desktop/map.html')
+        self.map.save("/home/user/Desktop/map.html")
 
     def _create_map(self):
-        self.points.groupby('name').apply(lambda x: self._make_layer(x))
+        self.points.groupby("name").apply(lambda x: self._make_layer(x))
         self.map.add_child(folium.map.LayerControl())
 
     def _make_layer(self, x):
@@ -288,7 +305,7 @@ class MapBindings(Report, MapsBase):
                 show=False,
                 name=x.name,
                 locations=[i for i in zip(x.lat.tolist(), x.lng.tolist())],
-                popups=x.object.tolist()
+                popups=x.object.tolist(),
             )
         )
 
@@ -300,13 +317,13 @@ class MapBindings(Report, MapsBase):
 
         # Object_id 1 без локаций, это служебный объект (отпуск, больнич, увол)
         # Даты нас не интересуют, только связка сотрудник-псу
-        points = self._stmts \
-            .loc[self._stmts.object_id != 1] \
-            .drop_duplicates(['name', 'object'])
+        points = self._stmts.loc[self._stmts.object_id != 1].drop_duplicates(
+            ["name", "object"]
+        )
 
         # Для кластеризации необходим столбец со временем, сгенерируем его
         # сами, т.к. подопечные имеют только координаты.
-        points['datetime'] = points.date.apply(
+        points["datetime"] = points.date.apply(
             lambda x: dt.datetime.fromisoformat(str(x))
         )
 
@@ -316,88 +333,95 @@ class MapBindings(Report, MapsBase):
         # и заменить эти координаты новыми, воссоединив с основным DataFrame.
 
         objects = self._concatenate_points(
-            points.drop_duplicates(['object_id'])
-        ).set_index('object_id')[['lng', 'lat']]
-        points = points.set_index('object_id')
+            points.drop_duplicates(["object_id"])
+        ).set_index("object_id")[["lng", "lat"]]
+        points = points.set_index("object_id")
         points = pd.merge(points, objects, left_index=True, right_index=True)
 
         return points.reset_index()
-    
+
 
 class MapObjectsOnly(Report, MapsBase):
-    def __init__(self,
-                 date_from: Union[dt.date, str],
-                 date_to: Union[dt.date, str],
-                 division: Optional[Union[int, str]] = None,
-                 name_ids: Optional[List[int]] = None,
-                 object_ids: Optional[List[int]] = None,
-                 **kwargs
-                 ):
-        super().__init__(date_from,
-                         date_to,
-                         division,
-                         name_ids,
-                         object_ids,
-                         objects_with_address=True,
-                         **kwargs)
-        
-        self._objects = self._stmts\
-            .drop_duplicates('object_id')\
-            .loc[self._stmts.object_id != 1] \
-            .loc[:, ['object', 'longitude', 'latitude', 'address']]
-            
+    def __init__(
+        self,
+        date_from: Union[dt.date, str],
+        date_to: Union[dt.date, str],
+        division: Optional[Union[int, str]] = None,
+        name_ids: Optional[List[int]] = None,
+        object_ids: Optional[List[int]] = None,
+        **kwargs,
+    ):
+        super().__init__(
+            date_from,
+            date_to,
+            division,
+            name_ids,
+            object_ids,
+            objects_with_address=True,
+            **kwargs,
+        )
+
+        self._objects = (
+            self._stmts.drop_duplicates("object_id")
+            .loc[self._stmts.object_id != 1]
+            .loc[:, ["object", "longitude", "latitude", "address"]]
+        )
+
         self._median_coordinates = [55.7522, 37.6156]
         points = self._objects.copy()
-        points['datetime'] = dt.datetime.now().isoformat(timespec='minutes')
+        points["datetime"] = dt.datetime.now().isoformat(timespec="minutes")
         self._points = self._concatenate_points(points)
         self.geojson = GeoDataFrame(
-            self._points.loc[:, ["object", "address"]], 
-            geometry=GeoSeries.from_xy(x=self._points.lng, y=self._points.lat)
-            ).to_json()
+            self._points.loc[:, ["object", "address"]],
+            geometry=GeoSeries.from_xy(x=self._points.lng, y=self._points.lat),
+        ).to_json()
         self.map = self._create_map()
-        
+
         pass
-    
+
     @property
     def _objects_points(self) -> pd.DataFrame:
         # Объекты
         objects = self._objects
-        objects['icon'] = [folium.features.Icon(icon='user',
-                                                prefix='fa',
-                                                color='black') for _ in
-                           range(len(objects))]
-        objects['tooltip'] = objects['object']
-        objects['popup'] = objects['object'] + '\n' + objects['address']
+        objects["icon"] = [
+            folium.features.Icon(icon="user", prefix="fa", color="black")
+            for _ in range(len(objects))
+        ]
+        objects["tooltip"] = objects["object"]
+        objects["popup"] = objects["object"] + "\n" + objects["address"]
         return objects
-    
+
     def _create_map(self):
         # СОЗДАНИЕ КАРТЫ
         map = folium.Map(self._median_coordinates, zoom_start=11)
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(map)
-        icon = folium.features.Icon(icon='user', prefix='fa', color='black')
+        icon = folium.features.Icon(icon="user", prefix="fa", color="black")
         Geocoder(placeholder="Найти адрес").add_to(map)
         object_layer = folium.GeoJson(
-            self.geojson, show=False, overlay=False, 
+            self.geojson,
+            show=False,
+            overlay=False,
             marker=folium.Marker(icon=icon),
             popup=folium.GeoJsonPopup(["object", "address"], labels=False),
-            tooltip=folium.GeoJsonTooltip(['object'], labels=False)
-            ).add_to(map)
-        Search(object_layer,
-               search_label='object',
-               placeholder="Поиск по ПСУ",
-               collapsed=True,
-               auto_collapse= True
-               ).add_to(map)
+            tooltip=folium.GeoJsonTooltip(["object"], labels=False),
+        ).add_to(map)
+        Search(
+            object_layer,
+            search_label="object",
+            placeholder="Поиск по ПСУ",
+            collapsed=True,
+            auto_collapse=True,
+        ).add_to(map)
         return map
 
 
 if __name__ == "__main__":
     divisions = ["ПВТ1", "ПНИ12,30"]
     start_date, end_date = "2023-01-01", "2023-01-23"
-    for division in divisions:        
+    for division in divisions:
         # m = MapBindings(start_date, end_date, division)
         # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
         m = MapObjectsOnly(start_date, end_date, division)
-        m.map.save(f'{division}_{start_date}-{end_date}_подопечные.html')
+        m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
     pass

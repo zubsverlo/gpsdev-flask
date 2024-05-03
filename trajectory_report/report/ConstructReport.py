@@ -562,8 +562,9 @@ class OneEmployeeReportDataGetter:
                     f"Не подключен к отслеживанию в этот день ({date})"
                 )
             if journal.iloc[0].subscriberID:
+                subs_id = int(journal.iloc[0].subscriberID)
                 locations = pd.read_sql(
-                    cs.locations_one_emp(date, journal.iloc[0].subscriberID),
+                    cs.locations_one_emp(date, subs_id),
                     conn,
                 )
                 valid_locations = locations[
