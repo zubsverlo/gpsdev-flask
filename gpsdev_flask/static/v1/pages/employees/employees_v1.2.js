@@ -138,12 +138,7 @@ function createForm() {
   nameFieldContainer.append(nameFieldLabel, nameField);
   phoneFieldContainer.append(phoneFieldLabel, phoneField);
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
-  restFields.append(
-    dateFields,
-    scheduleField,
-    noTrackingContainer,
-    stafferContainer
-  );
+  restFields.append(dateFields, scheduleField, stafferContainer);
   dateFields.append(hireDateLabel, hireDateField, quitDateLabel, quitDateField);
   scheduleField.append(scheduleCheck, scheduleCheckLabel);
   noTrackingContainer.append(noTrackingCheck, noTrackingCheckLabel);
@@ -281,7 +276,7 @@ $.ajax({
       hireDate.value = data.hire_date;
       quitDate.value = data.quit_date;
       data.schedule == 2 ? (scheduleCheck.checked = true) : null;
-      noTrackingCheck.checked = data.no_tracking;
+      // noTrackingCheck.checked = data.no_tracking;
       stafferCheck.checked = data.staffer;
 
       saveBtn.onclick = changeEmployee;
@@ -330,7 +325,7 @@ function createEmployee(e) {
 
   let scheduleCheck = document.getElementById("scheduleCheck").checked;
 
-  let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
+  // let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
 
   let stafferCheck = document.getElementById("stafferCheck").checked;
 
@@ -348,9 +343,9 @@ function createEmployee(e) {
     phone: phone.value,
     division: divisionId,
     hire_date: hireDate,
-    no_tracking: noTrackingCheck,
     staffer: stafferCheck,
   };
+  // no_tracking: noTrackingCheck,
 
   quitDate ? (parameters["quit_date"] = quitDate) : null;
 
@@ -423,7 +418,7 @@ function changeEmployee() {
 
   let scheduleCheck = document.getElementById("scheduleCheck").checked;
 
-  let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
+  // let noTrackingCheck = document.getElementById("noTrackingCheck").checked;
 
   let stafferCheck = document.getElementById("stafferCheck").checked;
 
@@ -443,9 +438,9 @@ function changeEmployee() {
     hire_date: hireDate,
     quit_date: quitDate == "" ? null : quitDate,
     schedule: !scheduleCheck ? 1 : 2,
-    no_tracking: noTrackingCheck,
     staffer: stafferCheck,
   };
+  // no_tracking: noTrackingCheck,
 
   sendEditEmployee(parameters);
 }
