@@ -318,14 +318,12 @@ class OneEmployeeReport(OneEmployeeReportDataGetter, ReportBase):
 
         self.offline_periods = locs[locs["long_period"]]
 
-        self.start_time = locs["created_at"].min()
-        self.end_time = locs["created_at"].max()
+        self.start_time = locs["created_at"].min().to_pydatetime()
+        self.end_time = locs["created_at"].max().to_pydatetime()
         self.locations_frequency = (
             locs[locs["long_period"] == False]["difference"]
             .mean()
             .to_pytimedelta()
-            .__str__()
-            .split(".")[0]
         )
         pass
 

@@ -235,16 +235,20 @@ class MapMovements(OneEmployeeReport, MapsBase):
             report["datetime"] = report.datetime.apply(lambda x: str(x)[-8:])
             report = report.rename(columns={"datetime": "time"})
             report = report.to_dict(orient="records")
-        if self.analytics is not None:
-            analytics = self.analytics[["available", "min", "max", "duration"]]
-            analytics["start"] = analytics["min"].apply(lambda x: str(x)[-8:])
-            analytics["end"] = analytics["max"].apply(lambda x: str(x)[-8:])
-            analytics["duration"] = analytics["duration"].apply(
+        if self.offline_periods is not None:
+            analytics = self.offline_periods[
+                ["created_at", "shifted", "difference"]
+            ]
+            analytics["start"] = analytics["created_at"].apply(
                 lambda x: str(x)[-8:]
             )
-            # analytics['status'] = analytics['available'].apply(lambda x: 'ON' if x else "OFF")
-            analytics["status"] = analytics["available"]
-            analytics = analytics[["start", "end", "duration", "status"]]
+            analytics["end"] = analytics["shifted"].apply(
+                lambda x: str(x)[-8:]
+            )
+            analytics["duration"] = analytics["difference"].apply(
+                lambda x: str(x)[-8:]
+            )
+            analytics = analytics[["start", "end", "duration"]]
             analytics = analytics.to_dict(orient="records")
 
         resp = {
@@ -256,6 +260,14 @@ class MapMovements(OneEmployeeReport, MapsBase):
             resp["report"] = report
         if analytics:
             resp["analytics"] = analytics
+        if self.start_time:
+            resp["start_time"] = str(self.start_time)[-8:]
+        if self.end_time:
+            resp["end_time"] = str(self.end_time)[-8:]
+        if self.locations_frequency:
+            resp["locations_frequency"] = (
+                self.locations_frequency.__str__().split(".")[0]
+            )
         return resp
 
 
