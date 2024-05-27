@@ -317,6 +317,7 @@ class Report:
         self._comment = data.get("_comment")
         self._frequency = data.get("_frequency")
         self._staffers = data.get("_staffers")
+        self._holiday_attend_needed = data.get("_holiday_attend_needed")
         # Эти параметры заполняются при выполнении метода _build_report
         self.duplicated_attends = None
         self.report = None
@@ -954,6 +955,7 @@ class Report:
             "duplicated_attends": dups,
             "no_payments": no_payments,
             "staffers": staffers,
+            "holiday_attend_needed": self._holiday_attend_needed,
         }
 
 

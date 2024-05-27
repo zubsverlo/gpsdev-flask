@@ -152,6 +152,13 @@ class OwntracksMtsReportDataGetter:
 
         self.objects = pd.read_sql(cs.objects(self.object_ids), self.conn)
 
+        # Подопечные, которых нужно посещать по выходным
+        holiday_attend_needed = [
+            i for i in self.conn.execute(
+                cs.holiday_attend_needed(self.object_ids)
+            ).scalars()
+        ]
+
         # Журнал определяет иточник локаций и кластеров
         # сотрудника в определенный период
         self.journal = pd.read_sql(cs.journal(self.name_ids), self.conn)
@@ -191,6 +198,7 @@ class OwntracksMtsReportDataGetter:
         data["_comment"] = comment
         data["_frequency"] = frequency
         data["_staffers"] = staffers
+        data["_holiday_attend_needed"] = holiday_attend_needed
         return data
 
     def mts_empty_locations(self) -> list[int] | list:
