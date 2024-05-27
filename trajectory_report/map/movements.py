@@ -78,7 +78,7 @@ class MapsBase:
 
     def _concatenate_points(self, df) -> pd.DataFrame:
         df = skmob.TrajDataFrame(
-            df, latitude="lat", longitude="lng"
+            df, latitude="object_lat", longitude="object_lng"
         )
         df = clustering.cluster(df, cluster_radius_km=0.005)
         df = df.groupby(by="cluster", group_keys=False).apply(
@@ -295,7 +295,14 @@ class MapBindings(Report, MapsBase):
         super().__init__(
             date_from, date_to, division, name_ids, object_ids, **kwargs
         )
-
+        self._stmts = pd.merge(
+            self._stmts, self._objects,
+            how='left', on='object_id'
+        )
+        self._stmts = pd.merge(
+            self._stmts, self._employees,
+            how='left', on='uid'
+        )
         self.points = self._points_from_stmts()
 
         self.map = folium.Map(
@@ -373,14 +380,13 @@ class MapObjectsOnly(Report, MapsBase):
             division,
             name_ids,
             object_ids,
-            objects_with_address=True,
             **kwargs,
         )
 
         self._objects = (
-            self._stmts.drop_duplicates("object_id")
-            .loc[self._stmts.object_id != 1]
-            .loc[:, ["object", "lng", "lat", "address"]]
+            self._objects
+            .loc[self._objects.object_id != 1]
+            .loc[:, ["object", "object_lng", "object_lat", "address"]]
         )
 
         self._median_coordinates = [55.7522, 37.6156]
@@ -434,11 +440,11 @@ class MapObjectsOnly(Report, MapsBase):
 
 if __name__ == "__main__":
     divisions = ["ПВТ1", "ПНИ12,30"]
-    start_date, end_date = "2023-01-01", "2023-01-23"
-    m = MapMovements(898, "2024-02-02", "Коньково").as_json_dict
-    # for division in divisions:
+    start_date, end_date = "2024-01-01", "2024-01-23"
+    # m = MapMovements(898, "2024-02-02", "Коньково").as_json_dict
+    for division in divisions:
         # m = MapBindings(start_date, end_date, division)
         # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
-        # m = MapObjectsOnly(start_date, end_date, division)
-        # m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
+        m = MapObjectsOnly(start_date, end_date, division)
+        m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
     pass

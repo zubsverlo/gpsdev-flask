@@ -1,4 +1,4 @@
-from gpsdev_flask import bcrypt
+from gpsdev_flask import bcrypt, main_logger
 from marshmallow import Schema, fields, ValidationError
 import datetime as dt
 import re
@@ -212,7 +212,7 @@ class ObjectSchema(Schema):
 class JournalSchema(Schema):
     id = fields.Integer(dump_only=True)
     name_id = fields.Integer()
-    subscriberID = fields.Integer()
+    subscriberID = fields.Integer(allow_none=True)
     period_init = fields.Date()
     period_end = fields.Date()
     name = fields.Pluck(
@@ -222,29 +222,30 @@ class JournalSchema(Schema):
         EmployeesSchema, "division_name", attribute="name", dump_only=True
     )
 
-    @validates_schema
-    def validate_periods(self, data, **kwargs):
-        subscriber = data.get("subscriberID", g.record.subscriberID)
-        init = data.get("period_init", g.record.period_init)
-        end = data.get("period_end", g.record.period_end)
-        if init > end:
-            raise ValidationError("period_init не может быть позже period_end")
-        sel = text(
-            f"select * from journal_site where "
-            f"subscriberID = {subscriber} and "
-            f"((period_init >= '{init}' and period_end <= '{end}') or "
-            f"(period_init >= '{init}' and period_init <= '{end}' and "
-            f"period_end is NULL) or "
-            f"('{init}' between period_init and period_end) or "
-            f"('{end}' between period_init and period_end)) and "
-            f"id != '{g.record.id}'"
-        )
-        records_in_sum = db_session.execute(sel).all()
-        if records_in_sum:
-            raise ValidationError(
-                f"Can't proceed. Check for other entries "
-                f"with {subscriber} subscriberID"
-            )
+    # @validates_schema
+    # def validate_periods(self, data, **kwargs):
+    #     subscriber = data.get("subscriberID", g.record.subscriberID)
+    #     init = data.get("period_init", g.record.period_init)
+    #     end = data.get("period_end", g.record.period_end)
+    #     main_logger.info(data)
+    #     if end and init > end:
+    #         raise ValidationError("period_init не может быть позже period_end")
+    #     sel = text(
+    #         f"select * from journal_site where "
+    #         f"subscriberID = {subscriber} and "
+    #         f"((period_init >= '{init}' and period_end <= '{end}') or "
+    #         f"(period_init >= '{init}' and period_init <= '{end}' and "
+    #         f"period_end is NULL) or "
+    #         f"('{init}' between period_init and period_end) or "
+    #         f"('{end}' between period_init and period_end)) and "
+    #         f"id != '{g.record.id}'"
+    #     )
+    #     records_in_sum = db_session.execute(sel).all()
+    #     if records_in_sum:
+    #         raise ValidationError(
+    #             f"Can't proceed. Check for other entries "
+    #             f"with {subscriber} subscriberID"
+    #         )
 
 
 class UserSchema(Schema):

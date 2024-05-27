@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, g
 from gpsdev_flask import db_session
 from gpsdev_flask.models import Journal
-from sqlalchemy import update
+from sqlalchemy import update, text, select
 from flask_login import current_user
 from marshmallow import ValidationError
 from gpsdev_flask.api import api_login_required
@@ -9,6 +9,7 @@ from gpsdev_flask.ma_schemas import JournalSchema
 from gpsdev_flask.api.error_responses import (not_allowed_403,
                                               not_found_404,
                                               validation_error_422)
+from gpsdev_flask import main_logger
 
 
 journal = Blueprint('journal', __name__)
@@ -33,15 +34,16 @@ def journal_main(row_id=None):
         return jsonify(schema.dump(res))
 
     if request.method == 'PATCH':
-        record = db_session.get(Journal, row_id)
-        if not record:
-            return not_found_404("No journal records found")
-        g.record = record
+        rec = db_session.get(Journal, row_id)
+        if not rec:
+            return not_found_404("No journal recs found")
+        # g.rec = rec
         schema = JournalSchema(partial=True)
         try:
             new_record = schema.load(request.get_json())
         except ValidationError as e:
             return validation_error_422(e.messages)
+
         db_session.execute(
             update(Journal)
             .filter_by(id=row_id)

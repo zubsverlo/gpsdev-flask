@@ -117,6 +117,7 @@ $.ajax({
   contentType: "application/json",
 })
   .done(function (data) {
+    console.log(data);
     journalTable = new DataTable("#journalTable", {
       aaData: data,
       scrollY: "70vh",
@@ -137,7 +138,9 @@ $.ajax({
         { data: "name" },
         { data: "subscriberID" },
         { data: "period_init" },
-        { data: "period_end" },
+        { data: "period_end",
+          defaultContent: "",
+        },
         {
           // add column with change buttons to all rows in table
           data: null,
@@ -228,9 +231,8 @@ function changePeriod() {
   let parameters = {
     name_id: nameId,
     period_init: initDate,
-    subscriberID: subId,
+    subscriberID: subId? subId : null,
   };
-
   endDate ? (parameters["period_end"] = endDate) : null;
 
   sendPeriod(parameters);

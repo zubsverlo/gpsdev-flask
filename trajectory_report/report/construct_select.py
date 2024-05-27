@@ -108,7 +108,6 @@ def employees(ids: list[int] | None = None, **kwargs) -> Select:
         Employees.name_id.label('uid'),
         Employees.name,
         Employees.bath_attendant,
-        Employees.name,
         Employees.schedule,
         Employees.phone,
         Employees.staffer,
