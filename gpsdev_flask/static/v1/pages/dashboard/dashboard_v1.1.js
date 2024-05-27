@@ -83,16 +83,22 @@ https://play.google.com/store/apps/details?id=ru.mts.android.apps.coordinator
         { data: "hire_date" },
         { data: "last_stmt_date" },
         {
-          // add column with change buttons to all rows in table
+          // add column with Уволить buttons to all rows in table
           data: null,
           defaultContent: "<button class='delete-btn'>Уволить</button>",
           targets: -1,
         },
         {
-          // add column with change buttons to all rows in table
+          // add column with WhatsApp buttons to all rows in table
           data: null,
           defaultContent: "<button class='change-btn'>WhatsApp</button>",
           targets: -2,
+        },
+        {
+          // add column with OwnTracks buttons to all rows in table
+          data: null,
+          defaultContent: "<button class='owntracks-btn'>OwnTracks</button>",
+          targets: -3,
         },
       ],
     });
@@ -436,6 +442,33 @@ $("#toConnectTable").on("click", ".delete-btn", function (e) {
         location.href = `/login?next=${currentLocation}`;
       }
     });
+});
+
+$("#toConnectTable").on("click", ".owntracks-btn", function (e) {
+  currentRowOfTable = e.target.closest("tr");
+  let data = toConnectTable.row(e.target.closest("tr")).data();
+
+  let fileName = `config_${data.name}.otrc`;
+
+  let xmlHttpRequest = new XMLHttpRequest();
+  xmlHttpRequest.onreadystatechange = function () {
+    var a;
+    if (xmlHttpRequest.readyState === 4 && xmlHttpRequest.status === 200) {
+      a = document.createElement("a");
+      a.href = window.URL.createObjectURL(xmlHttpRequest.response);
+      a.download = fileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+    }
+  };
+  xmlHttpRequest.open(
+    "GET",
+    `/api/employees/owntracks/connect/${data.name_id}`
+  );
+  xmlHttpRequest.setRequestHeader("Content-Type", "text/plain");
+  xmlHttpRequest.responseType = "blob";
+  xmlHttpRequest.send();
 });
 
 $("#delFromMtsTable").on("click", "button", function (e) {

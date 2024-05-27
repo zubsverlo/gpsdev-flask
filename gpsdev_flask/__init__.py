@@ -7,7 +7,11 @@ from gpsdev_flask.models import User
 from gpsdev_flask.query_handler import BackgroundQueriesHandler, TASKS_QUEUE
 from redis import Redis
 from config import get_config
+import logging
 
+
+main_logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 # from gpsdev_flask.models import Base
 
 config = get_config()

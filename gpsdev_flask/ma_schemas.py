@@ -10,9 +10,10 @@ from marshmallow import (
     post_load,
     post_dump,
     pre_load,
+    pre_dump,
 )
 from gpsdev_flask import db_session
-from gpsdev_flask.models import ObjectsSite, Employees, Division, User
+from gpsdev_flask.models import ObjectsSite, Employees, Division, User, Journal
 from flask import g
 from sqlalchemy import text, or_
 
@@ -65,6 +66,7 @@ class EmployeesSchema(Schema):
     no_tracking = fields.Boolean(load_default=False)
     bath_attendant = fields.Boolean(load_default=False)
     staffer = fields.Boolean(load_default=False)
+    tracking_type = fields.String(dump_only=True)
 
     @validates("name")
     def validate_name(self, name):
@@ -351,6 +353,19 @@ class StatementsSchema(Schema):
             )
 
 
+class ReportAnalysisSchema(Schema):
+    date_from = fields.Date(required=True)
+    date_to = fields.Date(required=True)
+
+    @validates_schema
+    def validate_dates(self, data, **kwargs):
+        if data["date_from"] > data["date_to"]:
+            raise ValidationError(
+                "Конечная дата должна быть больше начальной "
+                "даты, или они должны быть идентичны."
+            )
+
+
 class ReportSchema(Schema):
     date_from = fields.Date(required=True)
     date_to = fields.Date(required=True)
@@ -493,16 +508,20 @@ class OwnTracksLocationSchema(Schema):
 
     @pre_load
     def datetimes(self, data, **kwargs):
+        # if isinstance(data.get('created_at'), str):
+        #     return data
         timezone = dt.timezone(dt.timedelta(hours=3))
         if data.get("created_at"):
             data["created_at"] = dt.datetime.fromtimestamp(
                 data["created_at"], tz=timezone
             ).isoformat(timespec="seconds")
+            data["created_at"] = data["created_at"].split('+')[0]
 
         if data.get("tst"):
             data["tst"] = dt.datetime.fromtimestamp(
                 data["tst"], tz=timezone
             ).isoformat(timespec="seconds")
+            data["tst"] = data["tst"].split('+')[0]
         return data
 
 

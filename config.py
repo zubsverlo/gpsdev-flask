@@ -14,6 +14,8 @@ class Config(object):
     DB = os.getenv("DATABASE_DEVELOPMENT")
     ASYNC_DB = os.getenv("ASYNC_DATABASE_DEVELOPMENT")
     TOKEN_GOOGLE_PLACES = os.getenv("TOKEN_GOOGLE_PLACES")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    JWT_ALGORITHM = "HS256"
 
 
 class ProductionConfig(Config):

@@ -2,60 +2,44 @@
 import pandas as pd
 from skmob import TrajDataFrame
 from skmob.preprocessing import detection, clustering
-from trajectory_report.config import (
-    STAY_LOCATIONS_CONFIG_MTS,
-    STAY_LOCATIONS_CONFIG_OWNTRACKS,
-    CLUSTERS_CONFIG_MTS,
-    CLUSTERS_CONFIG_OWNTRACKS,
-)
 
 
 def prepare_clusters(
-    coordinates: pd.DataFrame, owntracks: bool = False
+    coordinates: pd.DataFrame,
+    minutes_for_a_stop,
+    no_data_for_minutes,
+    spatial_radius_km,
+    cluster_radius_km,
+    **kwargs
 ) -> pd.DataFrame:
     """
     Формирование остановок из DataFrame с координатами.
+    DF, вне зависимости от происхождения локаций, должен быть со столбцами:
+    uid, lng, lat, datetime
+    Столбцы на выходе:
+    uid, lng, lat, datetime, leaving_datetime, cluster
+    Единственная разница, имеющая значение, это конфиг для формирования
+    кластеров и остановок. Его тоже нужно распаковать в эту функцию, чтобы
+    для самой функции не было никакой разницы, какие кластеры здесь
+    обрабатываются.
     """
-
-    # Чтобы указать правильные столбцы для формирования tdf, в зависимости от
-    # источника локаций, используется dict
-    # По умолчанию это МТС
-    extension_dict = {
-        "user_id": "subscriberID",
-        "datetime": "locationDate",
-        "latitude": "latitude",
-        "longitude": "longitude",
-    }
-    stay_locations_config = STAY_LOCATIONS_CONFIG_MTS
-    clusters_confing = CLUSTERS_CONFIG_MTS
-
-    if owntracks:
-        extension_dict = {
-            "user_id": "employee_id",
-            "datetime": "created_at",
-            "latitude": "lat",
-            "longitude": "lon",
-        }
-        stay_locations_config = STAY_LOCATIONS_CONFIG_OWNTRACKS
-        clusters_confing = CLUSTERS_CONFIG_OWNTRACKS
 
     tdf = TrajDataFrame(
         coordinates,
-        latitude=extension_dict["latitude"],
-        longitude=extension_dict["longitude"],
-        user_id=extension_dict["user_id"],
-        datetime=extension_dict["datetime"],
+        latitude="lat",
+        longitude="lng",
+        user_id="uid",
+        datetime="datetime",
     )
 
     if tdf.empty:
         return TrajDataFrame(
             pd.DataFrame(
                 columns=[
-                    extension_dict["user_id"],
-                    "date",
+                    "uid",
                     "datetime",
-                    "longitude",
-                    "latitude",
+                    "lng",
+                    "lat",
                     "leaving_datetime",
                     "cluster",
                 ]
@@ -65,51 +49,25 @@ def prepare_clusters(
     # Формирование остановок. Самый важный этап, настройки влияют
     # на итоговый отчет. Уменьшение spatial_radius с 0.8 до 0.3 показало
     # большую точность, в связке с уменьшением радиуса ПСУ до 650 метров
-    tdf = detection.stay_locations(tdf, **stay_locations_config)
+    tdf = detection.stay_locations(
+        tdf,
+        minutes_for_a_stop=minutes_for_a_stop,
+        no_data_for_minutes=no_data_for_minutes,
+        spatial_radius_km=spatial_radius_km,
+    )
     # добавляет колонку с номерами кластеров, не влияет на кол-во остановок
-    if not len(tdf):
+    if tdf.empty:
         return TrajDataFrame(
             pd.DataFrame(
                 columns=[
-                    extension_dict["user_id"],
-                    "date",
+                    "uid",
                     "datetime",
-                    "longitude",
-                    "latitude",
+                    "lng",
+                    "lat",
                     "leaving_datetime",
                     "cluster",
                 ]
             )
         )
-    tdf = clustering.cluster(tdf, **clusters_confing)
-    if len(tdf) < 2:
-        tdf = tdf.rename(
-            columns={
-                "uid": extension_dict["user_id"],
-                "lng": "longitude",
-                "lat": "latitude",
-            }
-        )
-        tdf["date"] = tdf["datetime"].apply(lambda x: x.date())
-        return tdf
-
-    tdf = tdf.rename(
-        columns={
-            "uid": extension_dict["user_id"],
-            "lng": "longitude",
-            "lat": "latitude",
-        }
-    )
-    tdf["date"] = tdf["datetime"].apply(lambda x: x.date())
-    tdf = tdf[
-        [
-            extension_dict["user_id"],
-            "date",
-            "datetime",
-            "longitude",
-            "latitude",
-            "leaving_datetime",
-            "cluster",
-        ]
-    ]
+    tdf = clustering.cluster(tdf, cluster_radius_km=cluster_radius_km)
     return pd.DataFrame(tdf)

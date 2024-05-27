@@ -23,7 +23,6 @@ TOKENS_MTS = {
 TOKEN_TELEGRAM = os.getenv("TOKEN_TELEGRAM")
 TELEGRAM_ADMIN_ID = os.getenv("TELEGRAM_ADMIN_ID")
 
-
 # Параметры для генерации кластеров (ClusterGenerator.py)
 # STAY_LOCATIONS - параметры формирования остановок
 # CLUSTERS - параметры формирования кластеров
@@ -80,3 +79,8 @@ REPORT_BASE["MINS_BETWEEN_ATTENDS"] = 40
 STATS_CHECKOUT = dict()
 STATS_CHECKOUT["MINUTES"] = 60
 STATS_CHECKOUT["COUNT"] = 4
+
+
+# Количество минут, которое считается достаточным, чтобы посчитать перерыв
+# между локациями длинным и отобразить его в анализе локаций как бездействующий
+LONG_PERIOD = 25

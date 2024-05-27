@@ -952,7 +952,7 @@ function downloadXlsx(e) {
   getXlsx(parameters);
 }
 
-//send a request with parameters to the server, and then dowload the excel table
+//send a request with parameters to the server, and then download the excel table
 function getXlsx(parameters) {
   let division =
     document.getElementById("divisionSelect").selectedOptions[0].innerText;
@@ -2113,7 +2113,7 @@ function drawMap(data, employeeName, parameters) {
   modalBody.innerHTML = "";
   clearInterval(rotateInterval);
 
-  modalTitle.innerText = `Перемещения и Отчет: ${employeeName} (${parameters.date})`;
+  modalTitle.innerText = `Перемещения и Отчет: ${employeeName} (${parameters.date}) ${data.tracking_type}`;
 
   showModalInTable();
 
@@ -2146,16 +2146,24 @@ function drawMap(data, employeeName, parameters) {
 
   let analysisBtn = document.getElementById("analysisBtn");
   let analysisPartContainer = createAnalysisTable();
+  analysisPartContainer.style.display = "block";
   fillAnalysisWithData(analysisPartContainer, data);
-  if (analysisBtn.dataset.toggleAnalysis == "false") {
-    analysisPartContainer.style.display = "none";
-    analysisPartContainer.className = "analysis-container-hide";
-  } else if (analysisBtn.dataset.toggleAnalysis == "true" && data.analytics) {
-    analysisPartContainer.style.display = "block";
-    analysisPartContainer.className = "analysis-container-show";
-  }
 
-  contentContainer.append(analysisPartContainer);
+  let analysisOfflinePartContainer = createAnalysisOfflineTable();
+  fillAnalysisOfflineWithData(analysisOfflinePartContainer, data);
+  // if (analysisBtn.dataset.toggleAnalysis == "false") {
+  //   analysisOfflinePartContainer.style.display = "none";
+  //   analysisOfflinePartContainer.className = "analysis-container-hide";
+  //   analysisPartContainer.style.display = "block";
+  //   analysisPartContainer.className = "analysis-container-show2";
+  // } else if (analysisBtn.dataset.toggleAnalysis == "true" && data.analytics) {
+  //   analysisOfflinePartContainer.style.display = "block";
+  //   analysisOfflinePartContainer.className = "analysis-container-show";
+  //   analysisPartContainer.style.display = "block";
+  //   analysisPartContainer.className = "analysis-container-show2";
+  // }
+
+  contentContainer.append(analysisPartContainer, analysisOfflinePartContainer);
 
   clearInterval(rotateInterval);
   preLoadingImg.remove();
@@ -2194,11 +2202,11 @@ function createMapAndReport(data) {
   analysisBtn.id = "analysisBtn";
   analysisBtn.innerText = "Анализ";
   analysisBtn.onclick = toggleAnalysisInModal;
-  if (localStorage.getItem("toggleAnalysis") == "true") {
-    analysisBtn.dataset.toggleAnalysis = true;
-  } else {
-    analysisBtn.dataset.toggleAnalysis = false;
-  }
+  // if (localStorage.getItem("toggleAnalysis") == "true") {
+  //   analysisBtn.dataset.toggleAnalysis = true;
+  // } else {
+  //   analysisBtn.dataset.toggleAnalysis = false;
+  // }
   mapContainer.prepend(reportBtn, analysisBtn);
   horizontalPartContainer.append(mapContainer);
   contentContainer.append(horizontalPartContainer);
@@ -2328,23 +2336,30 @@ function createAnalysisTable() {
   analysisTable.id = "analysisTable";
 
   let thead = document.createElement("thead");
+  let trName = document.createElement("tr");
+  let analysisHeaderName = document.createElement("th");
+  analysisHeaderName.innerText = "Анализ отслеживания";
+  analysisHeaderName.colSpan = "3";
+  analysisHeaderName.style.borderRight = "1px solid gray";
+
   let tr = document.createElement("tr");
 
-  let thStatus = document.createElement("th");
-  thStatus.innerText = "Состояние";
-  thStatus.style.width = "58px";
+  let thStart = document.createElement("th");
+  thStart.innerText = "Начало";
+  thStart.style.width = "58px";
 
-  let thTime = document.createElement("th");
-  thTime.innerText = "Время";
-  thTime.style.width = "64px";
+  let thEnd = document.createElement("th");
+  thEnd.innerText = "Конец";
+  thEnd.style.width = "64px";
 
-  let thDuration = document.createElement("th");
-  thDuration.innerText = "Длит.";
-  thDuration.style.width = "64px";
-  thDuration.style.borderRight = "1px solid gray";
+  let thLocFrequency = document.createElement("th");
+  thLocFrequency.innerText = "Периодичность локаций";
+  thLocFrequency.style.width = "64px";
+  thLocFrequency.style.borderRight = "1px solid gray";
 
-  tr.append(thStatus, thTime, thDuration);
-  thead.append(tr);
+  trName.append(analysisHeaderName);
+  tr.append(thStart, thEnd, thLocFrequency);
+  thead.append(trName, tr);
   analysisTable.append(thead);
   analysisPartContainer.append(analysisTable);
   return analysisPartContainer;
@@ -2353,8 +2368,60 @@ function createAnalysisTable() {
 function fillAnalysisWithData(analysisPartContainer, data) {
   let count = 0;
 
+  let tr = document.createElement("tr");
+  tr.classList.add("last-row", "odd-row");
+
+  let thStart = document.createElement("th");
+  thStart.innerText = data.start_time;
+
+  let thEnd = document.createElement("th");
+  thEnd.innerText = data.end_time;
+
+  let thLocFrequency = document.createElement("th");
+  thLocFrequency.innerText = data.locations_frequency;
+  thLocFrequency.style.borderRight = "1px solid gray";
+
+  tr.append(thStart, thEnd, thLocFrequency);
+  analysisPartContainer.children[0].append(tr);
+}
+
+function createAnalysisOfflineTable() {
+  let analysisOfflinePartContainer = document.createElement("div");
+  analysisOfflinePartContainer.id = "analysisOfflinePartContainer";
+
+  let analysisOfflineTable = document.createElement("table");
+  analysisOfflineTable.id = "analysisOfflineTable";
+
+  let thead = document.createElement("thead");
+  let trName = document.createElement("tr");
+  let analysisOfflineHeaderName = document.createElement("th");
+  analysisOfflineHeaderName.innerText = "Периоды без локаций";
+  analysisOfflineHeaderName.colSpan = "3";
+  analysisOfflineHeaderName.style.borderRight = "1px solid gray";
+  let tr = document.createElement("tr");
+
+  let thTime = document.createElement("th");
+  thTime.innerText = "Время";
+  thTime.style.width = "64px";
+
+  let thDuration = document.createElement("th");
+  thDuration.innerText = "Длительность";
+  thDuration.style.width = "64px";
+  thDuration.style.borderRight = "1px solid gray";
+
+  trName.append(analysisOfflineHeaderName);
+  tr.append(thTime, thDuration);
+  thead.append(trName, tr);
+  analysisOfflineTable.append(thead);
+  analysisOfflinePartContainer.append(analysisOfflineTable);
+  return analysisOfflinePartContainer;
+}
+
+function fillAnalysisOfflineWithData(analysisOfflinePartContainer, data) {
+  let count = 0;
+
   if (!data.analytics) {
-    analysisPartContainer.style.display = "none";
+    analysisOfflinePartContainer.style.display = "none";
     let analysisBtn = document.getElementById("analysisBtn");
     analysisBtn.disabled = true;
     analysisBtn.classList.add("unactive-select");
@@ -2364,13 +2431,10 @@ function fillAnalysisWithData(analysisPartContainer, data) {
     return;
   }
   if (data.analytics.length > 3) {
-    analysisPartContainer.classList.add("scroll-table");
+    analysisOfflinePartContainer.classList.add("scroll-table");
   }
   data.analytics.forEach((row, index) => {
     let tr = document.createElement("tr");
-
-    let thStatus = document.createElement("th");
-    thStatus.innerText = row.status == true ? "Вкл." : "Выкл.";
 
     let thTime = document.createElement("th");
     thTime.innerText = `${row.start.slice(0, 5)}-${row.end.slice(0, 5)}`;
@@ -2391,8 +2455,8 @@ function fillAnalysisWithData(analysisPartContainer, data) {
       tr.classList.add("last-row");
     }
 
-    tr.append(thStatus, thTime, thDuration);
-    analysisPartContainer.children[0].append(tr);
+    tr.append(thTime, thDuration);
+    analysisOfflinePartContainer.children[0].append(tr);
   });
 }
 
@@ -2428,21 +2492,37 @@ function toggleReportInModal() {
 
 function toggleAnalysisInModal() {
   let analysisBtn = document.getElementById("analysisBtn");
+  let analysisOfflinePartContainer = document.getElementById(
+    "analysisOfflinePartContainer"
+  );
   let analysisPartContainer = document.getElementById("analysisPartContainer");
+  if (analysisPartContainer.style.display == "none") {
+    analysisOfflinePartContainer.style.height = "300px";
+    analysisOfflinePartContainer.style.display = "block";
+    analysisOfflinePartContainer.style.marginTop = "10px";
+    analysisOfflinePartContainer.style.transition = "all 0.8s";
+    analysisOfflinePartContainer.style.opacity = 1;
+    setTimeout(() => {
+      analysisOfflinePartContainer.style.flex = 2;
+    }, 1);
 
-  if (analysisBtn.dataset.toggleAnalysis == "false") {
-    analysisPartContainer.style.height = "300px";
+    analysisPartContainer.style.height = "150px";
     analysisPartContainer.style.display = "block";
     analysisPartContainer.style.marginTop = "10px";
     analysisPartContainer.style.transition = "all 0.8s";
     analysisPartContainer.style.opacity = 1;
     setTimeout(() => {
-      analysisPartContainer.style.flex = 2;
+      analysisPartContainer.style.flex = 0;
     }, 1);
+  } else if (analysisPartContainer.style.display == "block") {
+    analysisOfflinePartContainer.style.opacity = 0;
+    analysisOfflinePartContainer.style.flex = 0;
+    analysisOfflinePartContainer.style.height = "0px";
+    analysisOfflinePartContainer.style.marginTop = "0px";
+    setTimeout(() => {
+      analysisOfflinePartContainer.style.display = "none";
+    }, 800);
 
-    localStorage.setItem("toggleAnalysis", true);
-    analysisBtn.dataset.toggleAnalysis = true;
-  } else if (analysisBtn.dataset.toggleAnalysis == "true") {
     analysisPartContainer.style.opacity = 0;
     analysisPartContainer.style.flex = 0;
     analysisPartContainer.style.height = "0px";
@@ -2450,9 +2530,6 @@ function toggleAnalysisInModal() {
     setTimeout(() => {
       analysisPartContainer.style.display = "none";
     }, 800);
-
-    localStorage.setItem("toggleAnalysis", false);
-    analysisBtn.dataset.toggleAnalysis = false;
   }
 }
 

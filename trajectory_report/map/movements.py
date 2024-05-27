@@ -11,6 +11,7 @@ from typing import Union, Optional, List
 import datetime as dt
 from numpy import isnan
 from geopandas import GeoDataFrame, GeoSeries
+from gpsdev_flask import main_logger
 
 
 """
@@ -77,7 +78,7 @@ class MapsBase:
 
     def _concatenate_points(self, df) -> pd.DataFrame:
         df = skmob.TrajDataFrame(
-            df, latitude="latitude", longitude="longitude"
+            df, latitude="lat", longitude="lng"
         )
         df = clustering.cluster(df, cluster_radius_km=0.005)
         df = df.groupby(by="cluster", group_keys=False).apply(
@@ -109,11 +110,14 @@ class MapMovements(OneEmployeeReport, MapsBase):
         super().__init__(name_id, date, division)
 
         self._objects = self._stmts.drop_duplicates("object_id").loc[
-            :, ["object", "longitude", "latitude", "address"]
+            :, ["object", "object_lng", "object_lat", "address"]
         ]
+        self._objects = self._objects.rename(
+            columns={'object_lng': 'lng', 'object_lat': 'lat'}
+        )
 
-        median_lat = median(self.clusters.latitude)
-        median_lng = median(self.clusters.longitude)
+        median_lat = median(self.clusters.lat)
+        median_lng = median(self.clusters.lng)
 
         # Атрибут для уведомления, когда карта есть, но перемещений нет
         self.no_movements = True if not len(self.clusters) else False
@@ -182,7 +186,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
             axis=1,
         )
         clusters = clusters[
-            ["datetime", "latitude", "longitude", "icon", "popup", "tooltip"]
+            ["datetime", "lat", "lng", "icon", "popup", "tooltip"]
         ]
         return clusters
 
@@ -206,7 +210,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
         path = self.clusters.sort_values(by="datetime")
         if len(path):
             AntPath(
-                [i for i in zip(path.latitude, path.longitude)],
+                [i for i in zip(path.lat, path.lng)],
                 delay=1000,
                 weight=6,
                 dash_array=[9, 100],
@@ -237,9 +241,9 @@ class MapMovements(OneEmployeeReport, MapsBase):
             report = report.to_dict(orient="records")
         if self.offline_periods is not None:
             analytics = self.offline_periods[
-                ["created_at", "shifted", "difference"]
+                ["datetime", "shifted", "difference"]
             ]
-            analytics["start"] = analytics["created_at"].apply(
+            analytics["start"] = analytics["datetime"].apply(
                 lambda x: str(x)[-8:]
             )
             analytics["end"] = analytics["shifted"].apply(
@@ -376,7 +380,7 @@ class MapObjectsOnly(Report, MapsBase):
         self._objects = (
             self._stmts.drop_duplicates("object_id")
             .loc[self._stmts.object_id != 1]
-            .loc[:, ["object", "longitude", "latitude", "address"]]
+            .loc[:, ["object", "lng", "lat", "address"]]
         )
 
         self._median_coordinates = [55.7522, 37.6156]
@@ -431,9 +435,10 @@ class MapObjectsOnly(Report, MapsBase):
 if __name__ == "__main__":
     divisions = ["ПВТ1", "ПНИ12,30"]
     start_date, end_date = "2023-01-01", "2023-01-23"
-    for division in divisions:
+    m = MapMovements(898, "2024-02-02", "Коньково").as_json_dict
+    # for division in divisions:
         # m = MapBindings(start_date, end_date, division)
         # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
-        m = MapObjectsOnly(start_date, end_date, division)
-        m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
+        # m = MapObjectsOnly(start_date, end_date, division)
+        # m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
     pass

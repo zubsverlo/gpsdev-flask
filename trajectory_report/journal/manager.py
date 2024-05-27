@@ -1,13 +1,7 @@
-from trajectory_report.api.mts import get_subscribers
-from trajectory_report.database import DB_ENGINE, REDIS_CONN
+from trajectory_report.database import DB_ENGINE
 import datetime as dt
-from trajectory_report.models import Employees, Statements, Journal, Division
-from sqlalchemy import select, update, insert, and_
 from sqlalchemy.orm import Session
 import pandas as pd
-from collections import defaultdict
-from numpy import nan
-from sqlalchemy import func, distinct
 from trajectory_report.journal.utils import get_analysis_table, analyse
 
 

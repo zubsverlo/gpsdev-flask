@@ -9,6 +9,7 @@ from trajectory_report.gather.clusters_owntracks import (
 from trajectory_report.gather.journal import update_journal
 from celery.schedules import crontab
 from trajectory_report.notificators.telegram import empty_locations_notify
+from trajectory_report.gather.coordinates_analysis import analyze_coordinates
 
 
 @app_celery.task
@@ -53,6 +54,11 @@ def no_locations_notify():
     empty_locations_notify()
 
 
+@app_celery.task(name="coordinates_analysis")
+def coordinates_analysis():
+    analyze_coordinates()
+
+
 app_celery.conf.beat_schedule = {
     "fetch-coords-every-2-mins": {
         "task": "update_coordinates",
@@ -77,5 +83,9 @@ app_celery.conf.beat_schedule = {
     "empty-locations-notify-every-hour": {
         "task": "no_locations_notify",
         "schedule": crontab(minute="0", hour="9-22"),
+    },
+    "analyze-coordinates-every-three-hours": {
+        "task": "coordinates_analysis",
+        "schedule": crontab(minute="30", hour="*/3"),
     },
 }

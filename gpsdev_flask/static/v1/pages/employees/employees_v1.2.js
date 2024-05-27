@@ -97,18 +97,6 @@ function createForm() {
   scheduleCheckLabel.htmlFor = "scheduleCheck";
   scheduleCheckLabel.innerText = "Сотрудник является ванщиком";
 
-  let noTrackingContainer = document.createElement("div");
-  noTrackingContainer.id = "noTrackingContainer";
-
-  let noTrackingCheckLabel = document.createElement("label");
-  noTrackingCheckLabel.id = "noTrackingCheckLabel";
-  noTrackingCheckLabel.htmlFor = "noTrackingCheck";
-  noTrackingCheckLabel.innerText = "Не остлеживать сотрудника";
-
-  let noTrackingCheck = document.createElement("input");
-  noTrackingCheck.id = "noTrackingCheck";
-  noTrackingCheck.type = "checkbox";
-
   let stafferContainer = document.createElement("div");
   stafferContainer.id = "stafferContainer";
 
@@ -138,15 +126,9 @@ function createForm() {
   nameFieldContainer.append(nameFieldLabel, nameField);
   phoneFieldContainer.append(phoneFieldLabel, phoneField);
   divisionFieldContainer.append(divisionFieldLabel, divisionField);
-  restFields.append(
-    dateFields,
-    scheduleField,
-    noTrackingContainer,
-    stafferContainer
-  );
+  restFields.append(dateFields, scheduleField, stafferContainer);
   dateFields.append(hireDateLabel, hireDateField, quitDateLabel, quitDateField);
   scheduleField.append(scheduleCheck, scheduleCheckLabel);
-  noTrackingContainer.append(noTrackingCheck, noTrackingCheckLabel);
   stafferContainer.append(stafferCheck, stafferCheckLabel);
   btnsContainer.append(cancelBtn, saveBtn);
 
@@ -240,9 +222,9 @@ $.ajax({
       let data = employeeTable.row(e.target.closest("tr")).data();
 
       modal.style.display = "flex";
-      modalTitle.innerText = `Изменить сотрудника  ${
-        localStorage.getItem("rang-id") == 1 ? " ID: " + data.name_id : ""
-      }`;
+      modalTitle.innerText = `Изменить сотрудника ${
+        data.tracking_type ? data.tracking_type : ""
+      }  ${localStorage.getItem("rang-id") == 1 ? " ID: " + data.name_id : ""}`;
       modalForm = createForm();
       modalBody.appendChild(modalForm);
 
@@ -250,6 +232,16 @@ $.ajax({
       quitDateField.disabled = true;
       quitDateField.title =
         "Чтобы уволить сотрудника, проставьте 'У' в таблице";
+
+      let ownTracksBtn = document.createElement("button");
+      ownTracksBtn.id = "ownTracksBtn";
+      ownTracksBtn.type = "button";
+      ownTracksBtn.innerText = "OwnTracks+";
+      ownTracksBtn.addEventListener("click", () => {
+        downloadOwnTarcksConfig(data.name, data.name_id);
+      });
+
+      document.getElementById("scheduleField").append(ownTracksBtn);
 
       let deleteAccess = localStorage.getItem("rang-id");
       if (deleteAccess == "1") {
@@ -259,7 +251,7 @@ $.ajax({
         deleteBtn.innerText = "Удалить";
         deleteBtn.onclick = deleteEmployee;
 
-        document.getElementById("scheduleField").append(deleteBtn);
+        document.getElementById("stafferContainer").append(deleteBtn);
       }
 
       let name = document.getElementById("nameField");
@@ -269,7 +261,6 @@ $.ajax({
       let hireDate = document.getElementById("hireDateField");
       let quitDate = document.getElementById("quitDateField");
       let scheduleCheck = document.getElementById("scheduleCheck");
-      let noTrackingCheck = document.getElementById("noTrackingCheck");
       let stafferCheck = document.getElementById("stafferCheck");
       let saveBtn = document.getElementById("saveBtn");
 
@@ -281,7 +272,6 @@ $.ajax({
       hireDate.value = data.hire_date;
       quitDate.value = data.quit_date;
       data.schedule == 2 ? (scheduleCheck.checked = true) : null;
-      noTrackingCheck.checked = data.no_tracking;
       stafferCheck.checked = data.staffer;
 
       saveBtn.onclick = changeEmployee;
@@ -538,4 +528,25 @@ function deleteEmployee() {
         );
       }
     });
+}
+
+function downloadOwnTarcksConfig(name, name_id) {
+  let fileName = `config_${name}.otrc`;
+
+  let xmlHttpRequest = new XMLHttpRequest();
+  xmlHttpRequest.onreadystatechange = function () {
+    var a;
+    if (xmlHttpRequest.readyState === 4 && xmlHttpRequest.status === 200) {
+      a = document.createElement("a");
+      a.href = window.URL.createObjectURL(xmlHttpRequest.response);
+      a.download = fileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+    }
+  };
+  xmlHttpRequest.open("GET", `/api/employees/owntracks/connect/${name_id}`);
+  xmlHttpRequest.setRequestHeader("Content-Type", "text/plain");
+  xmlHttpRequest.responseType = "blob";
+  xmlHttpRequest.send();
 }

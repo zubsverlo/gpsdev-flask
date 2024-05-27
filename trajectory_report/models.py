@@ -293,3 +293,19 @@ class PermitStatements(Base):
             "object_id", "date", name="_permit_statements_unique_constraint"
         ),
     )
+
+
+class LocationAnalysis(Base):
+    __tablename__ = "location_analysis"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name_id: Mapped[int]
+    date: Mapped[dt.date]
+    count: Mapped[int]
+    seconds: Mapped[int]
+    start: Mapped[dt.datetime]
+    end: Mapped[dt.datetime]
+    owntracks: Mapped[bool]
+
+    __table_args__ = (
+        Index("dateIndex", "date"),
+    )

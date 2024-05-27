@@ -366,26 +366,29 @@
   }
 
   .scroll-table {
-    height: 500px;
+    height: 200px;
     overflow-y: scroll;
   }
 
   #duplicateTable tr,
   #reportTable tr,
-  #analysisTable tr {
+  #analysisTable tr,
+  #analysisOfflineTable tr {
     transition: all 0.3s;
   }
 
   #duplicateTable tr:hover,
   #reportTable tr:hover,
-  #analysisTable tr:hover {
+  #analysisTable tr:hover,
+  #analysisOfflineTable tr:hover {
     background-color: rgb(202, 202, 202);
     color: rgb(99, 99, 99);
   }
 
   #duplicateTable thead > tr > th,
   #reportTable thead > tr > th,
-  #analysisTable thead > tr > th {
+  #analysisTable thead > tr > th,
+  #analysisOfflineTable thead > tr > th {
     font-weight: 800;
     padding: 5px 0px;
     color: rgb(89 89 89);
@@ -393,14 +396,16 @@
 
   #duplicateTable thead > tr:hover,
   #reportTable thead > tr:hover,
-  #analysisTable thead > tr:hover {
+  #analysisTable thead > tr:hover,
+  #analysisOfflineTable thead > tr:hover {
     background-color: transparent;
     color: rgb(89 89 89);
   }
 
   #duplicateTable tr > th,
   #reportTable tr > th,
-  #analysisTable tr > th {
+  #analysisTable tr > th,
+  #analysisOfflineTable tr > th {
     border-left: 1px solid gray;
     border-top: 1px solid gray;
     font-weight: 400;
@@ -409,19 +414,22 @@
 
   #duplicateTable .odd-row,
   #reportTable .odd-row,
-  #analysisTable .odd-row {
+  #analysisTable .odd-row,
+  #analysisOfflineTable .odd-row {
     background-color: rgb(234 233 219);
   }
 
   #duplicateTable .even-row,
   #reportTable .even-row,
-  #analysisTable .even-row {
+  #analysisTable .even-row,
+  #analysisOfflineTable .even-row {
     background-color: rgb(174 174 174 / 12%);
   }
 
   #duplicateTable .last-row > *,
   #reportTable .last-row > *,
-  #analysisTable .last-row > * {
+  #analysisTable .last-row > *,
+  #analysisOfflineTable .last-row > * {
     border-bottom: 1px solid gray;
   }
 
@@ -529,6 +537,11 @@
   }
 
   #analysisPartContainer {
+    margin-top: 10px;
+  }
+
+  #analysisPartContainer,
+  #analysisOfflinePartContainer {
     width: 66%;
   }
 
@@ -551,7 +564,13 @@
     transition: all 0.8s;
   }
 
-  #analysisTable {
+  #analysisHeaderName,
+  #analysisOfflineHeaderName {
+    font-weight: 600;
+  }
+
+  #analysisTable,
+  #analysisOfflineTable {
     width: 100%;
   }
 
@@ -1374,26 +1393,29 @@
   }
 
   .scroll-table {
-    height: 500px;
+    height: 200px;
     overflow-y: scroll;
   }
 
   #duplicateTable tr,
   #reportTable tr,
-  #analysisTable tr {
+  #analysisTable tr,
+  #analysisOfflineTable tr {
     transition: all 0.3s;
   }
 
   #duplicateTable tr:hover,
   #reportTable tr:hover,
-  #analysisTable tr:hover {
+  #analysisTable tr:hover,
+  #analysisOfflineTable tr:hover {
     background-color: rgb(202, 202, 202);
     color: rgb(99, 99, 99);
   }
 
   #duplicateTable thead > tr > th,
   #reportTable thead > tr > th,
-  #analysisTable thead > tr > th {
+  #analysisTable thead > tr > th,
+  #analysisOfflineTable thead > tr > th {
     font-weight: 800;
     padding: 5px 0px;
     color: rgb(89 89 89);
@@ -1401,14 +1423,16 @@
 
   #duplicateTable thead > tr:hover,
   #reportTable thead > tr:hover,
-  #analysisTable thead > tr:hover {
+  #analysisTable thead > tr:hover,
+  #analysisOfflineTable thead > tr:hover {
     background-color: transparent;
     color: rgb(89 89 89);
   }
 
   #duplicateTable tr > th,
   #reportTable tr > th,
-  #analysisTable tr > th {
+  #analysisTable tr > th,
+  #analysisOfflineTable tr > th {
     border-left: 1px solid gray;
     border-top: 1px solid gray;
     font-weight: 400;
@@ -1417,19 +1441,22 @@
 
   #duplicateTable .odd-row,
   #reportTable .odd-row,
-  #analysisTable .odd-row {
+  #analysisTable .odd-row,
+  #analysisOfflineTable .odd-row {
     background-color: rgb(234 233 219);
   }
 
   #duplicateTable .even-row,
   #reportTable .even-row,
-  #analysisTable .even-row {
+  #analysisTable .even-row,
+  #analysisOfflineTable .even-row {
     background-color: rgb(174 174 174 / 12%);
   }
 
   #duplicateTable .last-row > *,
   #reportTable .last-row > *,
-  #analysisTable .last-row > * {
+  #analysisTable .last-row > *,
+  #analysisOfflineTable .last-row > * {
     border-bottom: 1px solid gray;
   }
 
@@ -1538,8 +1565,10 @@
     width: 100%;
   }
 
-  #analysisPartContainer {
+  #analysisPartContainer,
+  #analysisOfflinePartContainer {
     width: 66%;
+    margin-bottom: 10px;
   }
 
   .analysis-container-show {
@@ -1561,7 +1590,21 @@
     transition: all 0.8s;
   }
 
-  #analysisTable {
+  .analysis-container-show2 {
+    opacity: 1;
+    margin-top: 10px;
+
+    overflow: auto;
+    transition: all 0.8s;
+  }
+
+  #analysisHeaderName,
+  #analysisOfflineHeaderName {
+    font-weight: 600;
+  }
+
+  #analysisTable,
+  #analysisOfflineTable {
     width: 100%;
   }
 

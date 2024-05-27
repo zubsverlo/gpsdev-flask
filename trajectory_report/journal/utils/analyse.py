@@ -35,6 +35,7 @@ def delete_quit_date(df, session) -> None:
         .values(quit_date=None)
     )
     session.execute(upd)
+    session.commit()
 
 
 def set_quit_date(df, session) -> None:
@@ -51,6 +52,7 @@ def set_quit_date(df, session) -> None:
             .values(quit_date=row.last_stmt_date)
         )
         session.execute(upd)
+    session.commit()
 
 
 def close_journal_mts(df, session) -> None:
@@ -74,6 +76,7 @@ def close_journal_mts(df, session) -> None:
             .values(period_end=close_date)
         )
         session.execute(upd)
+    session.commit()
 
 
 def open_journal_mts(df, session) -> None:
@@ -95,6 +98,7 @@ def open_journal_mts(df, session) -> None:
             period_init=dt.date.today(),
         )
         session.execute(ins)
+    session.commit()
 
 
 def change_journal_mts(df, session) -> None:
@@ -129,6 +133,7 @@ def change_journal_mts(df, session) -> None:
         )
         session.execute(upd)
         session.execute(ins)
+    session.commit()
 
 
 def change_journal_from_owntracks_to_mts(df, session) -> None:
@@ -169,6 +174,7 @@ def change_journal_from_owntracks_to_mts(df, session) -> None:
 
         session.execute(upd)
         session.execute(ins)
+    session.commit()
 
 
 def close_journal_owntracks(df, session) -> None:
@@ -197,6 +203,7 @@ def close_journal_owntracks(df, session) -> None:
             .values(period_end=close_date)
         )
         session.execute(upd)
+    session.commit()
 
 
 def resume_journal_owntracks(df, session) -> None:
@@ -226,3 +233,4 @@ def resume_journal_owntracks(df, session) -> None:
             .values(period_end=None)
         )
         session.execute(upd)
+    session.commit()
