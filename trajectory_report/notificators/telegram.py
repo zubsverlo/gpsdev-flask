@@ -7,6 +7,7 @@ from trajectory_report.report.Report import Report
 
 CHANNELS_TO_NOTIFY: dict = json.loads(getenv("TELEGRAM_CHANNELS_TO_NOTIFY"))
 
+
 def send_text(text: str, chat_id: str | None = None) -> int:
     """
     Присылает в лс администратору сообщение с текстом.
@@ -23,13 +24,9 @@ def send_text(text: str, chat_id: str | None = None) -> int:
 
 
 def empty_locations_notify():
+    date = dt.date.today()
     for division, chat_id in CHANNELS_TO_NOTIFY.items():
-        r = Report(
-            dt.date.today(), 
-            dt.date.today(), 
-            division, 
-            check_for_empty_locations=True
-        )
+        r = Report(date, date, division)
         text = ""
         for i in r.employees_to_notify.to_numpy():
             text += ": +".join(i)+'\n'

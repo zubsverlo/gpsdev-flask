@@ -1,10 +1,9 @@
-from trajectory_report.JournalManager import HrManager
+from trajectory_report.journal.manager import JournalManager
 
 
 def update_journal():
-    HrManager().todo_all()
+    JournalManager()
 
 
 if __name__ == "__main__":
     update_journal()
-    

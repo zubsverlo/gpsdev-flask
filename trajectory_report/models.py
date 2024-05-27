@@ -15,7 +15,10 @@ import datetime as dt
 
 """
 __table_args__ = (
-UniqueConstraint('customer_id', 'location_code', name='_customer_location_uc'),)
+    UniqueConstraint(
+        'customer_id', 'location_code', name='_customer_location_uc'
+    ),
+)
 Эта опция помогает определить, какое сочетание в таблице будет уникальным.
 Если оно не уникально - добавить строку будет нельзя
 """
@@ -140,6 +143,7 @@ class Journal(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name_id: Mapped[int] = mapped_column(ForeignKey("employees_site.name_id"))
     subscriberID: Mapped[int]
+    owntracks: Mapped[bool]
     period_init: Mapped[dt.date]
     period_end: Mapped[dt.date]
     name: Mapped["Employees"] = relationship("Employees", lazy="joined")
@@ -248,13 +252,32 @@ class OwnTracksLocation(Base):
     batt: Mapped[int] = mapped_column(SMALLINT(), nullable=True)
     bs: Mapped[int] = mapped_column(SMALLINT())
     conn: Mapped[str] = mapped_column(CHAR(1), nullable=True)
-    created_at: Mapped[int] = mapped_column(nullable=True)
+    created_at: Mapped[dt.datetime] = mapped_column(nullable=True)
     lat: Mapped[float] = mapped_column(REAL)
     lon: Mapped[float] = mapped_column(REAL)
     m: Mapped[int] = mapped_column(SMALLINT(), nullable=True)
     t: Mapped[str] = mapped_column(CHAR(1), nullable=True)
-    tst: Mapped[int] = mapped_column(nullable=True)
+    tst: Mapped[dt.datetime] = mapped_column(nullable=True)
     vel: Mapped[int] = mapped_column(SMALLINT(), nullable=True)
+
+    __table_args__ = (
+        Index("employeeRequestDate", "employee_id", "created_at"),
+        Index("createdAt", "created_at"),
+    )
+
+
+class OwnTracksCluster(Base):
+    __tablename__ = "owntracks_cluster"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    employee_id: Mapped[int]
+    date: Mapped[dt.date]
+    datetime: Mapped[dt.datetime]
+    longitude: Mapped[float] = mapped_column(REAL)
+    latitude: Mapped[float] = mapped_column(REAL)
+    leaving_datetime: Mapped[dt.datetime]
+    cluster: Mapped[int] = mapped_column(nullable=False)
+
+    __table_args__ = (Index("owntrcksIdDate", "employee_id", "date"),)
 
 
 class PermitStatements(Base):
@@ -270,4 +293,20 @@ class PermitStatements(Base):
         UniqueConstraint(
             "object_id", "date", name="_permit_statements_unique_constraint"
         ),
+    )
+
+
+class LocationAnalysis(Base):
+    __tablename__ = "location_analysis"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name_id: Mapped[int]
+    date: Mapped[dt.date]
+    count: Mapped[int]
+    seconds: Mapped[int]
+    start: Mapped[dt.datetime]
+    end: Mapped[dt.datetime]
+    owntracks: Mapped[bool]
+
+    __table_args__ = (
+        Index("dateIndex", "date"),
     )

@@ -107,6 +107,17 @@
     border: solid 1px gray;
     border-radius: 5px;
     padding: 10px 15px;
+
+    cursor: pointer;
+  }
+
+  .owntracks-btn {
+    background-color: rgb(71 141 178);
+    color: rgb(247, 237, 237);
+    border: solid 1px gray;
+    border-radius: 5px;
+    padding: 10px 15px;
+
     cursor: pointer;
   }
 }

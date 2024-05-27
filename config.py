@@ -6,27 +6,29 @@ load_dotenv()
 
 
 class Config(object):
-    FLASK_ENV = 'development'
+    FLASK_ENV = "development"
     DEBUG = False
     TESTING = False
-    SECRET_KEY = os.getenv('SECRET_KEY')
+    SECRET_KEY = os.getenv("SECRET_KEY")
     DATABASE_ECHO = False
-    DB = os.getenv('DATABASE_DEVELOPMENT')
-    ASYNC_DB = os.getenv('ASYNC_DATABASE_DEVELOPMENT')
-    TOKEN_GOOGLE_PLACES = os.getenv('TOKEN_GOOGLE_PLACES')
+    DB = os.getenv("DATABASE_DEVELOPMENT")
+    ASYNC_DB = os.getenv("ASYNC_DATABASE_DEVELOPMENT")
+    TOKEN_GOOGLE_PLACES = os.getenv("TOKEN_GOOGLE_PLACES")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    JWT_ALGORITHM = "HS256"
 
 
 class ProductionConfig(Config):
-    FLASK_ENV = 'production'
-    DB = os.getenv('DATABASE_PRODUCTION')
-    ASYNC_DB = os.getenv('ASYNC_DATABASE_PRODUCTION')
-    REDIS = 'redis'
+    FLASK_ENV = "production"
+    DB = os.getenv("DATABASE_PRODUCTION")
+    ASYNC_DB = os.getenv("ASYNC_DATABASE_PRODUCTION")
+    REDIS = "redis"
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    DATABASE_ECHO = True
-    REDIS = 'redis_dev'
+    DATABASE_ECHO = False
+    REDIS = "redis_dev"
 
 
 class TestingConfig(Config):
@@ -34,10 +36,10 @@ class TestingConfig(Config):
 
 
 def get_config():
-    env = os.getenv('ENV')
-    if env == 'production':
+    env = os.getenv("ENV")
+    if env == "production":
         return ProductionConfig()
-    elif env == 'testing':
+    elif env == "testing":
         return TestingConfig()
     else:
         return DevelopmentConfig()

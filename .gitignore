@@ -162,3 +162,8 @@ cython_debug/
 # VsCode
 .devcontainer/
 .vscode/
+
+# VIM
+*.swp
+tags
+scratch.notes

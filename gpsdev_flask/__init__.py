@@ -7,6 +7,11 @@ from gpsdev_flask.models import User
 from gpsdev_flask.query_handler import BackgroundQueriesHandler, TASKS_QUEUE
 from redis import Redis
 from config import get_config
+import logging
+
+
+main_logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 # from gpsdev_flask.models import Base
 
 config = get_config()
@@ -30,7 +35,7 @@ def create_app():
         db_session.remove()
 
     login_manager.init_app(app)
-    login_manager.login_view = '/login'
+    login_manager.login_view = "/login"
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -40,6 +45,7 @@ def create_app():
 
     # Прокинуть все routes:
     from gpsdev_flask.routes import register_blueprints
+
     register_blueprints(app)
 
     return app

@@ -133,6 +133,10 @@
     margin-bottom: 5px;
   }
 
+  #scheduleField {
+    width: 368px;
+  }
+
   #scheduleField input,
   #noTrackingContainer input,
   #stafferContainer input {
@@ -141,8 +145,22 @@
     margin-right: 10px;
   }
 
-  #deleteBtn {
+  #ownTracksBtn {
     margin-left: 13px;
+
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+    background-color: rgb(71 141 178);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #deleteBtn {
+    margin-left: 140px;
 
     font-size: 15px;
     font-weight: 500;
@@ -331,6 +349,7 @@
     flex-direction: row;
     align-items: center;
     width: 320px;
+    margin-bottom: 5px;
   }
 
   #scheduleField input,
@@ -341,8 +360,22 @@
     margin-right: 10px;
   }
 
-  #deleteBtn {
+  #ownTracksBtn {
     margin-left: 13px;
+
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: none;
+    background-color: rgb(71 141 178);
+    color: rgb(247, 237, 237);
+
+    cursor: pointer;
+  }
+
+  #deleteBtn {
+    margin-left: 91px;
 
     font-size: 15px;
     font-weight: 500;

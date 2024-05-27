@@ -14,6 +14,8 @@ from trajectory_report.models import (
     Clusters,
     Comment,
     Frequency,
+    OwnTracksCluster,
+    OwnTracksLocation,
 )
 
 
@@ -68,20 +70,67 @@ def statements(
     return sel
 
 
-def employees(**kwargs) -> Select:
-    """Все сотрудники"""
-    sel: Select = select(Employees.name_id, Employees.name)
+def statements_extended(
+    date_from: dt.date,
+    date_to: dt.date,
+    division: Optional[Union[int, str]] = None,
+    name_ids: Optional[List[int]] = None,
+    object_ids: Optional[List[int]] = None,
+) -> Select:
+    """Получить записи с заявленными выходами"""
+
+    sel = (
+        select(
+            Statements.name_id.label('uid'),
+            Statements.object_id,
+            Statements.date,
+            Statements.statement,
+        )
+        .where(Statements.date >= date_from)
+        .where(Statements.date <= date_to)
+        .select_from(Statements)
+    )
+    if isinstance(division, int):
+        sel = sel.where(Statements.division == division)
+    if isinstance(division, str):
+        sel = sel.join(Division, Statements.division == Division.id)
+        sel = sel.where(Division.division == division)
+    if name_ids:
+        sel = sel.where(Statements.name_id.in_(name_ids))
+    if object_ids:
+        sel = sel.where(Statements.object_id.in_(object_ids))
     return sel
 
 
-def objects(**kwargs) -> Select:
+def employees(ids: list[int] | None = None, **kwargs) -> Select:
+    """Все сотрудники"""
+    sel: Select = select(
+        Employees.name_id.label('uid'),
+        Employees.name,
+        Employees.bath_attendant,
+        Employees.name,
+        Employees.schedule,
+        Employees.phone,
+        Employees.staffer,
+    )
+    if ids:
+        sel = sel.where(Employees.name_id.in_(ids))
+    return sel
+
+
+def objects(ids: list[int] | None = None, **kwargs) -> Select:
     """Все объекты (подопечные)"""
     sel: Select = select(
         ObjectsSite.object_id,
         ObjectsSite.name.label("object"),
-        ObjectsSite.latitude,
-        ObjectsSite.longitude,
+        ObjectsSite.latitude.label("object_lat"),
+        ObjectsSite.longitude.label("object_lng"),
+        ObjectsSite.address,
+        ObjectsSite.no_payments,
+        ObjectsSite.income,
     )
+    if ids:
+        sel = sel.where(ObjectsSite.object_id.in_(ids))
     return sel
 
 
@@ -126,6 +175,7 @@ def journal(name_ids: Optional[List[int]] = None, **kwargs) -> Select:
         Journal.subscriberID,
         Journal.period_init,
         Journal.period_end,
+        Journal.owntracks,
     )
     if name_ids:
         sel = sel.where(Journal.name_id.in_(name_ids))
@@ -140,7 +190,7 @@ def serves(
 ) -> Select:
     """Получить служебные записки из БД"""
     sel: Select = select(
-        Serves.name_id,
+        Serves.name_id.label('uid'),
         Serves.object_id,
         Serves.date,
         Serves.approval,
@@ -153,22 +203,37 @@ def serves(
     return sel
 
 
-def current_locations(
+def current_locations_mts(
     subscriber_ids: Optional[List[int]] = None, **kwargs
 ) -> Select:
     """get current locations by subscriber_ids"""
     sel: Select = (
         select(
-            Coordinates.subscriberID,
-            Coordinates.locationDate,
-            Coordinates.longitude,
-            Coordinates.latitude,
+            Coordinates.subscriberID.label('uid'),
+            Coordinates.locationDate.label('datetime'),
+            Coordinates.longitude.label('lng'),
+            Coordinates.latitude.label('lat'),
         )
         .where(Coordinates.requestDate > dt.date.today())
         .where(Coordinates.locationDate != None)
     )
     if subscriber_ids:
         sel = sel.where(Coordinates.subscriberID.in_(subscriber_ids))
+    return sel
+
+
+def current_locations_owntracks(
+    employee_ids: Optional[List[int]] = None, **kwargs
+) -> Select:
+    """get current locations by subscriber_ids"""
+    sel: Select = select(
+        OwnTracksLocation.employee_id.label('uid'),
+        OwnTracksLocation.created_at.label('datetime'),
+        OwnTracksLocation.lon.label('lng'),
+        OwnTracksLocation.lat,
+    ).where(OwnTracksLocation.created_at > dt.date.today())
+    if employee_ids:
+        sel = sel.where(OwnTracksLocation.employee_id.in_(employee_ids))
     return sel
 
 
@@ -180,11 +245,11 @@ def clusters(
 ) -> Select:
     """Получить кластеры из БД"""
     sel: Select = select(
-        Clusters.subscriberID,
+        Clusters.subscriberID.label('uid'),
         Clusters.date,
         Clusters.datetime,
-        Clusters.longitude,
-        Clusters.latitude,
+        Clusters.longitude.label('lng'),
+        Clusters.latitude.label('lat'),
         Clusters.leaving_datetime,
         Clusters.cluster,
     ).where(Clusters.date >= date_from)
@@ -196,17 +261,40 @@ def clusters(
     return sel
 
 
+def clusters_owntracks(
+    date_from: dt.date,
+    date_to: Optional[dt.date] = None,
+    employee_ids: Optional[List[int]] = None,
+    **kwargs
+) -> Select:
+    sel: Select = select(
+        OwnTracksCluster.employee_id.label("uid"),
+        OwnTracksCluster.date,
+        OwnTracksCluster.datetime,
+        OwnTracksCluster.longitude.label('lng'),
+        OwnTracksCluster.latitude.label('lat'),
+        OwnTracksCluster.leaving_datetime,
+        OwnTracksCluster.cluster,
+    ).where(OwnTracksCluster.date >= date_from)
+
+    if date_to:
+        sel = sel.where(OwnTracksCluster.date < date_to + dt.timedelta(days=1))
+    if employee_ids:
+        sel = sel.where(OwnTracksCluster.employee_id.in_(employee_ids))
+    return sel
+
+
 def statements_one_emp(
     date: dt.date, name_id: int, division: Union[int, str]
 ) -> Select:
     sel = (
         select(
-            Statements.name_id,
+            Statements.name_id.label('uid'),
             Employees.name,
             Statements.object_id,
             ObjectsSite.name.label("object"),
-            ObjectsSite.longitude,
-            ObjectsSite.latitude,
+            ObjectsSite.longitude.label("object_lng"),
+            ObjectsSite.latitude.label("object_lat"),
             ObjectsSite.address,
             Statements.date,
             Statements.statement,
@@ -225,19 +313,55 @@ def statements_one_emp(
     return sel
 
 
+def statements_one_emp_extended(
+    date: dt.date, name_id: int, division: int | str | None
+) -> Select:
+    sel = (
+        select(
+            Statements.name_id,
+            Statements.object_id,
+            Statements.date,
+            Statements.statement,
+        )
+        .where(Statements.date == date)
+        .where(Statements.name_id == name_id)
+        .select_from(Statements)
+    )
+    if isinstance(division, int):
+        sel = sel.where(Statements.division == division)
+    if isinstance(division, str):
+        sel = sel.join(Division, Statements.division == Division.id)
+        sel = sel.where(Division.division == division)
+    return sel
+
+
 def locations_one_emp(date: dt.date, subscriber_id: int) -> Select:
     """get locations by subscriber_id and date"""
     sel: Select = (
         select(
-            Coordinates.subscriberID,
-            Coordinates.requestDate,
-            Coordinates.locationDate,
-            Coordinates.longitude,
-            Coordinates.latitude,
+            Coordinates.subscriberID.label('uid'),
+            Coordinates.locationDate.label('datetime'),
+            Coordinates.longitude.label('lng'),
+            Coordinates.latitude.label('lat'),
         )
         .where(Coordinates.subscriberID == subscriber_id)
         .where(Coordinates.requestDate >= date)
         .where(Coordinates.requestDate < date + dt.timedelta(days=1))
+    )
+    return sel
+
+
+def locations_one_emp_owntracks(date: dt.date, employee_id: int) -> Select:
+    sel: Select = (
+        select(
+            OwnTracksLocation.employee_id.label('uid'),
+            OwnTracksLocation.created_at.label('datetime'),
+            OwnTracksLocation.lon.label('lng'),
+            OwnTracksLocation.lat,
+        )
+        .where(OwnTracksLocation.created_at > date)
+        .where(OwnTracksLocation.created_at < date + dt.timedelta(days=1))
+        .where(OwnTracksLocation.employee_id == employee_id)
     )
     return sel
 
@@ -248,6 +372,7 @@ def journal_one_emp(name_id: int) -> Select:
         Journal.subscriberID,
         Journal.period_init,
         Journal.period_end,
+        Journal.owntracks,
     ).where(Journal.name_id == name_id)
     return sel
 
@@ -326,6 +451,14 @@ def empty_locations() -> Select:
         .group_by(Coordinates.subscriberID)
         .having(last_loc == None)
     )
+    return sel
+
+
+def empty_locations_owntracks() -> Select:
+    prev_hour = dt.datetime.now() - dt.timedelta(hours=1)
+    sel: Select = select(
+        OwnTracksLocation.employee_id.distinct().label("name_id")
+    ).where(OwnTracksLocation.created_at >= prev_hour)
     return sel
 
 
