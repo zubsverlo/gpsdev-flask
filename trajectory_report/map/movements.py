@@ -152,6 +152,8 @@ class MapMovements(OneEmployeeReport, MapsBase):
     @property
     def _clusters_points(self) -> pd.DataFrame:
         clusters = self.clusters
+        clusters['leaving_datetime'] = clusters['leaving_datetime']\
+            .astype('datetime64')
         clusters["popup"] = clusters["leaving_datetime"] - clusters["datetime"]
 
         clusters = clusters.sort_values(by="datetime")
