@@ -42,6 +42,12 @@ def employees():
     return render_template('employees.html', title='Сотрудники')
 
 
+@pages.route('/analysis')
+@login_required
+def analysis():
+    return render_template('analysis.html', title='Анализ')
+
+
 @pages.route('/journal')
 @login_required
 def journal():

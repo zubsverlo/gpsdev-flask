@@ -86,7 +86,7 @@ def get_coordinates(date):
     locations_mts = pd.merge(journal, locations_mts, on='subscriberID')\
         .rename(columns={'locationDate': 'created_at'})\
         .loc[:, ['name_id', 'created_at', 'owntracks']]
-    locs = pd.concat([locations_mts, locations_owntracks]).fillna(False)
+    locs = pd.concat([locations_mts, locations_owntracks]).fillna(True)
     locs = locs.sort_values(['name_id', 'created_at'])
 
     locs['shifted'] = locs.groupby('name_id')['created_at'].shift(-1)
@@ -115,6 +115,7 @@ def get_coordinates(date):
             'owntracks_first': 'owntracks',
         }
     )
+    pass
     # add records to the db
     locs.to_sql(
         'location_analysis', DB_ENGINE, if_exists='append', index=False

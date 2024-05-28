@@ -60,6 +60,9 @@
             <div class="page">Карты</div>
           </a>
           {% if current_user.rang_id == 1 %}
+          <a href="/analysis" class="page-link">
+            <div class="page">Анализ</div></a
+          >
           <a href="/journal" class="page-link">
             <div class="page">Журнал</div></a
           >
@@ -84,6 +87,7 @@
           </div>
           <div class="page" onclick="location.href='/maps';">Карты</div>
           {% if current_user.rang_id == 1 %}
+          <div class="page" onclick="location.href='/analysis';">Анализ</div>
           <div class="page" onclick="location.href='/journal';">Журнал</div>
           <div class="page" onclick="location.href='/users';">Пользователи</div>
           <div class="page" onclick="location.href='/dashboard';">

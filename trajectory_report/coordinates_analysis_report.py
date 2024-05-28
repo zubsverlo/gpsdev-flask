@@ -80,6 +80,7 @@ def get_report(
     )
     stmts['start'] = stmts['start'].apply(lambda x: x.strftime("%H:%M:%S"))
     stmts['end'] = stmts['end'].apply(lambda x: x.strftime("%H:%M:%S"))
+    stmts['date'] = stmts['date'].astype(str)
     return stmts.to_dict(orient='records')
 
 

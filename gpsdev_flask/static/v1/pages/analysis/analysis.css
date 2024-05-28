@@ -1,0 +1,144 @@
+#preLoadContainer {
+  height: 500px;
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.8s;
+}
+
+#preLoadImg {
+  width: 200px;
+}
+
+#tableParametersContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+#tableParameters {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+#tableParameters > * {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5px;
+}
+
+#tableParameters > * > * {
+  font-size: 15px;
+  cursor: pointer;
+}
+
+#startDateOfPeriodContainer {
+  margin: 0px;
+}
+
+#tableParameters input {
+  width: 102px;
+  height: 40px;
+  padding: 0px 5px;
+
+  text-align: center;
+  font-weight: 500;
+
+  border: 1px solid gray;
+  background-color: rgb(205 188 126 / 36%);
+  color: rgb(75, 75, 75);
+  transition: box-shadow 0.5s;
+}
+
+#tableParameters input:focus {
+  border: 1px solid black;
+  outline: none;
+}
+
+#startDateOfPeriod {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  border-right: none !important;
+}
+
+#endDateOfPeriod {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.date-highlight {
+  box-shadow: 0px 0px 8px 1px rgb(122, 122, 122);
+}
+
+.fade-out-box {
+  box-shadow: 0px 0px 13px rgba(27, 160, 100, 0);
+  transition: box-shadow 0.8s;
+}
+
+#requestBtn {
+  padding: 11.5px 5px;
+  border: 1px solid gray;
+  border-radius: 3px;
+  background-color: rgb(28 100 121 / 60%);
+  color: rgb(247 243 243);
+
+  transition: all 0.4s;
+}
+
+#requestBtn:hover {
+  background-color: rgba(10, 127, 115, 0.66);
+  color: rgb(247 243 243);
+}
+#requestBtn:active {
+  background-color: rgba(228, 232, 173, 0.66);
+  color: rgb(74, 74, 74);
+}
+
+.pre-table-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#tableContainer {
+  opacity: 0;
+  transition: all 0.8s;
+}
+
+tr {
+  background-color: rgba(49, 132, 115, 0.551);
+  color: rgb(236, 230, 230);
+}
+
+td {
+  color: black;
+
+  font-family: "Manrope", sans-serif;
+  font-weight: 300;
+}
+
+tr.odd {
+  background-color: rgba(218, 217, 193, 0.1) !important;
+}
+
+tr.even {
+  background-color: rgba(244, 242, 177, 0.1) !important;
+}
+
+tfoot input {
+  width: 100%;
+  padding: 3px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 3px;
+  background-color: rgba(244, 238, 238, 0.85);
+  color: rgb(93, 93, 93);
+}
