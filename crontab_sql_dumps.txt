@@ -1,0 +1,5 @@
+40 0 * * * /home/user/remove_expired_files.sh >> ~/removelog.log
+10 0 * * * mysqldump -uusername -h127.0.0.1 -ppassword gps --no-data | gzip > /home/user/DB_DUMPS/`date -I'date'`-schema_dump.sql.gz
+12 0 * * * mysqldump -uusername -h127.0.0.1 -ppassword gps --no-create-info --ignore-table gps.coordinates --ignore-table gps.owntracks_location | gzip > /home/user/DB_DUMPS/`date -I'date'`-dump.sql.gz
+14 0 * * * mysqldump -uusername -h127.0.0.1 -ppassword gps coordinates --no-create-info --where="coordinates.requestDate between '$(date --date="1 day ago" -I'date')' and '$(date -I'date')'" | gzip > /home/user/DB_DUMPS/coordinates/$(date --date="1 day ago" -I'date')-coordinates.sql.gz
+16 0 * * * mysqldump -uusername -h127.0.0.1 -ppassword gps owntracks_location --no-create-info --where="owntracks_location.created_at between '$(date --date="1 day ago" -I'date')' and '$(date -I'date')'" | gzip > /home/user/DB_DUMPS/coordinates/$(date --date="1 day ago" -I'date')-owntracks_location.sql.gz
