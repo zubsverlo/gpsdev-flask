@@ -54,9 +54,15 @@ def employees_sel(name_ids: list) -> Select:
     return sel
 
 
-def get_report(date_from: dt.date | str, date_to: dt.date | str):
+def get_report(
+        date_from: dt.date | str,
+        date_to: dt.date | str | None = None
+) -> dict:
     date_from = dt.date.fromisoformat(str(date_from))
-    date_to = dt.date.fromisoformat(str(date_to))
+    if date_to:
+        date_to = dt.date.fromisoformat(str(date_to))
+    else:
+        date_to = dt.date.today()
     with DB_ENGINE.connect() as conn:
         analysis = pd.read_sql(locs_sel(date_from, date_to), conn)
         stmts = pd.read_sql(stmts_sel(date_from, date_to), conn)

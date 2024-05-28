@@ -355,9 +355,9 @@ class StatementsSchema(Schema):
             )
 
 
-class ReportAnalysisSchema(Schema):
+class CoordinatesAnalysisSchema(Schema):
     date_from = fields.Date(required=True)
-    date_to = fields.Date(required=True)
+    date_to = fields.Date(required=False)
 
     @validates_schema
     def validate_dates(self, data, **kwargs):
