@@ -46,7 +46,7 @@ class OneEmployeeReportDataGetter:
                 raise ReportException(
                     f"Не подключен к отслеживанию в этот день ({self.date})"
                 )
-            if journal.iloc[0].subscriberID:
+            if pd.notna(journal.iloc[0].subscriberID):
                 subs_id = int(journal.iloc[0].subscriberID)
                 locations = pd.read_sql(
                     cs.locations_one_emp(self.date, subs_id),
