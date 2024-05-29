@@ -297,6 +297,7 @@ class MapBindings(Report, MapsBase):
         super().__init__(
             date_from, date_to, division, name_ids, object_ids, **kwargs
         )
+        self._stmts = self._stmts[self._stmts['object_id'] != 1]
         self._stmts = pd.merge(
             self._stmts, self._objects,
             how='left', on='object_id'
@@ -305,12 +306,18 @@ class MapBindings(Report, MapsBase):
             self._stmts, self._employees,
             how='left', on='uid'
         )
+        self._stmts = self._stmts[
+            [
+                'object_id', 'object_lat', 'object_lng', 
+                'object', 'name', 'address'
+            ]
+        ]
+        self._stmts = self._stmts.drop_duplicates()
         self.points = self._points_from_stmts()
 
         self.map = folium.Map(
-            location=[55.50703, 37.58213],
-            zoom_start=12,
-            tiles="cartodbpositron",
+            location=[55.75160, 37.61802],
+            zoom_start=11,
         )
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(self.map)
@@ -330,7 +337,7 @@ class MapBindings(Report, MapsBase):
                 show=False,
                 name=x.name,
                 locations=[i for i in zip(x.lat.tolist(), x.lng.tolist())],
-                popups=x.object.tolist(),
+                popups=x.popups.tolist(),
             )
         )
 
@@ -342,28 +349,20 @@ class MapBindings(Report, MapsBase):
 
         # Object_id 1 без локаций, это служебный объект (отпуск, больнич, увол)
         # Даты нас не интересуют, только связка сотрудник-псу
-        points = self._stmts.loc[self._stmts.object_id != 1].drop_duplicates(
-            ["name", "object"]
-        )
-
+        points = self._stmts.copy()
         # Для кластеризации необходим столбец со временем, сгенерируем его
         # сами, т.к. подопечные имеют только координаты.
-        points["datetime"] = points.date.apply(
-            lambda x: dt.datetime.fromisoformat(str(x))
-        )
-
+        points["datetime"] = dt.datetime.now()
         # ПРОБЛЕМА: при раскидывании близлежащих точек один объект может
         # оказаться с несколькими разными координатами.
         # Решением будет изъять все уникальные объекты, раскинуть их координаты
         # и заменить эти координаты новыми, воссоединив с основным DataFrame.
 
-        objects = self._concatenate_points(
-            points.drop_duplicates(["object_id"])
-        ).set_index("object_id")[["lng", "lat"]]
-        points = points.set_index("object_id")
-        points = pd.merge(points, objects, left_index=True, right_index=True)
-
-        return points.reset_index()
+        objects = self._concatenate_points(points)[["object_id", "lng", "lat"]]
+        points = pd.merge(points, objects, on="object_id")
+        points = points[['object', 'name', 'lng', 'lat', 'address']]
+        points['popups'] = points.object + "\n\n" + points.address
+        return points
 
 
 class MapObjectsOnly(Report, MapsBase):
@@ -444,9 +443,10 @@ if __name__ == "__main__":
     divisions = ["ПВТ1", "ПНИ12,30"]
     start_date, end_date = "2024-01-01", "2024-01-23"
     # m = MapMovements(898, "2024-02-02", "Коньково").as_json_dict
-    for division in divisions:
+    m = MapBindings("2024-05-01", "2024-05-31", "ПНИ12,30")
+    # for division in divisions:
         # m = MapBindings(start_date, end_date, division)
         # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
-        m = MapObjectsOnly(start_date, end_date, division)
-        m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
+        # m = MapObjectsOnly(start_date, end_date, division)
+        # m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
     pass
