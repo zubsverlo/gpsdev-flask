@@ -167,4 +167,4 @@ cython_debug/
 *.swp
 *.swo
 tags
-scratch.notes
+scratch_notes.txt

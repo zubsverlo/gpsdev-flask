@@ -10,6 +10,7 @@ from trajectory_report.models import (
 from trajectory_report.database import DB_ENGINE
 import pandas as pd
 from trajectory_report.config import LONG_PERIOD
+from gpsdev_flask import main_logger
 
 
 YESTERDAY = dt.date.today()-dt.timedelta(days=1)
@@ -63,6 +64,7 @@ def locations_owntracks_select(date) -> Select:
         select(
             OwnTracksLocation.employee_id.label("name_id"),
             OwnTracksLocation.created_at,
+            OwnTracksLocation.tst,
         )
         .where(OwnTracksLocation.created_at > date)
         .where(OwnTracksLocation.created_at < date+dt.timedelta(days=1))
@@ -77,6 +79,18 @@ def get_coordinates(date):
         locations_owntracks = pd.read_sql(
             locations_owntracks_select(date), conn
         )
+    tst = locations_owntracks\
+        .rename(columns={'tst': 'datetime'})\
+        .drop_duplicates(['name_id', 'datetime'], keep='last')
+    created_at = locations_owntracks\
+        .rename(columns={'created_at': 'datetime'})\
+        .drop_duplicates(['name_id', 'datetime'], keep='last')
+    locations_owntracks = pd.concat([tst, created_at])\
+        .drop_duplicates(['name_id', 'datetime'])\
+        .sort_values(['name_id', 'datetime'])\
+        .loc[:, ['name_id', 'datetime']]
+    locations_owntracks = locations_owntracks\
+        .rename(columns={'datetime': 'created_at'})
     journal.loc[pd.isna(journal['period_end']), 'period_end'] = dt.date.today()
     # filter journal to get current employee's subscriberID
     journal = journal.loc[

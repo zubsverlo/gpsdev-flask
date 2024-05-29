@@ -6,6 +6,8 @@ import datetime as dt
 from typing import List
 import pandas as pd
 from trajectory_report.report.ClusterGenerator import prepare_clusters
+from trajectory_report.config import (STAY_LOCATIONS_CONFIG_OWNTRACKS,
+                                      CLUSTERS_CONFIG_OWNTRACKS)
 
 
 def get_dates_range() -> List[dt.date]:
@@ -28,17 +30,29 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
     """Собирает все координаты за указанный день"""
     sel = (
         select(
-            OwnTracksLocation.employee_id,
+            OwnTracksLocation.employee_id.label('uid'),
             OwnTracksLocation.created_at,
-            OwnTracksLocation.lon,
+            OwnTracksLocation.tst,
+            OwnTracksLocation.lon.label('lng'),
             OwnTracksLocation.lat,
         )
         .where(OwnTracksLocation.created_at > date)
         .where(OwnTracksLocation.created_at < date + dt.timedelta(days=1))
     )
     with DB_ENGINE.connect() as conn:
-        coords = pd.read_sql(sel, conn)
-    return coords
+        locations = pd.read_sql(sel, conn)
+    
+    tst = locations\
+        .rename(columns={'tst': 'datetime'})\
+        .drop_duplicates(['uid', 'datetime'], keep='last')
+    created_at = locations\
+        .rename(columns={'created_at': 'datetime'})\
+        .drop_duplicates(['uid', 'datetime'], keep='last')
+    locations = pd.concat([tst, created_at])\
+        .drop_duplicates(['uid', 'datetime'])\
+        .sort_values(['uid', 'datetime'])\
+        .loc[:, ['uid', 'datetime', 'lng', 'lat']]
+    return locations
 
 
 def remake_clusters():
@@ -75,7 +89,18 @@ def make_clusters_owntracks(dates: list[dt.date] | None = None):
         # Получить координаты
         coords = get_coordinates(date)
         # Сформировать кластеры
-        clusters = prepare_clusters(coords, owntracks=True)
+        clusters = prepare_clusters(
+            coords,
+            **STAY_LOCATIONS_CONFIG_OWNTRACKS,
+            **CLUSTERS_CONFIG_OWNTRACKS
+        )
+        clusters = clusters.rename(
+            columns={
+                "uid": "employee_id",
+                "lng": "longitude",
+                "lat": "latitude"
+            }
+        )
         # Сохранить кластеры в БД
         clusters.to_sql(
             OwnTracksCluster.__tablename__,

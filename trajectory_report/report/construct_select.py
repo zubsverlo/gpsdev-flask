@@ -227,7 +227,8 @@ def current_locations_owntracks(
     """get current locations by subscriber_ids"""
     sel: Select = select(
         OwnTracksLocation.employee_id.label('uid'),
-        OwnTracksLocation.created_at.label('datetime'),
+        OwnTracksLocation.created_at,
+        OwnTracksLocation.tst,
         OwnTracksLocation.lon.label('lng'),
         OwnTracksLocation.lat,
     ).where(OwnTracksLocation.created_at > dt.date.today())
@@ -354,7 +355,8 @@ def locations_one_emp_owntracks(date: dt.date, employee_id: int) -> Select:
     sel: Select = (
         select(
             OwnTracksLocation.employee_id.label('uid'),
-            OwnTracksLocation.created_at.label('datetime'),
+            OwnTracksLocation.created_at,
+            OwnTracksLocation.tst,
             OwnTracksLocation.lon.label('lng'),
             OwnTracksLocation.lat,
         )

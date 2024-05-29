@@ -69,11 +69,23 @@ class OneEmployeeReportDataGetter:
                 locations = pd.read_sql(
                     cs.locations_one_emp_owntracks(self.date, self.name_id),
                     conn,
-                ).sort_values("datetime")
+                )
                 if locations.empty:
                     raise ReportException(
                         f"За {self.date} нет локаций. Устройство отключено!"
                     )
+                # here some manipulations with locations
+                tst = locations\
+                    .rename(columns={'tst': 'datetime'})\
+                    .drop_duplicates(['uid', 'datetime'], keep='last')
+                created_at = locations\
+                    .rename(columns={'created_at': 'datetime'})\
+                    .drop_duplicates(['uid', 'datetime'], keep='last')
+                locations = pd.concat([tst, created_at])\
+                    .drop_duplicates(['uid', 'datetime'])\
+                    .sort_values(['uid', 'datetime'])\
+                    .loc[:, ['uid', 'datetime', 'lng', 'lat']]
+
                 self.owntracks = True
                 clusters = prepare_clusters(
                     locations,
@@ -316,13 +328,23 @@ class OwntracksMtsReportDataGetter:
             self.conn,
         )
         if self.includes_current_date:
-            curr_locs_owntracks = pd.read_sql(
+            curr_owntracks = pd.read_sql(
                 cs.current_locations_owntracks(employee_ids=self.name_ids),
                 self.conn,
             )
+            tst = curr_owntracks\
+                .rename(columns={'tst': 'datetime'})\
+                .drop_duplicates(['uid', 'datetime'], keep='last')
+            created_at = curr_owntracks\
+                .rename(columns={'created_at': 'datetime'})\
+                .drop_duplicates(['uid', 'datetime'], keep='last')
+            curr_owntracks = pd.concat([tst, created_at])\
+                .drop_duplicates(['uid', 'datetime'])\
+                .sort_values(['uid', 'datetime'])\
+                .loc[:, ['uid', 'datetime', 'lng', 'lat']]
             try:
                 locs_clusters = prepare_clusters(
-                    curr_locs_owntracks,
+                    curr_owntracks,
                     **STAY_LOCATIONS_CONFIG_OWNTRACKS,
                     **CLUSTERS_CONFIG_OWNTRACKS
                 )
@@ -370,10 +392,10 @@ def one_employee_report_data_factory(*args, **kwargs) -> dict:
 
 
 if __name__ == "__main__":
-    # a = OwntracksMtsReportDataGetter(
-    #     "2024-02-01", "2024-05-31", "Коньково"
-    # ).get_data()
+    a = OwntracksMtsReportDataGetter(
+        "2024-05-01", "2024-05-31", "ПВТ1"
+    ).get_data()
     # e = OneEmployeeReportDataGetter(1293, "2024-04-26", 2).get_data()
-    e = OneEmployeeReportDataGetter(898, "2024-02-02", 3).get_data()
+    # e = OneEmployeeReportDataGetter(898, "2024-02-02", 3).get_data()
     # print(a)
     pass
