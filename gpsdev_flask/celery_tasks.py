@@ -22,6 +22,7 @@ def set_json_cache(table, json_response):
     redis_session.set(table, json_response)
 
 
+@app_celery.task(name="update_coordinates")
 def update_coordinates():
     fetch_coordinates()
     redis_session.expireat("current_locations", 0)

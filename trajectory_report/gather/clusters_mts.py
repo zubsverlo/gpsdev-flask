@@ -5,7 +5,9 @@ import datetime as dt
 from typing import List
 import pandas as pd
 from trajectory_report.report.ClusterGenerator import prepare_clusters
-
+from trajectory_report.config import (
+        CLUSTERS_CONFIG_MTS, STAY_LOCATIONS_CONFIG_MTS
+)
 
 def get_dates_range() -> List[dt.date]:
     """Получить список дат, по которым нужно произвести кластеры.
@@ -27,11 +29,10 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
     """Собирает все координаты за указанный день"""
     sel = (
         select(
-            Coordinates.subscriberID,
-            Coordinates.requestDate,
-            Coordinates.locationDate,
-            Coordinates.longitude,
-            Coordinates.latitude,
+            Coordinates.subscriberID.label("uid"),
+            Coordinates.locationDate.label("datetime"),
+            Coordinates.longitude.label("lng"),
+            Coordinates.latitude.label("lat"),
         )
         .where(Coordinates.requestDate > date)
         .where(Coordinates.requestDate < date + dt.timedelta(days=1))
@@ -48,8 +49,20 @@ def make_clusters_mts():
         # Получить координаты
         coords = get_coordinates(date)
         # Сформировать кластеры
-        clusters = prepare_clusters(coords)
+        clusters = prepare_clusters(
+            coords,
+            **CLUSTERS_CONFIG_MTS,
+            **STAY_LOCATIONS_CONFIG_MTS
+        )
         # Сохранить кластеры в БД
+        clusters = clusters.rename(
+            columns={
+                "uid": "subscriberID",
+                "lng": "longitude",
+                "lat": "latitude",
+            }
+        )
+        clusters['date'] = clusters['datetime'].apply(lambda x: x.date())
         clusters.to_sql(
             Clusters.__tablename__, DB_ENGINE, if_exists="append", index=False
         )
@@ -57,9 +70,4 @@ def make_clusters_mts():
 
 
 if __name__ == "__main__":
-    coords = get_coordinates(dt.date(2023, 10, 4))
-    a = prepare_clusters(coords)
-    # a = a.loc[a['subscriberID'] == 3329149]
-
-    pass
-    # make_clusters()
+    make_clusters_mts()
