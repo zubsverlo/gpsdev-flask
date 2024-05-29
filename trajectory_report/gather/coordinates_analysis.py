@@ -115,18 +115,18 @@ def get_coordinates(date):
             'owntracks_first': 'owntracks',
         }
     )
-    pass
-    # add records to the db
-    locs.to_sql(
-        'location_analysis', DB_ENGINE, if_exists='append', index=False
-    )
+    return locs
 
 
 def analyze_coordinates():
     # get dates since the last analysis and make analysis for every of them
     dates = get_dates_range()
     for date in dates:
-        get_coordinates(date)
+        locs = get_coordinates(date)
+        # add records to the db
+        locs.to_sql(
+            'location_analysis', DB_ENGINE, if_exists='append', index=False
+        )
 
 
 if __name__ == "__main__":

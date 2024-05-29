@@ -9,6 +9,7 @@ from trajectory_report.models import (
 from trajectory_report.database import DB_ENGINE
 import pandas as pd
 from trajectory_report.exceptions import ReportException
+from trajectory_report.gather.coordinates_analysis import get_coordinates
 
 
 # filter by statements only those who worked when report fetched
@@ -68,6 +69,9 @@ def get_report(
         stmts = pd.read_sql(stmts_sel(date_from, date_to), conn)
         name_ids = stmts.name_id.unique().tolist()
         employees = pd.read_sql(employees_sel(name_ids), conn)
+    if date_to >= dt.date.today():
+        current_analysis = get_coordinates(dt.date.today())
+        analysis = pd.concat([analysis, current_analysis])
     if analysis.empty:
         raise ReportException("Нет данных для анализа за указанный период")
     stmts = stmts.drop_duplicates(['name_id', 'date'])[['name_id', 'date']]
