@@ -964,7 +964,7 @@ if __name__ == "__main__":
     # r = Report('2024-02-01', '2024-05-31', "Коньково")
     # o = OneEmployeeReport(1293, "2024-05-23", "Коньково")
     # o = OneEmployeeReport(898, "2024-02-02", "Коньково")
-    o = OneEmployeeReport(494, "2024-05-28", "ПВТ1")
+    o = OneEmployeeReport(1187, "2024-05-29", "ПВТ1")
     e = time.perf_counter()
     # a = r.as_json_dict
     print(e - s)

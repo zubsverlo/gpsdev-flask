@@ -87,7 +87,7 @@ class OneEmployeeReportDataGetter:
                     .sort_values(['uid', 'datetime'])\
                     .loc[:, ['uid', 'datetime', 'lng', 'lat']]
                 locations = locations[
-                        locations['datetime'] > datetime64(dt.date.today())
+                        locations['datetime'] > datetime64(self.date)
                 ]
                 self.owntracks = True
                 clusters = prepare_clusters(
