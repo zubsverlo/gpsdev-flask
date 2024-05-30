@@ -32,7 +32,7 @@ def report():
         .first()
     if not entry:
         tracking_type = 'Не отслеживается'
-    if entry.owntracks:
+    elif entry.owntracks:
         tracking_type = 'owntracks'
     else:
         tracking_type = 'MTS'
