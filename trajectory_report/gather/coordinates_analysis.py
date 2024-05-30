@@ -11,6 +11,7 @@ from trajectory_report.database import DB_ENGINE
 import pandas as pd
 from trajectory_report.config import LONG_PERIOD
 from gpsdev_flask import main_logger
+from numpy import datetime64
 
 
 YESTERDAY = dt.date.today()-dt.timedelta(days=1)
@@ -89,8 +90,10 @@ def get_coordinates(date):
         .drop_duplicates(['name_id', 'datetime'])\
         .sort_values(['name_id', 'datetime'])\
         .loc[:, ['name_id', 'datetime']]
-    locations_owntracks = locations_owntracks\
-        .rename(columns={'datetime': 'created_at'})
+    locations_owntracks = locations_owntracks[
+        locations_owntracks['datetime'] > datetime64(date)
+    ]
+    l
     journal.loc[pd.isna(journal['period_end']), 'period_end'] = dt.date.today()
     # filter journal to get current employee's subscriberID
     journal = journal.loc[

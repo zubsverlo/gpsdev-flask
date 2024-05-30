@@ -8,6 +8,7 @@ import pandas as pd
 from trajectory_report.report.ClusterGenerator import prepare_clusters
 from trajectory_report.config import (STAY_LOCATIONS_CONFIG_OWNTRACKS,
                                       CLUSTERS_CONFIG_OWNTRACKS)
+from numpy import datetime64
 
 
 def get_dates_range() -> List[dt.date]:
@@ -52,6 +53,7 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
         .drop_duplicates(['uid', 'datetime'])\
         .sort_values(['uid', 'datetime'])\
         .loc[:, ['uid', 'datetime', 'lng', 'lat']]
+    locations = locations[locations['datetime'] > datetime64(date)]
     return locations
 
 

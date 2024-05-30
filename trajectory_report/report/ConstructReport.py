@@ -13,6 +13,7 @@ from trajectory_report.config import (
     CLUSTERS_CONFIG_MTS,
     CLUSTERS_CONFIG_OWNTRACKS,
 )
+from numpy import datetime64
 
 
 class OneEmployeeReportDataGetter:
@@ -85,7 +86,9 @@ class OneEmployeeReportDataGetter:
                     .drop_duplicates(['uid', 'datetime'])\
                     .sort_values(['uid', 'datetime'])\
                     .loc[:, ['uid', 'datetime', 'lng', 'lat']]
-
+                locations = locations[
+                        locations['datetime'] > datetime64(dt.date.today())
+                ]
                 self.owntracks = True
                 clusters = prepare_clusters(
                     locations,
@@ -342,6 +345,10 @@ class OwntracksMtsReportDataGetter:
                 .drop_duplicates(['uid', 'datetime'])\
                 .sort_values(['uid', 'datetime'])\
                 .loc[:, ['uid', 'datetime', 'lng', 'lat']]
+
+            curr_owntracks = curr_owntracks[
+                curr_owntracks['datetime'] > datetime64(dt.date.today())
+            ]
             try:
                 locs_clusters = prepare_clusters(
                     curr_owntracks,
