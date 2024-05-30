@@ -101,6 +101,7 @@ def make_clusters_owntracks(dates: list[dt.date] | None = None):
                 "lat": "latitude"
             }
         )
+        clusters['date'] = clusters.datetime.apply(lambda x: x.date())
         # Сохранить кластеры в БД
         clusters.to_sql(
             OwnTracksCluster.__tablename__,
