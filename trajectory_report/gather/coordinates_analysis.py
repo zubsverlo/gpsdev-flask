@@ -90,11 +90,12 @@ def get_coordinates(date):
         .drop_duplicates(['name_id', 'datetime'])\
         .sort_values(['name_id', 'datetime'])\
         .loc[:, ['name_id', 'datetime']]
-    locations_owntracks = locations_owntracks\
-        .rename(columns={'datetime': 'created_at'})
     locations_owntracks = locations_owntracks[
         locations_owntracks['datetime'] > datetime64(date)
     ]
+    locations_owntracks = locations_owntracks\
+        .rename(columns={'datetime': 'created_at'})
+
     journal.loc[pd.isna(journal['period_end']), 'period_end'] = dt.date.today()
     # filter journal to get current employee's subscriberID
     journal = journal.loc[
