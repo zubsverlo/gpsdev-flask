@@ -358,10 +358,9 @@ class MapBindings(Report, MapsBase):
         # Решением будет изъять все уникальные объекты, раскинуть их координаты
         # и заменить эти координаты новыми, воссоединив с основным DataFrame.
 
-        objects = self._concatenate_points(points)[["object_id", "lng", "lat"]]
-        points = pd.merge(points, objects, on="object_id")
+        points = self._concatenate_points(points)
         points = points[['object', 'name', 'lng', 'lat', 'address']]
-        points['popups'] = points.object + "\n\n" + points.address
+        points['popups'] = points.object + "\n(соц. " + points.name + ")"
         return points
 
 
