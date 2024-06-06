@@ -257,7 +257,7 @@ class OneEmployeeReport():
         ]
         clusters[columns] = coordinates_values
 
-        result = self._calculate_distance(clusters)
+        result = calculate_distance(clusters)
 
         if len(result):
             return True

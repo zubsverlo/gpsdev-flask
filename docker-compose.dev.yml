@@ -34,19 +34,19 @@ services:
     environment:
       - TZ=Europe/Moscow
 
-  celery_dev:
-    build:
-      context: .
-      dockerfile: Dockerfile-celery
-    depends_on:
-      - redis_dev
-    restart: always
-    volumes:
-      - .:/app
-    entrypoint: celery
-    command: -A gpsdev_flask.celery_app.app_celery worker --loglevel=info
-    environment:
-      - TZ=Europe/Moscow
+#  celery_dev:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile-celery
+#    depends_on:
+#      - redis_dev
+#    restart: always
+#    volumes:
+#      - .:/app
+#    entrypoint: celery
+#    command: -A gpsdev_flask.celery_app.app_celery worker --loglevel=info
+#    environment:
+#      - TZ=Europe/Moscow
 #  celery-beat:
 #    build:
 #      context: .
