@@ -34,7 +34,8 @@ def post_location():
     except ValidationError as e:
         main_logger.info("validation owntrack location error")
         main_logger.info(e.messages)
-        return validation_error_422(e.messages)
+        # return validation_error_422(e.messages)
+        return jsonify({})
     # компиляция insert в строку и добавление в очередь на исполнение в redis
     insert_statement = insert(OwnTracksLocation)\
         .values(**obj, employee_id=auth.username)\
