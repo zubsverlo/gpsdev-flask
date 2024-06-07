@@ -32,12 +32,13 @@ def post_location():
     try:
         obj = schema.load(request.get_json())
     except ValidationError as e:
+        main_logger.info("validation owntrack location error")
+        main_logger.info(e.messages)
         return validation_error_422(e.messages)
     # компиляция insert в строку и добавление в очередь на исполнение в redis
     insert_statement = insert(OwnTracksLocation)\
         .values(**obj, employee_id=auth.username)\
         .compile(compile_kwargs={"literal_binds": True})
-    main_logger.info(insert_statement)
     if obj.get('created_at').date() < dt.date.today():
         # переформировать кластеры, если локации пришли позже
         redis_session.sadd(
