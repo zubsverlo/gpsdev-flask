@@ -229,6 +229,9 @@ class OneEmployeeReport():
 
         self.start_time = locs["datetime"].min().to_pydatetime()
         self.end_time = locs["datetime"].max().to_pydatetime()
+        # здесь решить, что делать, когда локация всего одна
+        if len(locs) == 1:
+            locs["difference"] = dt.timedelta(seconds=1)
         self.locations_frequency = (
             locs[locs["long_period"] == False]["difference"]
             .mean()
@@ -964,7 +967,7 @@ if __name__ == "__main__":
     # r = Report('2024-02-01', '2024-05-31', "Коньково")
     # o = OneEmployeeReport(1293, "2024-05-23", "Коньково")
     # o = OneEmployeeReport(898, "2024-02-02", "Коньково")
-    o = OneEmployeeReport(1187, "2024-05-29", "ПВТ1")
+    o = OneEmployeeReport(159, "2024-06-07", "ПВТ1")
     e = time.perf_counter()
     # a = r.as_json_dict
     print(e - s)
