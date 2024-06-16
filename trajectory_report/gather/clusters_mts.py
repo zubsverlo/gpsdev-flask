@@ -6,7 +6,7 @@ from typing import List
 import pandas as pd
 from trajectory_report.report.ClusterGenerator import prepare_clusters
 from trajectory_report.config import (
-        CLUSTERS_CONFIG_MTS, STAY_LOCATIONS_CONFIG_MTS
+        CLUSTERS_MTS, CLUSTERS_MTS
 )
 
 def get_dates_range() -> List[dt.date]:
@@ -51,8 +51,8 @@ def make_clusters_mts():
         # Сформировать кластеры
         clusters = prepare_clusters(
             coords,
-            **CLUSTERS_CONFIG_MTS,
-            **STAY_LOCATIONS_CONFIG_MTS
+            **CLUSTERS_MTS,
+            **CLUSTERS_MTS
         )
         # Сохранить кластеры в БД
         clusters = clusters.rename(

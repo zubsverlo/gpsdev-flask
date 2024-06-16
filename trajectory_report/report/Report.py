@@ -1,17 +1,19 @@
-import time
-import pandas as pd
 import datetime as dt
-import numpy as np
-from math import cos, asin, sqrt, pi
-from numpy import NaN
-from trajectory_report.config import REPORT_BASE, STATS_CHECKOUT
 import io
+import time
+from dataclasses import dataclass
+from math import asin, cos, pi, sqrt
+
+import numpy as np
+import pandas as pd
 import xlsxwriter
+from numpy import NaN
+
+from trajectory_report.config import REPORT_BASE, STATS_CHECKOUT
 from trajectory_report.report.ConstructReport import (
     one_employee_report_data_factory,
+    report_data_factory,
 )
-from trajectory_report.report.ConstructReport import report_data_factory
-from dataclasses import dataclass
 
 
 def distance_vectorized(
@@ -21,10 +23,7 @@ def distance_vectorized(
     a = (
         0.5
         - np.cos((lat2 - lat1) * p) / 2
-        + np.cos(lat1 * p)
-        * np.cos(lat2 * p)
-        * (1 - np.cos((lon2 - lon1) * p))
-        / 2
+        + np.cos(lat1 * p) * np.cos(lat2 * p) * (1 - np.cos((lon2 - lon1) * p)) / 2
     )
     return 12742 * np.arcsin(np.sqrt(a))
 
@@ -44,12 +43,21 @@ def calculate_distance(data_flow: pd.DataFrame) -> pd.DataFrame:
 
     # По каждой строке высчитывается дистанция, в пределах радиуса - True.
     distances = distance_vectorized(
-        object_lat, object_lng, cluster_lat, cluster_lng
+        object_lat,
+        object_lng,
+        cluster_lat,
+        cluster_lng,
     )
-    distances = [i <= REPORT_BASE["RADIUS"] / 1000 for i in distances]
-    data_flow["in_radius"] = distances
-    data_flow = data_flow[data_flow["in_radius"]]
-    return data_flow
+    distances_mts = [i <= REPORT_BASE["RADIUS_MTS"] / 1000 for i in distances]
+    distances_owntracks = [
+        i <= REPORT_BASE["RADIUS_OWNTRACKS"] / 1000 for i in distances
+    ]
+    data_flow["in_radius_mts"] = distances_mts
+    data_flow["in_radius_owntracks"] = distances_owntracks
+    mask_mts = (data_flow["in_radius_mts"]) & (~data_flow["owntracks"])
+    mask_owntracks = (data_flow["in_radius_owntracks"]) & (data_flow["owntracks"])
+    stmts_jrnl_clstrs = data_flow[(mask_mts | mask_owntracks)]
+    return stmts_jrnl_clstrs
 
 
 def consolidate_time_periods(df):
@@ -63,9 +71,7 @@ def consolidate_time_periods(df):
     # уже включен в текущий кластер. Такие строки (последующий кластер)
     # не несут никакой ценности, поэтому мы их удаляем.
     df["next_ld_is_less"] = (
-        df.groupby(["uid", "object_id", "date"])[
-            "leaving_datetime"
-        ].shift(-1)
+        df.groupby(["uid", "object_id", "date"])["leaving_datetime"].shift(-1)
         <= df["leaving_datetime"]
     )
     # Смещаем bool на строку ниже, добавляя столбец
@@ -129,9 +135,7 @@ def consolidate_time_periods(df):
     # В завершение, снова удаление всех последующих кластеров, охватывающих
     # тот же период, что и текущий (как в начале алгоритма)
     df["next_ld_is_less"] = (
-        df.groupby(["uid", "object_id", "date"])[
-            "leaving_datetime"
-        ].shift(-1)
+        df.groupby(["uid", "object_id", "date"])["leaving_datetime"].shift(-1)
         <= df["leaving_datetime"]
     )
     df["odd_line"] = df["next_ld_is_less"].shift(1)
@@ -139,7 +143,7 @@ def consolidate_time_periods(df):
     return df
 
 
-class OneEmployeeReport():
+class OneEmployeeReport:
     """
     ФОРМИРОВАНИЕ ИНДИВИДУАЛЬНОГО ОТЧЕТА
     Понадобятся: clusters, statements+objects.
@@ -154,10 +158,10 @@ class OneEmployeeReport():
 
     def __init__(self, name_id: int, date: dt.date | str, division: int | str):
         data = one_employee_report_data_factory(name_id, date, division)
-        self._stmts = data['_stmts']
-        self.clusters = data['clusters']
-        self._locations = data['_locations']
-        self.owntracks = data['owntracks']
+        self._stmts = data["_stmts"]
+        self.clusters = data["clusters"]
+        self._locations = data["_locations"]
+        self.owntracks = data["owntracks"]
         self.report = self._build_report()
         self.owntracks_location_analysis()
 
@@ -165,7 +169,7 @@ class OneEmployeeReport():
         stmts_clstrs = pd.merge(
             self._stmts.loc[self._stmts.object_id != 1],
             self.clusters,
-            on=['uid', 'date'],
+            on=["uid", "date"],
         )
 
         # Вычисление дистанции между объектами и кластерами и фильтрация,
@@ -200,9 +204,7 @@ class OneEmployeeReport():
         df["attend_number"] = (
             df.groupby(by=["name", "object", "date"]).duration.cumcount() + 1
         )
-        attends_sum = (
-            df.groupby(by=["name", "object", "date"]).count().duration
-        )
+        attends_sum = df.groupby(by=["name", "object", "date"]).count().duration
 
         df = df.set_index(["name", "object", "date"])
         df["attends_sum"] = attends_sum
@@ -233,9 +235,7 @@ class OneEmployeeReport():
         if len(locs) == 1:
             locs["difference"] = dt.timedelta(seconds=1)
         self.locations_frequency = (
-            locs[locs["long_period"] == False]["difference"]
-            .mean()
-            .to_pytimedelta()
+            locs[locs["long_period"] == False]["difference"].mean().to_pytimedelta()
         )
         pass
 
@@ -404,29 +404,11 @@ class Report:
             .reset_index()
             .query("result > 1")
             .loc[:, ["object", "date", "result", "name"]]
-            .sort_values(
-                by=["result", "object", "date"], ascending=[False, True, True]
-            )
+            .sort_values(by=["result", "object", "date"], ascending=[False, True, True])
             .rename(columns={"result": "duration"})
         )
 
-        # name_id сотрудников, у которых остались "Н/Б" на сегодня.
-        # Из этих сотрудников формируется список на оповещение, в случае, если
-        # локаций не было в течение определенного периода
-        self.employees_to_notify = (
-            pd.merge(
-                self.report,
-                self._employees[["uid", "empty_locations", "phone"]],
-                how="left",
-                on="uid",
-            )
-            .query("result == 'Н/Б'")
-            .query("empty_locations == True")
-            .query("date == @dt.date.today()")
-            .drop_duplicates("uid")
-            .loc[:, ["name", "phone"]]
-        )
-        self.report = self.report.rename(columns={'uid': 'name_id'})
+        self.report = self.report.rename(columns={"uid": "name_id"})
         return self
 
     def _filter_serves(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -445,9 +427,7 @@ class Report:
         attendant_name_ids = self._employees[
             self._employees["schedule"] == 2
         ].uid.unique()
-        reserved_serves = self._serves[
-            self._serves.uid.isin(attendant_name_ids)
-        ]
+        reserved_serves = self._serves[self._serves.uid.isin(attendant_name_ids)]
 
         # Исключаем все выходы с ванщиками (к ним фильтрация не относится)
         with_schedules = with_schedules[with_schedules["schedule"] != 2]
@@ -479,13 +459,9 @@ class Report:
         mask_attends_count = pd.notna(data.attends_count)
 
         # Нет отчета, но есть есть служебка
-        mask_no_duration_but_approval = pd.isna(data.duration) & pd.notna(
-            data.approval
-        )
+        mask_no_duration_but_approval = pd.isna(data.duration) & pd.notna(data.approval)
         # Нет отчета и нет служебки
-        mask_no_duration_no_approval = pd.isna(data.duration) & pd.isna(
-            data.approval
-        )
+        mask_no_duration_no_approval = pd.isna(data.duration) & pd.isna(data.approval)
         # Ещё не наступившие даты или "БОЛЬНИЧНЫЙ/ОТПУСК/УВОЛ."
         mask_future_or_first_object = (data.date > dt.date.today()) | (
             data.object_id == 1
@@ -536,9 +512,15 @@ class Report:
 
         # По каждой строке высчитывается дистанция, в пределах радиуса - True.
         distances = distance(object_lat, object_lng, cluster_lat, cluster_lng)
-        distances = [i <= REPORT_BASE["RADIUS"] / 1000 for i in distances]
-        data["in_radius"] = distances
-        stmts_jrnl_clstrs = data[data["in_radius"] == True]
+        distances_mts = [i <= REPORT_BASE["RADIUS_MTS"] / 1000 for i in distances]
+        distances_owntracks = [
+            i <= REPORT_BASE["RADIUS_OWNTRACKS"] / 1000 for i in distances
+        ]
+        data["in_radius_mts"] = distances_mts
+        data["in_radius_owntracks"] = distances_owntracks
+        mask_mts = (data["in_radius_mts"]) & (~data["owntracks"])
+        mask_owntracks = (data["in_radius_owntracks"]) & (data["owntracks"])
+        stmts_jrnl_clstrs = data[(mask_mts | mask_owntracks)]
         return stmts_jrnl_clstrs
 
     @staticmethod
@@ -553,9 +535,7 @@ class Report:
         # уже включен в текущий кластер. Такие строки (последующий кластер)
         # не несут никакой ценности, поэтому мы их удаляем.
         data["next_ld_is_less"] = (
-            data.groupby(["uid", "object_id", "date"])[
-                "leaving_datetime"
-            ].shift(-1)
+            data.groupby(["uid", "object_id", "date"])["leaving_datetime"].shift(-1)
             <= data["leaving_datetime"]
         )
         # Смещаем bool на строку ниже, добавляя столбец
@@ -597,9 +577,7 @@ class Report:
         # текущего, поэтому, если это значение меньше или равно допускаемого
         # времени между двумя кластерами, то эти кластеры можно объединить.
         data["time_difference"] = (
-            data.groupby(["uid", "object_id", "date"])["datetime"].shift(
-                -1
-            )
+            data.groupby(["uid", "object_id", "date"])["datetime"].shift(-1)
             - data["leaving_datetime"]
         )
         # bool маска для нахождения кластеров для объединения
@@ -618,9 +596,7 @@ class Report:
         # В завершение, снова удаление всех последующих кластеров, охватывающих
         # тот же период, что и текущий (как в начале алгоритма)
         data["next_ld_is_less"] = (
-            data.groupby(["uid", "object_id", "date"])[
-                "leaving_datetime"
-            ].shift(-1)
+            data.groupby(["uid", "object_id", "date"])["leaving_datetime"].shift(-1)
             <= data["leaving_datetime"]
         )
         data["odd_line"] = data["next_ld_is_less"].shift(1)
@@ -723,9 +699,7 @@ class Report:
         new_columns = []
         for i in res.columns:
             try:
-                new_columns.append(
-                    dt.date.fromisoformat(str(i)).strftime("%d.%m")
-                )
+                new_columns.append(dt.date.fromisoformat(str(i)).strftime("%d.%m"))
             except ValueError:
                 new_columns.append(i)
 
@@ -735,14 +709,10 @@ class Report:
             f = 0
             for i, v in enumerate(l):
                 if v != name:
-                    result.append(
-                        (f, i - 1, name, res.iloc[i - 1].to_list()[1:])
-                    )
+                    result.append((f, i - 1, name, res.iloc[i - 1].to_list()[1:]))
                     name = v
                     f = i
-            result.append(
-                (f, len(l) - 1, l[-1], res.iloc[len(l) - 1].to_list()[1:])
-            )
+            result.append((f, len(l) - 1, l[-1], res.iloc[len(l) - 1].to_list()[1:]))
             return result
 
         l = index(res.name.tolist())
@@ -766,9 +736,7 @@ class Report:
         book.get_worksheet_by_name("Sheet1").set_column("D:D", 8, None)
         format_attend = book.add_format({"bg_color": "#cfe2f3"})
         format_absence = book.add_format({"bg_color": "#f88a8a"})
-        format_na = book.add_format(
-            {"bg_color": "#000000", "font_color": "#ffffff"}
-        )
+        format_na = book.add_format({"bg_color": "#000000", "font_color": "#ffffff"})
         format_b = book.add_format({"bg_color": "#b7e1cd"})
         format_o = book.add_format({"bg_color": "#ffe599"})
         format_u = book.add_format({"bg_color": "#aaaaaa"})
@@ -785,9 +753,7 @@ class Report:
 
         if list_no_payments:
             a = self.horizontal_report[["object", "object_id"]].reset_index()
-            a["to_format"] = a["object_id"].apply(
-                lambda x: x in list_no_payments
-            )
+            a["to_format"] = a["object_id"].apply(lambda x: x in list_no_payments)
             for t in a.itertuples():
                 item_format = no_payments if t.to_format else align_left
                 book.get_worksheet_by_name("Sheet1").write(
@@ -891,13 +857,9 @@ class Report:
         #                          'value': '3',
         #                          'format': format_three})
 
-        align_rows_format = book.add_format(
-            {"align": "center", "valign": "vcenter"}
-        )
+        align_rows_format = book.add_format({"align": "center", "valign": "vcenter"})
         for i in range(res.shape[0]):
-            book.get_worksheet_by_name("Sheet1").set_row(
-                i, 15, align_rows_format
-            )
+            book.get_worksheet_by_name("Sheet1").set_row(i, 15, align_rows_format)
 
         rows_format = book.add_format(
             {
@@ -946,9 +908,7 @@ class Report:
         dups = self.duplicated_attends
         dups["date"] = dups["date"].astype(str)
         dups = dups.to_dict(orient="records")
-        no_payments = self._objects.query(
-            "no_payments == True"
-        ).object_id.tolist()
+        no_payments = self._objects.query("no_payments == True").object_id.tolist()
         staffers = self._employees.query("staffer == True").uid.tolist()
         return {
             "horizontal_report": {
@@ -964,7 +924,7 @@ class Report:
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    # r = Report('2024-02-01', '2024-05-31', "Коньково")
+    # r = Report("2024-05-01", "2024-06-30", "ПВТ1")
     # o = OneEmployeeReport(1293, "2024-05-23", "Коньково")
     # o = OneEmployeeReport(898, "2024-02-02", "Коньково")
     o = OneEmployeeReport(159, "2024-06-07", "ПВТ1")

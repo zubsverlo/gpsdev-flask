@@ -1,18 +1,20 @@
-import folium
-from folium.plugins import AntPath, Geocoder, Search
-from branca.element import Figure
-import math
-import skmob
-from skmob.preprocessing import clustering
-from numpy import median
-import pandas as pd
-from trajectory_report.report.Report import OneEmployeeReport, Report
-from typing import Union, Optional, List
 import datetime as dt
-from numpy import isnan
-from geopandas import GeoDataFrame, GeoSeries
-from gpsdev_flask import main_logger
+import math
+from typing import List, Optional, Union
 
+import folium
+import pandas as pd
+import skmob
+from branca.element import Figure
+from folium.plugins import AntPath, Geocoder, Search
+from geopandas import GeoDataFrame, GeoSeries
+from jinja2 import Template
+from numpy import isnan, median
+from skmob.preprocessing import clustering
+
+from gpsdev_flask import main_logger
+from trajectory_report.config import REPORT_BASE
+from trajectory_report.report.Report import OneEmployeeReport, Report
 
 """
 
@@ -78,12 +80,15 @@ class MapsBase:
 
     def _concatenate_points(self, df) -> pd.DataFrame:
         df = skmob.TrajDataFrame(
-            df, latitude="object_lat", longitude="object_lng"
+            df,
+            latitude="object_lat",
+            longitude="object_lng",
         )
         df = clustering.cluster(df, cluster_radius_km=0.005)
         df = df.groupby(by="cluster", group_keys=False).apply(
             lambda x: self._tie_clusters(x)
         )
+        df["is_object"] = pd.notna(df.object)
         return pd.DataFrame(df)
 
     @property
@@ -109,11 +114,16 @@ class MapMovements(OneEmployeeReport, MapsBase):
     ):
         super().__init__(name_id, date, division)
 
+        self.radius = (
+            REPORT_BASE["RADIUS_OWNTRACKS"]
+            if self.owntracks
+            else REPORT_BASE["RADIUS_MTS"]
+        )
         self._objects = self._stmts.drop_duplicates("object_id").loc[
             :, ["object", "object_lng", "object_lat", "address"]
         ]
         self._objects = self._objects.rename(
-            columns={'object_lng': 'lng', 'object_lat': 'lat'}
+            columns={"object_lng": "lng", "object_lat": "lat"}
         )
 
         median_lat = median(self.clusters.lat)
@@ -141,23 +151,24 @@ class MapMovements(OneEmployeeReport, MapsBase):
     def _objects_points(self) -> pd.DataFrame:
         # Объекты
         objects = self._objects
+        objects = objects[pd.notna(objects['lat'])]
         objects["icon"] = [
             folium.features.Icon(icon="user", prefix="fa", color="black")
             for _ in range(len(objects))
         ]
+        objects["popup"] = objects["address"]
         objects["tooltip"] = objects["object"]
-        objects["popup"] = objects["object"] + "\n" + objects["address"]
         return objects
 
     @property
     def _clusters_points(self) -> pd.DataFrame:
         clusters = self.clusters
-        clusters['leaving_datetime'] = clusters['leaving_datetime']\
-            .astype('datetime64[ns]')
+        clusters["leaving_datetime"] = clusters["leaving_datetime"].astype(
+            "datetime64[ns]"
+        )
         clusters["popup"] = clusters["leaving_datetime"] - clusters["datetime"]
 
         clusters = clusters.sort_values(by="datetime")
-
         # Первая и последняя иконка - это начало и конец пути. Остальные -
         # "пауза".
         icons = [
@@ -165,18 +176,12 @@ class MapMovements(OneEmployeeReport, MapsBase):
             for _ in range(len(clusters))
         ]
         if icons:
-            icons[0] = folium.features.Icon(
-                icon="play", prefix="fa", color="green"
-            )
-            icons[-1] = folium.features.Icon(
-                icon="stop", prefix="fa", color="red"
-            )
+            icons[0] = folium.features.Icon(icon="play", prefix="fa", color="green")
+            icons[-1] = folium.features.Icon(icon="stop", prefix="fa", color="red")
         # Добавление иконок к кластерам
         clusters["icon"] = icons
         # Информация о времени (при наведении курсора)
-        clusters["tooltip"] = clusters["datetime"].apply(
-            lambda x: x.strftime("%H:%M")
-        )
+        clusters["tooltip"] = clusters["datetime"].apply(lambda x: x.strftime("%H:%M"))
         # Подробная информация (при нажатии на точку)
         clusters["popup"] = clusters.apply(
             lambda x: (
@@ -187,9 +192,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
             ),
             axis=1,
         )
-        clusters = clusters[
-            ["datetime", "lat", "lng", "icon", "popup", "tooltip"]
-        ]
+        clusters = clusters[["datetime", "lat", "lng", "icon", "popup", "tooltip"]]
         return clusters
 
     def _create_map(self):
@@ -206,6 +209,8 @@ class MapMovements(OneEmployeeReport, MapsBase):
                 popup=row.popup,
                 tooltip=row.tooltip,
                 icon=row.icon,
+                is_object=row.is_object,
+                object_radius=self.radius,
             ).add_to(map)
 
         # Antpath отображает маршрут через анимацию ползающих "муравьев"
@@ -221,6 +226,59 @@ class MapMovements(OneEmployeeReport, MapsBase):
                 hardwareAcceleration=True,
                 opacity=0.6,
             ).add_to(map)
+
+        # for point in self._objects.itertuples():
+        #     folium.Circle(
+        #         location=[point.lat, point.lng],
+        #         stroke=True,
+        #         radius=self.radius,
+        #         color="black",
+        #         weight=1,
+        #         fill_opacity=0.2,
+        #         opacity=0.2,
+        #         fill_color="green",
+        #         fill=False,  # gets overridden by fill_color
+        #         interactive=False,
+        #         # popup="{} meters".format(150),
+        #         tooltip=f"Радиус {self.radius} метров",
+        #     ).add_to(map)
+        Geocoder(placeholder="Найти адрес", position="bottomright").add_to(map)
+
+        # Modify Marker template to include the onClick event
+        click_template = """{% macro script(this, kwargs) %}
+            var {{ this.get_name() }} = L.marker(
+                {{ this.location|tojson }},
+                {{ this.options|tojson }}
+            ).addTo({{ this._parent.get_name() }}).on('click', onClick);
+        {% endmacro %}"""
+        folium.Marker._template = Template(click_template)
+        click_js = """function onClick(e) {
+                 console.log(e.target)
+                 var isObject = e.target.options.isObject;
+                 var radius = e.target.options.objectRadius;
+                 if (isObject && !e.target.radiusIdAppended) {
+                    var i = L.circle(
+                      e.latlng,
+                      {
+                        radius: radius,
+                        color: "black",
+                        weight: 1,
+                        fillOpacity: 0.2,
+                        opacity: 0.2,
+                        fillColor: "green",
+                        tooltip: `Радиус {radius} метров`
+                      }
+                    ).addTo(e.target._map);
+                    e.target.radiusIdAppended = i;
+                 } else if (isObject && e.target.radiusIdAppended) {
+                   e.target._map.removeLayer(e.target.radiusIdAppended);
+                   e.target.radiusIdAppended = null;
+                 }
+                 }"""
+        e = folium.Element(click_js)
+        html = map.get_root()
+        html.script.get_root().render()
+        html.script._children[e.get_name()] = e
         return map
 
     @property
@@ -242,18 +300,10 @@ class MapMovements(OneEmployeeReport, MapsBase):
             report = report.rename(columns={"datetime": "time"})
             report = report.to_dict(orient="records")
         if self.offline_periods is not None:
-            analytics = self.offline_periods[
-                ["datetime", "shifted", "difference"]
-            ]
-            analytics["start"] = analytics["datetime"].apply(
-                lambda x: str(x)[-8:]
-            )
-            analytics["end"] = analytics["shifted"].apply(
-                lambda x: str(x)[-8:]
-            )
-            analytics["duration"] = analytics["difference"].apply(
-                lambda x: str(x)[-8:]
-            )
+            analytics = self.offline_periods[["datetime", "shifted", "difference"]]
+            analytics["start"] = analytics["datetime"].apply(lambda x: str(x)[-8:])
+            analytics["end"] = analytics["shifted"].apply(lambda x: str(x)[-8:])
+            analytics["duration"] = analytics["difference"].apply(lambda x: str(x)[-8:])
             analytics = analytics[["start", "end", "duration"]]
             analytics = analytics.to_dict(orient="records")
 
@@ -271,9 +321,9 @@ class MapMovements(OneEmployeeReport, MapsBase):
         if self.end_time:
             resp["end_time"] = str(self.end_time)[-8:]
         if self.locations_frequency:
-            resp["locations_frequency"] = (
-                self.locations_frequency.__str__().split(".")[0]
-            )
+            resp["locations_frequency"] = self.locations_frequency.__str__().split(".")[
+                0
+            ]
         return resp
 
 
@@ -294,23 +344,12 @@ class MapBindings(Report, MapsBase):
         object_ids: Optional[List[int]] = None,
         **kwargs,
     ):
-        super().__init__(
-            date_from, date_to, division, name_ids, object_ids, **kwargs
-        )
-        self._stmts = self._stmts[self._stmts['object_id'] != 1]
-        self._stmts = pd.merge(
-            self._stmts, self._objects,
-            how='left', on='object_id'
-        )
-        self._stmts = pd.merge(
-            self._stmts, self._employees,
-            how='left', on='uid'
-        )
+        super().__init__(date_from, date_to, division, name_ids, object_ids, **kwargs)
+        self._stmts = self._stmts[self._stmts["object_id"] != 1]
+        self._stmts = pd.merge(self._stmts, self._objects, how="left", on="object_id")
+        self._stmts = pd.merge(self._stmts, self._employees, how="left", on="uid")
         self._stmts = self._stmts[
-            [
-                'object_id', 'object_lat', 'object_lng', 
-                'object', 'name', 'address'
-            ]
+            ["object_id", "object_lat", "object_lng", "object", "name", "address"]
         ]
         self._stmts = self._stmts.drop_duplicates()
         self.points = self._points_from_stmts()
@@ -359,8 +398,8 @@ class MapBindings(Report, MapsBase):
         # и заменить эти координаты новыми, воссоединив с основным DataFrame.
 
         points = self._concatenate_points(points)
-        points = points[['object', 'name', 'lng', 'lat', 'address']]
-        points['popups'] = points.object + "\n(соц. " + points.name + ")"
+        points = points[["object", "name", "lng", "lat", "address"]]
+        points["popups"] = points.object + "\n(соц. " + points.name + ")"
         return points
 
 
@@ -383,11 +422,9 @@ class MapObjectsOnly(Report, MapsBase):
             **kwargs,
         )
 
-        self._objects = (
-            self._objects
-            .loc[self._objects.object_id != 1]
-            .loc[:, ["object", "object_lng", "object_lat", "address"]]
-        )
+        self._objects = self._objects.loc[self._objects.object_id != 1].loc[
+            :, ["object", "object_lng", "object_lat", "address"]
+        ]
 
         self._median_coordinates = [55.7522, 37.6156]
         points = self._objects.copy()
@@ -441,11 +478,11 @@ class MapObjectsOnly(Report, MapsBase):
 if __name__ == "__main__":
     divisions = ["ПВТ1", "ПНИ12,30"]
     start_date, end_date = "2024-01-01", "2024-01-23"
-    # m = MapMovements(898, "2024-02-02", "Коньково").as_json_dict
-    m = MapBindings("2024-05-01", "2024-05-31", "ПНИ12,30")
+    m = MapMovements(57, "2024-06-15", "ПВТ6")
+    # m = MapBindings("2024-05-01", "2024-05-31", "ПНИ12,30")
     # for division in divisions:
-        # m = MapBindings(start_date, end_date, division)
-        # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
-        # m = MapObjectsOnly(start_date, end_date, division)
-        # m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
+    # m = MapBindings(start_date, end_date, division)
+    # m.map.save(f'{division}_{start_date}-{end_date}_закрепления.html')
+    # m = MapObjectsOnly(start_date, end_date, division)
+    # m.map.save(f"{division}_{start_date}-{end_date}_подопечные.html")
     pass

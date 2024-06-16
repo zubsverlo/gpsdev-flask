@@ -1,19 +1,21 @@
 # (основной запрос отчетов)
-import pandas as pd
-from trajectory_report.report import construct_select as cs
-from trajectory_report.database import DB_ENGINE
 import datetime as dt
-from trajectory_report.report.ClusterGenerator import prepare_clusters
-from trajectory_report.exceptions import ReportException
 from dataclasses import dataclass
-from gpsdev_flask import main_logger
-from trajectory_report.config import (
-    STAY_LOCATIONS_CONFIG_MTS,
-    STAY_LOCATIONS_CONFIG_OWNTRACKS,
-    CLUSTERS_CONFIG_MTS,
-    CLUSTERS_CONFIG_OWNTRACKS,
-)
+
+import pandas as pd
 from numpy import datetime64
+
+from gpsdev_flask import main_logger
+from trajectory_report.config import CLUSTERS_MTS, CLUSTERS_OWNTRACKS
+from trajectory_report.database import DB_ENGINE
+from trajectory_report.exceptions import ReportException
+from trajectory_report.report import construct_select as cs
+from trajectory_report.report.ClusterGenerator import prepare_clusters
+from trajectory_report.report.coords_clusters_getter import (
+    get_clusters,
+    get_concatinated_coordinates,
+    get_journal,
+)
 
 
 class OneEmployeeReportDataGetter:
@@ -24,21 +26,25 @@ class OneEmployeeReportDataGetter:
         division: int | str,
     ) -> None:
         date = dt.date.fromisoformat(str(date))
-        self.owntracks = False
         self.name_id = name_id
         self.division = division
         self.date = date
 
     def get_data(self):
+        """
+        if locations.empty:
+            raise ReportException(
+                f"За {self.date} нет локаций. Устройство отключено!"
+            )
+
+        """
         with DB_ENGINE.connect() as conn:
             stmts = pd.read_sql(
                 cs.statements_one_emp(self.date, self.name_id, self.division),
-                conn
+                conn,
             )
             journal = pd.read_sql(cs.journal_one_emp(self.name_id), conn)
-            journal["period_end"] = journal["period_end"].fillna(
-                dt.date.today()
-            )
+            journal["period_end"] = journal["period_end"].fillna(dt.date.today())
             journal = journal.loc[
                 (journal["period_init"] <= self.date)
                 & (self.date <= journal["period_end"])
@@ -47,78 +53,56 @@ class OneEmployeeReportDataGetter:
                 raise ReportException(
                     f"Не подключен к отслеживанию в этот день ({self.date})"
                 )
-            if pd.notna(journal.iloc[0].subscriberID):
-                subs_id = int(journal.iloc[0].subscriberID)
-                locations = pd.read_sql(
-                    cs.locations_one_emp(self.date, subs_id),
-                    conn,
+            # clusters and locations start
+            locations = get_concatinated_coordinates(
+                name_ids=[self.name_id],
+                date=self.date,
+                conn=conn,
+                journal=journal,
+            )
+            if locations.empty:
+                raise ReportException(
+                    f"За {self.date} нет локаций. Устройство отключено!"
                 )
-                locations = locations[
-                    pd.notna(locations["datetime"])
-                ]
-                if locations.empty:
-                    raise ReportException(
-                        f"За {self.date} нет локаций. Устройство отключено!"
-                    )
-                clusters = prepare_clusters(
-                    locations,
-                    **STAY_LOCATIONS_CONFIG_MTS,
-                    **CLUSTERS_CONFIG_MTS
-                )
-                clusters['uid'] = self.name_id
-            else:
-                locations = pd.read_sql(
-                    cs.locations_one_emp_owntracks(self.date, self.name_id),
-                    conn,
-                )
-                if locations.empty:
-                    raise ReportException(
-                        f"За {self.date} нет локаций. Устройство отключено!"
-                    )
-                # here some manipulations with locations
-                tst = locations\
-                    .rename(columns={'tst': 'datetime'})\
-                    .drop_duplicates(['uid', 'datetime'], keep='last')
-                created_at = locations\
-                    .rename(columns={'created_at': 'datetime'})\
-                    .drop_duplicates(['uid', 'datetime'], keep='last')
-                locations = pd.concat([tst, created_at])\
-                    .drop_duplicates(['uid', 'datetime'])\
-                    .sort_values(['uid', 'datetime'])\
-                    .loc[:, ['uid', 'datetime', 'lng', 'lat']]
-                locations = locations[
-                        locations['datetime'] > datetime64(self.date)
-                ]
-                self.owntracks = True
-                clusters = prepare_clusters(
-                    locations,
-                    **STAY_LOCATIONS_CONFIG_OWNTRACKS,
-                    **CLUSTERS_CONFIG_OWNTRACKS
-                )
-            clusters['date'] = clusters['datetime'].apply(lambda x: x.date())
+            clusters = get_clusters(
+                name_ids=[self.name_id],
+                date_from=self.date,
+                conn=conn,
+                coords=locations,
+                journal=journal,
+            )
+            owntracks = locations.owntracks.any()
+            main_logger.info(owntracks)
+            main_logger.info(locations)
             data = {
-                '_stmts': stmts,
-                'clusters': clusters,
-                '_locations': locations,
-                'owntracks': self.owntracks
+                "_stmts": stmts,
+                "clusters": clusters,
+                "_locations": locations,
+                "owntracks": owntracks,
             }
             return data
 
 
 @dataclass
 class OwntracksMtsReportDataGetter:
-    date_from: dt.date | str
-    date_to: dt.date | str
+    date_from: dt.date | str = dt.date.today()
+    date_to: dt.date | str | None = None
     division: int | str | None = None
     name_ids: list[int] | None = None
     object_ids: list[int] | None = None
 
     def __post_init__(self):
         self.date_from = dt.date.fromisoformat(str(self.date_from))
-        self.date_to = dt.date.fromisoformat(str(self.date_to))
-        self.includes_current_date: bool = dt.date.today() <= self.date_to
-        self.empty_locations: list = []
-
+        if self.date_to:
+            self.date_to = dt.date.fromisoformat(str(self.date_to))
+        else:
+            self.date_to = self.date_from
+        if self.date_from == self.date_to:
+            self.coords_date = self.date_to
+        elif dt.date.today() <= self.date_to:
+            self.coords_date = dt.date.today()
+        else:
+            self.coords_date = None
         self.conn = DB_ENGINE.connect()
 
     def get_data(self) -> dict:
@@ -157,50 +141,44 @@ class OwntracksMtsReportDataGetter:
         )
 
         # Комментарии в таблице
-        comment = pd.read_sql(
-            cs.comment(self.division, self.name_ids), self.conn
-        )
+        comment = pd.read_sql(cs.comment(self.division, self.name_ids), self.conn)
         # Частота посещений псу в таблице
-        frequency = pd.read_sql(
-            cs.frequency(self.division, self.name_ids), self.conn
-        )
+        frequency = pd.read_sql(cs.frequency(self.division, self.name_ids), self.conn)
 
         self.objects = pd.read_sql(cs.objects(self.object_ids), self.conn)
 
         # Подопечные, которых нужно посещать по выходным
         holiday_attend_needed = [
-            i for i in self.conn.execute(
+            i
+            for i in self.conn.execute(
                 cs.holiday_attend_needed(self.object_ids)
             ).scalars()
         ]
 
         # Журнал определяет иточник локаций и кластеров
         # сотрудника в определенный период
-        self.journal = pd.read_sql(cs.journal(self.name_ids), self.conn)
-        self.journal["period_end"] = self.journal["period_end"].fillna(
-            dt.date.today()
+        self.journal = get_journal(self.name_ids, self.conn)
+        # Локации и кластеры
+        coords = None
+        if self.coords_date:
+            coords = get_concatinated_coordinates(
+                self.name_ids,
+                self.coords_date,
+                self.conn,
+                self.journal,
+            )
+        clusters = get_clusters(
+            name_ids=self.name_ids,
+            date_from=self.date_from,
+            date_to=self.date_to,
+            conn=self.conn,
+            coords=coords,
+            journal=self.journal,
         )
 
-        # Кластеры и отсутствующие локации
-        mts_clusters = self.mts_clusters()
-        owntracks_clusters = self.owntracks_clusters()
-        clusters = pd.concat([mts_clusters, owntracks_clusters])
-
-        empty_locations = (
-            self.mts_empty_locations() + self.owntracks_empty_locations()
+        staffers = (
+            self.employees.loc[self.employees["staffer"] == True].uid.unique().tolist()
         )
-
-        # Добавление к сотрудникам информации о пустых локациях.
-        # Если использовать не только МТС, то вместо mts_empty_locations
-        # нужно передать расширенный список с name_id.
-        self.employees["empty_locations"] = self.employees.uid.isin(
-            empty_locations
-        )
-        staffers = self.employees\
-            .loc[self.employees['staffer'] == True]\
-            .uid\
-            .unique()\
-            .tolist()
 
         self.conn.close()
 
@@ -214,6 +192,7 @@ class OwntracksMtsReportDataGetter:
         data["_frequency"] = frequency
         data["_staffers"] = staffers
         data["_holiday_attend_needed"] = holiday_attend_needed
+        data["_coordinates"] = coords
         return data
 
     def mts_empty_locations(self) -> list[int] | list:
@@ -227,9 +206,7 @@ class OwntracksMtsReportDataGetter:
         """
         if not self.includes_current_date:
             return []
-        empty_locations = list(
-            self.conn.execute(cs.empty_locations()).scalars()
-        )
+        empty_locations = list(self.conn.execute(cs.empty_locations()).scalars())
         today = dt.date.today()
         mask = (
             (today >= self.journal["period_init"])
@@ -256,9 +233,7 @@ class OwntracksMtsReportDataGetter:
             & (today <= self.journal["period_end"])
             & (self.journal["owntracks"] == True)
         )
-        empty_locations = (
-            set(self.journal[mask].name_id.unique()) - empty_locations
-        )
+        empty_locations = set(self.journal[mask].name_id.unique()) - empty_locations
         return list(empty_locations)
 
     def mts_clusters(self) -> pd.DataFrame:
@@ -277,7 +252,7 @@ class OwntracksMtsReportDataGetter:
                 ]
             )
         journal = self.journal.copy()
-        journal = journal[journal['owntracks'] == False]
+        journal = journal[journal["owntracks"] == False]
 
         clusters = pd.read_sql(
             cs.clusters(self.date_from, self.date_to, subs_ids), self.conn
@@ -289,11 +264,11 @@ class OwntracksMtsReportDataGetter:
             try:
                 locs_clusters = prepare_clusters(
                     current_locations,
-                    **STAY_LOCATIONS_CONFIG_MTS,
-                    **CLUSTERS_CONFIG_MTS,
+                    **CLUSTERS_MTS,
+                    **CLUSTERS_MTS,
                 )
-                dates = locs_clusters['datetime'].apply(lambda x: x.date())
-                locs_clusters['date'] = dates
+                dates = locs_clusters["datetime"].apply(lambda x: x.date())
+                locs_clusters["date"] = dates
                 clusters = pd.concat([clusters, locs_clusters])
             except (TypeError, AttributeError):
                 print(
@@ -301,16 +276,14 @@ class OwntracksMtsReportDataGetter:
                     "Возможно, из-за недостатка кол-ва локаций."
                 )
         clusters = pd.merge(
-            clusters,
-            journal,
-            how="left", right_on="subscriberID", left_on="uid"
+            clusters, journal, how="left", right_on="subscriberID", left_on="uid"
         )
 
         clusters["j_exist"] = (clusters["date"] >= clusters["period_init"]) & (
             clusters["date"] <= clusters["period_end"]
         )
         clusters = clusters[clusters["j_exist"]]
-        clusters['uid'] = clusters['name_id']
+        clusters["uid"] = clusters["name_id"]
         return clusters[
             [
                 "uid",
@@ -335,28 +308,28 @@ class OwntracksMtsReportDataGetter:
                 cs.current_locations_owntracks(employee_ids=self.name_ids),
                 self.conn,
             )
-            tst = curr_owntracks\
-                .rename(columns={'tst': 'datetime'})\
-                .drop_duplicates(['uid', 'datetime'], keep='last')
-            created_at = curr_owntracks\
-                .rename(columns={'created_at': 'datetime'})\
-                .drop_duplicates(['uid', 'datetime'], keep='last')
-            curr_owntracks = pd.concat([tst, created_at])\
-                .drop_duplicates(['uid', 'datetime'])\
-                .sort_values(['uid', 'datetime'])\
-                .loc[:, ['uid', 'datetime', 'lng', 'lat']]
+            tst = curr_owntracks.rename(columns={"tst": "datetime"}).drop_duplicates(
+                ["uid", "datetime"], keep="last"
+            )
+            created_at = curr_owntracks.rename(
+                columns={"created_at": "datetime"}
+            ).drop_duplicates(["uid", "datetime"], keep="last")
+            curr_owntracks = (
+                pd.concat([tst, created_at])
+                .drop_duplicates(["uid", "datetime"])
+                .sort_values(["uid", "datetime"])
+                .loc[:, ["uid", "datetime", "lng", "lat"]]
+            )
 
             curr_owntracks = curr_owntracks[
-                curr_owntracks['datetime'] > datetime64(dt.date.today())
+                curr_owntracks["datetime"] > datetime64(dt.date.today())
             ]
             try:
                 locs_clusters = prepare_clusters(
-                    curr_owntracks,
-                    **STAY_LOCATIONS_CONFIG_OWNTRACKS,
-                    **CLUSTERS_CONFIG_OWNTRACKS
+                    curr_owntracks, **CLUSTERS_OWNTRACKS, **CLUSTERS_OWNTRACKS
                 )
-                dates = locs_clusters['datetime'].apply(lambda x: x.date())
-                locs_clusters['date'] = dates
+                dates = locs_clusters["datetime"].apply(lambda x: x.date())
+                locs_clusters["date"] = dates
 
                 clusters = pd.concat([clusters, locs_clusters])
             except (TypeError, AttributeError):
@@ -366,8 +339,7 @@ class OwntracksMtsReportDataGetter:
                 )
 
         clusters = pd.merge(
-            clusters, self.journal, how="left",
-            left_on="uid", right_on="name_id"
+            clusters, self.journal, how="left", left_on="uid", right_on="name_id"
         )
         clusters["j_exist"] = (
             (clusters["date"] >= clusters["period_init"])
@@ -399,9 +371,7 @@ def one_employee_report_data_factory(*args, **kwargs) -> dict:
 
 
 if __name__ == "__main__":
-    a = OwntracksMtsReportDataGetter(
-        "2024-05-01", "2024-05-31", "ПВТ1"
-    ).get_data()
+    a = OwntracksMtsReportDataGetter("2024-05-01", "2024-05-31", "ПВТ1").get_data()
     # e = OneEmployeeReportDataGetter(1293, "2024-04-26", 2).get_data()
     # e = OneEmployeeReportDataGetter(898, "2024-02-02", 3).get_data()
     # print(a)

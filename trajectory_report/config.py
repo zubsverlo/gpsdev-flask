@@ -26,38 +26,37 @@ TELEGRAM_ADMIN_ID = os.getenv("TELEGRAM_ADMIN_ID")
 # Параметры для генерации кластеров (ClusterGenerator.py)
 # STAY_LOCATIONS - параметры формирования остановок
 # CLUSTERS - параметры формирования кластеров
-STAY_LOCATIONS_CONFIG_MTS = dict()
-CLUSTERS_CONFIG_MTS = dict()
+CLUSTERS_MTS = dict()
 
 # Кол-во минут на одном месте, чтобы сформировать остановку.
 # Стандарт: 2
-STAY_LOCATIONS_CONFIG_MTS["minutes_for_a_stop"] = 2
+CLUSTERS_MTS["minutes_for_a_stop"] = 2
 # После какого кол-ва минут отсутствия данных считать остановку прерванной.
 # Стандарт: 360
-STAY_LOCATIONS_CONFIG_MTS["no_data_for_minutes"] = 360
+CLUSTERS_MTS["no_data_for_minutes"] = 360
 # Радиус в км, по которому объединять локации в одну остановку
 # Стандарт: 0.8
-STAY_LOCATIONS_CONFIG_MTS["spatial_radius_km"] = 0.3
+CLUSTERS_MTS["spatial_radius_km"] = 0.3
 # В каком радиусе объединять остановки в кластер
 # Стандарт: 0.3
-CLUSTERS_CONFIG_MTS["cluster_radius_km"] = 0.3
+CLUSTERS_MTS["cluster_radius_km"] = 0.3
 
 
 # Параметры генерации кластеров и остановок для owntracks
-STAY_LOCATIONS_CONFIG_OWNTRACKS = dict()
-CLUSTERS_CONFIG_OWNTRACKS = dict()
+CLUSTERS_OWNTRACKS = dict()
 
-STAY_LOCATIONS_CONFIG_OWNTRACKS["minutes_for_a_stop"] = 2
-STAY_LOCATIONS_CONFIG_OWNTRACKS["no_data_for_minutes"] = 360
-STAY_LOCATIONS_CONFIG_OWNTRACKS["spatial_radius_km"] = 0.15
-CLUSTERS_CONFIG_OWNTRACKS["cluster_radius_km"] = 0.15
+CLUSTERS_OWNTRACKS["minutes_for_a_stop"] = 2
+CLUSTERS_OWNTRACKS["no_data_for_minutes"] = 60
+CLUSTERS_OWNTRACKS["spatial_radius_km"] = 0.15
+CLUSTERS_OWNTRACKS["cluster_radius_km"] = 0.15
 
 
 # Основные параметры для формирования отчета:
 REPORT_BASE = dict()
 # Радиус, который считается приемлемым между координатами кластера
 # и координатами объекта, чтобы считать это посещением.
-REPORT_BASE["RADIUS"] = 500
+REPORT_BASE["RADIUS_MTS"] = 500
+REPORT_BASE["RADIUS_OWNTRACKS"] = 150
 
 # Длительность в минутах между посещениями, чтобы считать их отдельными.
 # Например, если сотрудник пришел, затем ушёл и вернулся.

@@ -369,7 +369,7 @@ def locations_one_emp_owntracks(date: dt.date, employee_id: int) -> Select:
 
 def journal_one_emp(name_id: int) -> Select:
     sel: Select = select(
-        Journal.name_id,
+        Journal.name_id.label("uid"),
         Journal.subscriberID,
         Journal.period_init,
         Journal.period_end,

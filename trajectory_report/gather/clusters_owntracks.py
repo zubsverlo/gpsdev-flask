@@ -6,8 +6,8 @@ import datetime as dt
 from typing import List
 import pandas as pd
 from trajectory_report.report.ClusterGenerator import prepare_clusters
-from trajectory_report.config import (STAY_LOCATIONS_CONFIG_OWNTRACKS,
-                                      CLUSTERS_CONFIG_OWNTRACKS)
+from trajectory_report.config import (CLUSTERS_OWNTRACKS,
+                                      CLUSTERS_OWNTRACKS)
 from numpy import datetime64
 
 
@@ -93,8 +93,8 @@ def make_clusters_owntracks(dates: list[dt.date] | None = None):
         # Сформировать кластеры
         clusters = prepare_clusters(
             coords,
-            **STAY_LOCATIONS_CONFIG_OWNTRACKS,
-            **CLUSTERS_CONFIG_OWNTRACKS
+            **CLUSTERS_OWNTRACKS,
+            **CLUSTERS_OWNTRACKS
         )
         clusters = clusters.rename(
             columns={
