@@ -72,8 +72,6 @@ class OneEmployeeReportDataGetter:
                 journal=journal,
             )
             owntracks = locations.owntracks.any()
-            main_logger.info(owntracks)
-            main_logger.info(locations)
             data = {
                 "_stmts": stmts,
                 "clusters": clusters,
