@@ -23,7 +23,10 @@ def distance_vectorized(
     a = (
         0.5
         - np.cos((lat2 - lat1) * p) / 2
-        + np.cos(lat1 * p) * np.cos(lat2 * p) * (1 - np.cos((lon2 - lon1) * p)) / 2
+        + np.cos(lat1 * p)
+        * np.cos(lat2 * p)
+        * (1 - np.cos((lon2 - lon1) * p))
+        / 2
     )
     return 12742 * np.arcsin(np.sqrt(a))
 
@@ -54,8 +57,15 @@ def calculate_distance(data_flow: pd.DataFrame) -> pd.DataFrame:
     ]
     data_flow["in_radius_mts"] = distances_mts
     data_flow["in_radius_owntracks"] = distances_owntracks
-    mask_mts = (data_flow["in_radius_mts"]) & (~data_flow["owntracks"])
-    mask_owntracks = (data_flow["in_radius_owntracks"]) & (data_flow["owntracks"])
+    # mask_mts = (data_flow["in_radius_mts"]) & (~data_flow["owntracks"])
+    # mask_owntracks = (data_flow["in_radius_owntracks"]) & (data_flow["owntracks"])
+    # TODO: убрать заплатку с датой (вернуть как выше) после 10 июля
+    mask_mts = (data_flow["in_radius_mts"]) & (
+        (~data_flow["owntracks"]) | (data_flow["date"] <= dt.date(2024, 6, 14))
+    )
+    mask_owntracks = (data_flow["in_radius_owntracks"]) & (
+        (data_flow["owntracks"]) & (data_flow["date"] > dt.date(2024, 6, 14))
+    )
     stmts_jrnl_clstrs = data_flow[(mask_mts | mask_owntracks)]
     return stmts_jrnl_clstrs
 
@@ -235,7 +245,9 @@ class OneEmployeeReport:
         if len(locs) == 1:
             locs["difference"] = dt.timedelta(seconds=1)
         self.locations_frequency = (
-            locs[locs["long_period"] == False]["difference"].mean().to_pytimedelta()
+            locs[locs["long_period"] == False]["difference"]
+            .mean()
+            .to_pytimedelta()
         )
         pass
 
@@ -404,7 +416,9 @@ class Report:
             .reset_index()
             .query("result > 1")
             .loc[:, ["object", "date", "result", "name"]]
-            .sort_values(by=["result", "object", "date"], ascending=[False, True, True])
+            .sort_values(
+                by=["result", "object", "date"], ascending=[False, True, True]
+            )
             .rename(columns={"result": "duration"})
         )
 
@@ -427,7 +441,9 @@ class Report:
         attendant_name_ids = self._employees[
             self._employees["schedule"] == 2
         ].uid.unique()
-        reserved_serves = self._serves[self._serves.uid.isin(attendant_name_ids)]
+        reserved_serves = self._serves[
+            self._serves.uid.isin(attendant_name_ids)
+        ]
 
         # Исключаем все выходы с ванщиками (к ним фильтрация не относится)
         with_schedules = with_schedules[with_schedules["schedule"] != 2]
@@ -459,9 +475,13 @@ class Report:
         mask_attends_count = pd.notna(data.attends_count)
 
         # Нет отчета, но есть есть служебка
-        mask_no_duration_but_approval = pd.isna(data.duration) & pd.notna(data.approval)
+        mask_no_duration_but_approval = pd.isna(data.duration) & pd.notna(
+            data.approval
+        )
         # Нет отчета и нет служебки
-        mask_no_duration_no_approval = pd.isna(data.duration) & pd.isna(data.approval)
+        mask_no_duration_no_approval = pd.isna(data.duration) & pd.isna(
+            data.approval
+        )
         # Ещё не наступившие даты или "БОЛЬНИЧНЫЙ/ОТПУСК/УВОЛ."
         mask_future_or_first_object = (data.date > dt.date.today()) | (
             data.object_id == 1
@@ -512,14 +532,24 @@ class Report:
 
         # По каждой строке высчитывается дистанция, в пределах радиуса - True.
         distances = distance(object_lat, object_lng, cluster_lat, cluster_lng)
-        distances_mts = [i <= REPORT_BASE["RADIUS_MTS"] / 1000 for i in distances]
+        distances_mts = [
+            i <= REPORT_BASE["RADIUS_MTS"] / 1000 for i in distances
+        ]
         distances_owntracks = [
             i <= REPORT_BASE["RADIUS_OWNTRACKS"] / 1000 for i in distances
         ]
         data["in_radius_mts"] = distances_mts
         data["in_radius_owntracks"] = distances_owntracks
-        mask_mts = (data["in_radius_mts"]) & (~data["owntracks"])
-        mask_owntracks = (data["in_radius_owntracks"]) & (data["owntracks"])
+        # mask_mts = (data["in_radius_mts"]) & (~data["owntracks"])
+        # mask_owntracks = (data["in_radius_owntracks"]) & (data["owntracks"])
+        # применить после 10 июля
+        mask_mts = (data["in_radius_mts"]) & (
+            (~data["owntracks"]) | (data["date"] <= dt.date(2024, 6, 14))
+        )
+        mask_owntracks = (data["in_radius_owntracks"]) & (
+            (data["owntracks"]) & (data["date"] > dt.date(2024, 6, 14))
+        )
+
         stmts_jrnl_clstrs = data[(mask_mts | mask_owntracks)]
         return stmts_jrnl_clstrs
 
@@ -535,7 +565,9 @@ class Report:
         # уже включен в текущий кластер. Такие строки (последующий кластер)
         # не несут никакой ценности, поэтому мы их удаляем.
         data["next_ld_is_less"] = (
-            data.groupby(["uid", "object_id", "date"])["leaving_datetime"].shift(-1)
+            data.groupby(["uid", "object_id", "date"])[
+                "leaving_datetime"
+            ].shift(-1)
             <= data["leaving_datetime"]
         )
         # Смещаем bool на строку ниже, добавляя столбец
@@ -596,7 +628,9 @@ class Report:
         # В завершение, снова удаление всех последующих кластеров, охватывающих
         # тот же период, что и текущий (как в начале алгоритма)
         data["next_ld_is_less"] = (
-            data.groupby(["uid", "object_id", "date"])["leaving_datetime"].shift(-1)
+            data.groupby(["uid", "object_id", "date"])[
+                "leaving_datetime"
+            ].shift(-1)
             <= data["leaving_datetime"]
         )
         data["odd_line"] = data["next_ld_is_less"].shift(1)
@@ -699,7 +733,9 @@ class Report:
         new_columns = []
         for i in res.columns:
             try:
-                new_columns.append(dt.date.fromisoformat(str(i)).strftime("%d.%m"))
+                new_columns.append(
+                    dt.date.fromisoformat(str(i)).strftime("%d.%m")
+                )
             except ValueError:
                 new_columns.append(i)
 
@@ -709,10 +745,14 @@ class Report:
             f = 0
             for i, v in enumerate(l):
                 if v != name:
-                    result.append((f, i - 1, name, res.iloc[i - 1].to_list()[1:]))
+                    result.append(
+                        (f, i - 1, name, res.iloc[i - 1].to_list()[1:])
+                    )
                     name = v
                     f = i
-            result.append((f, len(l) - 1, l[-1], res.iloc[len(l) - 1].to_list()[1:]))
+            result.append(
+                (f, len(l) - 1, l[-1], res.iloc[len(l) - 1].to_list()[1:])
+            )
             return result
 
         l = index(res.name.tolist())
@@ -736,7 +776,9 @@ class Report:
         book.get_worksheet_by_name("Sheet1").set_column("D:D", 8, None)
         format_attend = book.add_format({"bg_color": "#cfe2f3"})
         format_absence = book.add_format({"bg_color": "#f88a8a"})
-        format_na = book.add_format({"bg_color": "#000000", "font_color": "#ffffff"})
+        format_na = book.add_format(
+            {"bg_color": "#000000", "font_color": "#ffffff"}
+        )
         format_b = book.add_format({"bg_color": "#b7e1cd"})
         format_o = book.add_format({"bg_color": "#ffe599"})
         format_u = book.add_format({"bg_color": "#aaaaaa"})
@@ -753,7 +795,9 @@ class Report:
 
         if list_no_payments:
             a = self.horizontal_report[["object", "object_id"]].reset_index()
-            a["to_format"] = a["object_id"].apply(lambda x: x in list_no_payments)
+            a["to_format"] = a["object_id"].apply(
+                lambda x: x in list_no_payments
+            )
             for t in a.itertuples():
                 item_format = no_payments if t.to_format else align_left
                 book.get_worksheet_by_name("Sheet1").write(
@@ -857,9 +901,13 @@ class Report:
         #                          'value': '3',
         #                          'format': format_three})
 
-        align_rows_format = book.add_format({"align": "center", "valign": "vcenter"})
+        align_rows_format = book.add_format(
+            {"align": "center", "valign": "vcenter"}
+        )
         for i in range(res.shape[0]):
-            book.get_worksheet_by_name("Sheet1").set_row(i, 15, align_rows_format)
+            book.get_worksheet_by_name("Sheet1").set_row(
+                i, 15, align_rows_format
+            )
 
         rows_format = book.add_format(
             {
@@ -908,7 +956,9 @@ class Report:
         dups = self.duplicated_attends
         dups["date"] = dups["date"].astype(str)
         dups = dups.to_dict(orient="records")
-        no_payments = self._objects.query("no_payments == True").object_id.tolist()
+        no_payments = self._objects.query(
+            "no_payments == True"
+        ).object_id.tolist()
         staffers = self._employees.query("staffer == True").uid.tolist()
         return {
             "horizontal_report": {

@@ -113,10 +113,10 @@ class MapMovements(OneEmployeeReport, MapsBase):
         division: Union[int, str],
     ):
         super().__init__(name_id, date, division)
-
+        # TODO: убрать условие с датой после 10 июля
         self.radius = (
             REPORT_BASE["RADIUS_OWNTRACKS"]
-            if self.owntracks
+            if self.owntracks and date > dt.date(2024, 6, 14)
             else REPORT_BASE["RADIUS_MTS"]
         )
         self._objects = self._stmts.drop_duplicates("object_id").loc[
