@@ -43,6 +43,7 @@ def post_location():
         main_logger.info(f"Обнаружен {auth.username}")
         main_logger.info(obj)
         main_logger.info(request.get_json())
+        main_logger.info(request.data)
     insert_statement = insert(OwnTracksLocation)\
         .values(**obj, employee_id=auth.username)\
         .compile(compile_kwargs={"literal_binds": True})
