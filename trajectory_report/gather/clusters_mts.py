@@ -52,7 +52,6 @@ def make_clusters_mts():
         clusters = prepare_clusters(
             coords,
             **CLUSTERS_MTS,
-            **CLUSTERS_MTS
         )
         # Сохранить кластеры в БД
         clusters = clusters.rename(

@@ -94,7 +94,6 @@ def make_clusters_owntracks(dates: list[dt.date] | None = None):
         clusters = prepare_clusters(
             coords,
             **CLUSTERS_OWNTRACKS,
-            **CLUSTERS_OWNTRACKS
         )
         clusters = clusters.rename(
             columns={
