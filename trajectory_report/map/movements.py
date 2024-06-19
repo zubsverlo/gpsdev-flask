@@ -24,6 +24,17 @@ from trajectory_report.report.Report import OneEmployeeReport, Report
 """
 
 
+class MarkerWithOnclick(folium.Marker):
+    # Modify Marker template to include the onClick event
+    click_template = """{% macro script(this, kwargs) %}
+        var {{ this.get_name() }} = L.marker(
+            {{ this.location|tojson }},
+            {{ this.options|tojson }}
+        ).addTo({{ this._parent.get_name() }}).on('click', onClick);
+    {% endmacro %}"""
+    _template = Template(click_template)
+
+
 class MapsBase:
     """
     Базовый класс для формирования карты. Метод _tie_clusters позволяет
@@ -204,7 +215,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
         # Накидываем на карту все образовавшиеся точки.
 
         for row in self._points.itertuples():
-            folium.Marker(
+            MarkerWithOnclick(
                 (row.lat, row.lng),
                 popup=row.popup,
                 tooltip=row.tooltip,
@@ -245,13 +256,13 @@ class MapMovements(OneEmployeeReport, MapsBase):
         Geocoder(placeholder="Найти адрес", position="bottomright").add_to(map)
 
         # Modify Marker template to include the onClick event
-        click_template = """{% macro script(this, kwargs) %}
-            var {{ this.get_name() }} = L.marker(
-                {{ this.location|tojson }},
-                {{ this.options|tojson }}
-            ).addTo({{ this._parent.get_name() }}).on('click', onClick);
-        {% endmacro %}"""
-        folium.Marker._template = Template(click_template)
+        # click_template = """{% macro script(this, kwargs) %}
+        #     var {{ this.get_name() }} = L.marker(
+        #         {{ this.location|tojson }},
+        #         {{ this.options|tojson }}
+        #     ).addTo({{ this._parent.get_name() }}).on('click', onClick);
+        # {% endmacro %}"""
+        # folium.Marker._template = Template(click_template)
         click_js = """function onClick(e) {
                  console.log(e.target)
                  var isObject = e.target.options.isObject;

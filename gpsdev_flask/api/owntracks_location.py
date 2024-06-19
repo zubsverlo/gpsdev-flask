@@ -39,11 +39,6 @@ def post_location():
         # return validation_error_422(e.messages)
         return jsonify({})
     # компиляция insert в строку и добавление в очередь на исполнение в redis
-    if auth.username == "1371" or auth.username == "1293":
-        main_logger.info(f"Обнаружен {auth.username}")
-        main_logger.info(obj)
-        main_logger.info(request.get_json())
-        main_logger.info(request.data)
     insert_statement = insert(OwnTracksLocation)\
         .values(**obj, employee_id=auth.username)\
         .compile(compile_kwargs={"literal_binds": True})
