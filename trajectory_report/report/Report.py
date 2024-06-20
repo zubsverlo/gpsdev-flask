@@ -238,6 +238,7 @@ class OneEmployeeReport:
         locs["long_period"] = locs.difference > dt.timedelta(minutes=25)
 
         self.offline_periods = locs[locs["long_period"]]
+        locs = locs[pd.notna(locs['shifted'])]
 
         self.start_time = locs["datetime"].min().to_pydatetime()
         self.end_time = locs["datetime"].max().to_pydatetime()
@@ -247,8 +248,11 @@ class OneEmployeeReport:
         self.locations_frequency = (
             locs[locs["long_period"] == False]["difference"]
             .mean()
-            .to_pytimedelta()
         )
+        if pd.notna(self.locations_frequency):
+            self.locations_frequency = self.locations_frequency.to_pytimedelta()
+        else:
+            self.locations_frequency = "Неизвестно"
         pass
 
     def check_by_coordinates(self, lat: float, lon: float) -> bool:
@@ -977,7 +981,7 @@ if __name__ == "__main__":
     # r = Report("2024-05-01", "2024-06-30", "ПВТ1")
     # o = OneEmployeeReport(1293, "2024-05-23", "Коньково")
     # o = OneEmployeeReport(898, "2024-02-02", "Коньково")
-    o = OneEmployeeReport(159, "2024-06-07", "ПВТ1")
+    o = OneEmployeeReport(382, "2024-06-13", "ПВТ6")
     e = time.perf_counter()
     # a = r.as_json_dict
     print(e - s)
