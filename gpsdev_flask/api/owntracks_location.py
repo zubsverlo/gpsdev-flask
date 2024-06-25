@@ -47,5 +47,6 @@ def post_location():
         redis_session.sadd(
             "owntracks_cluster_dates", str(obj.get('created_at').date())
         )
+    main_logger.info(f"owntracks from {auth.username}: {obj}")
     redis_session.lpush('queue_sql', str(insert_statement))
     return jsonify({})
