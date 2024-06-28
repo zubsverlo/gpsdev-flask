@@ -8,7 +8,7 @@
   href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css"
 />
 
-<link rel="stylesheet" href="../static/v1/pages/analysis/analysis.css" />
+<link rel="stylesheet" href="../static/v1/pages/analysis/analysis_v1.1.css" />
 
 <script
   src="https://code.jquery.com/jquery-3.7.0.min.js"
@@ -20,6 +20,7 @@
 
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 
+<!--
 <div id="tableParametersContainer">
   <form id="tableParameters">
     <div id="startDateOfPeriodContainer">
@@ -33,6 +34,7 @@
     </div>
   </form>
 </div>
+-->
 
 <div id="preLoadContainer">
   <img src="../static/v1/icons/pre_load_location.gif" id="preLoadImg" />
@@ -48,13 +50,11 @@
       <tr>
         <th>Подразделение</th>
         <th>Имя</th>
-        <th>Name ID</th>
-        <th>Дата</th>
-        <th>Начало</th>
-        <th>Конец</th>
-        <th>Кол-во</th>
-        <th>Длит.</th>
-        <th>OwnTracks</th>
+        <th>ID Сотрудника</th>
+        <th>Посл. локация</th>
+        <th>Проблема</th>
+        <th>Время без локаций</th>
+        <th>Работает сегодня</th>
         <th>Личный номер</th>
       </tr>
     </thead>
@@ -62,20 +62,18 @@
       <tr>
         <th>Подразделение</th>
         <th>Имя</th>
-        <th>Name ID</th>
-        <th>Дата</th>
-        <th>Начало</th>
-        <th>Конец</th>
-        <th>Кол-во</th>
-        <th>Длит.</th>
-        <th>OwnTracks</th>
+        <th>ID Сотрудника</th>
+        <th>Посл. локация</th>
+        <th>Проблема</th>
+        <th>Время без локаций</th>
+        <th>Работает сегодня</th>
         <th>Личный номер</th>
       </tr>
     </tfoot>
   </table>
 </div>
 
-<script type="module" src="../static/v1/pages/analysis/analysis.js"></script>
+<script type="module" src="../static/v1/pages/analysis/analysis_v1.1.js"></script>
 <script type="module" src="../static/v1/alerts.js"></script>
 <script type="module" src="../static/v1/modal.js"></script>
 <script type="module" src="../static/v1/translation_dict.js"></script>

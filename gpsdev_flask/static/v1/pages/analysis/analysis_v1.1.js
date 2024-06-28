@@ -6,84 +6,87 @@ import { checkPattern } from "../../../v1/check_pattern.js";
 let analysisTable;
 let currentRowOfTable;
 
-let requestTableBtn = document.getElementById("requestBtn");
-requestTableBtn.onclick = requestTable;
+// let requestTableBtn = document.getElementById("requestBtn");
+// requestTableBtn.onclick = requestTable;
 
 let startDate = document.getElementById("startDateOfPeriod");
 let endDate = document.getElementById("endDateOfPeriod");
 
+// window.onload = function (e) {
+//   week(e);
+// };
+
+// function week(e) {
+//   e.preventDefault();
+
+//   startDate.classList.remove("date-highlight", "fade-out-box");
+//   endDate.classList.remove("date-highlight", "fade-out-box");
+
+//   startDate.value = "";
+//   endDate.value = "";
+
+//   let date = new Date();
+//   let day = date.getDate();
+//   let month = date.getMonth();
+//   let year = date.getFullYear();
+//   let firstDate = new Date(year, month, day - 7, 12)
+//     .toISOString()
+//     .split("T")[0];
+//   let lastDate = new Date(year, month, day, 12).toISOString().split("T")[0];
+
+//   startDate.value = firstDate;
+//   endDate.value = lastDate;
+
+//   startDate.classList.add("date-highlight");
+//   endDate.classList.add("date-highlight");
+//   setTimeout(() => {
+//     startDate.classList.add("fade-out-box");
+//     endDate.classList.add("fade-out-box");
+//     setTimeout(() => {
+//       startDate.classList.remove("date-highlight", "fade-out-box");
+//       endDate.classList.remove("date-highlight", "fade-out-box");
+//     }, 600);
+//   }, 600);
+// }
+
+// function getTableParameters(e) {
+//   e.preventDefault();
+//   let startDate = document.getElementById("startDateOfPeriod").value;
+//   let endDate = document.getElementById("endDateOfPeriod").value;
+
+//   $("#preLoadContainer")[0].style.display = "flex";
+
+//   if (startDate == "" || endDate == "") {
+//     $("#preLoadContainer")[0].style.display = "none";
+//     document.getElementById("requestBtn").disabled = false;
+//     alertsToggle("Укажите дату!", "warning", 5000);
+//     return;
+//   }
+//   let parameters = {
+//     date_from: startDate,
+//     date_to: endDate,
+//   };
+
+//   console.log(parameters);
+//   return parameters;
+// }
+
 window.onload = function (e) {
-  week(e);
+  getTable(e);
 };
 
-function week(e) {
-  e.preventDefault();
+// function requestTable(e) {
+//   document.getElementById("requestBtn").disabled = true;
+//   let parameters = getTableParameters(e);
+//   if (parameters == undefined) return;
+//   getTable(parameters);
+// }
 
-  startDate.classList.remove("date-highlight", "fade-out-box");
-  endDate.classList.remove("date-highlight", "fade-out-box");
-
-  startDate.value = "";
-  endDate.value = "";
-
-  let date = new Date();
-  let day = date.getDate();
-  let month = date.getMonth();
-  let year = date.getFullYear();
-  let firstDate = new Date(year, month, day - 7, 12)
-    .toISOString()
-    .split("T")[0];
-  let lastDate = new Date(year, month, day, 12).toISOString().split("T")[0];
-
-  startDate.value = firstDate;
-  endDate.value = lastDate;
-
-  startDate.classList.add("date-highlight");
-  endDate.classList.add("date-highlight");
-  setTimeout(() => {
-    startDate.classList.add("fade-out-box");
-    endDate.classList.add("fade-out-box");
-    setTimeout(() => {
-      startDate.classList.remove("date-highlight", "fade-out-box");
-      endDate.classList.remove("date-highlight", "fade-out-box");
-    }, 600);
-  }, 600);
-}
-
-function getTableParameters(e) {
-  e.preventDefault();
-  let startDate = document.getElementById("startDateOfPeriod").value;
-  let endDate = document.getElementById("endDateOfPeriod").value;
-
-  $("#preLoadContainer")[0].style.display = "flex";
-
-  if (startDate == "" || endDate == "") {
-    $("#preLoadContainer")[0].style.display = "none";
-    document.getElementById("requestBtn").disabled = false;
-    alertsToggle("Укажите дату!", "warning", 5000);
-    return;
-  }
-  let parameters = {
-    date_from: startDate,
-    date_to: endDate,
-  };
-
-  console.log(parameters);
-  return parameters;
-}
-
-function requestTable(e) {
-  document.getElementById("requestBtn").disabled = true;
-  let parameters = getTableParameters(e);
-  if (parameters == undefined) return;
-  getTable(parameters);
-}
-
-function getTable(parameters) {
+function getTable(s) {
   $.ajax({
-    url: "/api/analysis",
-    method: "POST",
+    url: "/api/analysis/table",
+    method: "GET",
     contentType: "application/json",
-    data: JSON.stringify(parameters),
   })
     .done(function (data) {
       console.log(data);
@@ -106,12 +109,20 @@ function getTable(parameters) {
           { data: "division" },
           { data: "name" },
           { data: "name_id" },
-          { data: "date" },
-          { data: "start" },
-          { data: "end" },
-          { data: "count" },
-          { data: "seconds" },
-          { data: "owntracks" },
+          { data: "datetime" },
+          {
+            data: "problem",
+            render: function (data) {
+              return data ? "Возможно" : "Нет";
+            },
+          },
+          { data: "since_last_location" },
+          {
+            data: "works_today",
+            render: function (data) {
+              return data ? "Да" : "Нет";
+            },
+          },
           { data: "phone" },
         ],
         initComplete: function () {
