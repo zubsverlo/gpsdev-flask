@@ -13,6 +13,7 @@ import datetime as dt
 from gpsdev_flask import config
 from gpsdev_flask import main_logger
 from sqlalchemy.sql import insert
+from owntracks_config import OWNTRACKS_CONFIG
 
 
 owntracks_location = Blueprint("owntracks_location", __name__)
@@ -22,6 +23,13 @@ owntracks_location = Blueprint("owntracks_location", __name__)
 @owntracks_location.route("/", methods=["POST"])
 def post_location():
     auth = request.authorization
+
+    configuration_json = {
+        "_type": "cmd",
+        "action": "setConfiguration",
+        "configuration": OWNTRACKS_CONFIG
+    }
+
     try:
         payload = jwt.decode(auth.password, key=config.JWT_SECRET_KEY)
     except JWTError:
@@ -37,7 +45,7 @@ def post_location():
         main_logger.info(request.get_json())
         main_logger.info(auth)
         # return validation_error_422(e.messages)
-        return jsonify({})
+        return jsonify(configuration_json)
     # компиляция insert в строку и добавление в очередь на исполнение в redis
     insert_statement = insert(OwnTracksLocation)\
         .values(**obj, employee_id=auth.username)\
@@ -49,4 +57,4 @@ def post_location():
         )
     main_logger.info(f"owntracks from {auth.username}: {obj}")
     redis_session.lpush('queue_sql', str(insert_statement))
-    return jsonify({})
+    return jsonify(configuration_json)
