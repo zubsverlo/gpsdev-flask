@@ -85,6 +85,6 @@ def get_last_coordinates():
     )
     df.loc[df["works_today"] == False, "problem"] = False
     df = df.sort_values(
-        ["works_today", "division", "datetime"], ascending=[False, True, True]
+            ["problem", "division", "datetime"], ascending=[False, True, True]
     )
     return jsonify(df.to_dict(orient="records"))
