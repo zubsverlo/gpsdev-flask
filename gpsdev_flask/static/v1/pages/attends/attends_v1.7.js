@@ -6,6 +6,7 @@ let attendsTable;
 let currentRowOfTable;
 let serverErrorTimer = 0;
 let serverUnavailable = false;
+let currentPageDivision = null;
 
 // check if the browser language is different
 let browserLanguage = navigator.language || navigator.userLanguage;
@@ -274,6 +275,7 @@ function getTable(parameters) {
         newColumns.push(newColumn);
       });
       $("#preLoadContainer")[0].style.display = "none";
+      currentPageDivision = parameters.division;
 
       let windowHeight = window.innerHeight - 180;
 
@@ -335,6 +337,7 @@ function getTable(parameters) {
       document
         .getElementById("attendsTable")
         .addEventListener("keydown", tableKeyEvents);
+
     })
     .fail(function (xhr, status, error) {
       let json = xhr.responseJSON;
@@ -1141,6 +1144,7 @@ function updateDataInTable(parameters, table, selectedCells, searchValue) {
       table.setData(data.horizontal_report.data);
       let newSearch = document.getElementsByClassName("jexcel_search")[0];
       reMergeCells();
+      currentPageDivision = parameters.division;
 
       if (localStorage.getItem("toggleComments") == "hide") {
         attendsTable.hideColumn(2);
@@ -1387,9 +1391,10 @@ function getChangedStatementAndFrequencyParameters(
   if (x > amountOfColumns) {
     if (value == "С" || value == "ПРОВ") return;
     let date = attendsTable.getColumnOptions(x).title;
-    let divisionId = parseInt(
-      localStorage.getItem("previous-selected-division")
-    );
+    // let divisionId = parseInt(
+    //   localStorage.getItem("previous-selected-division")
+    // );
+    let divisionId = currentPageDivision;
     let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
     let objectId = parseInt(attendsTable.getCellFromCoords(4, y).innerText);
     if (value == "В" && objectId == 1) return;
@@ -1554,7 +1559,8 @@ function getFrequency() {
   let frequencyArea = document.getElementById("frequencyArea");
   let x = frequencyArea.dataset.x;
   let y = frequencyArea.dataset.y;
-  let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  // let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  let divisionId = currentPageDivision;
   let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
   let objectId = parseInt(attendsTable.getCellFromCoords(4, y).innerText);
 
@@ -1670,7 +1676,8 @@ function getComment() {
   let commentArea = document.getElementById("commentArea");
   let x = commentArea.dataset.x;
   let y = commentArea.dataset.y;
-  let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  // let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  let divisionId = currentPageDivision;
   let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
   let objectId = parseInt(attendsTable.getCellFromCoords(4, y).innerText);
 
@@ -2069,7 +2076,8 @@ async function contextMenuOneEmployeeMap(object, x, y, e) {
 }
 
 function getDataToMapRequest(x, y) {
-  let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  // let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  let divisionId = currentPageDivision;
   let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
   let date = attendsTable.getColumnOptions(x).title;
 
@@ -2873,7 +2881,8 @@ function getServeParameters(servesList) {
   addressField ? (lat = addressField.getAttribute("lat")) : null;
   let lon;
   addressField ? (lon = addressField.getAttribute("lon")) : null;
-  let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  // let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  let divisionId = currentPageDivision;
 
   let comment = document.getElementById("serveReasonField").value;
   let approval;
