@@ -317,11 +317,46 @@ class ServesSchema(Schema):
     object = fields.Pluck(
         ObjectSchema(only=["name"]), "name", attribute="object", dump_only=True
     )
+    create_tst = fields.DateTime(load_default=dt.datetime.now())
+    approve_tst = fields.DateTime()
+    author_id = fields.Integer()
+    approver_id = fields.Integer()
+    author = fields.String(dump_only=True)
+    approver = fields.String(dump_only=True)
+
+    # @post_load
+    # def add_author(self, data, **kwargs):
+    #     data['author_id'] = current_user.id
+    #     return data
 
     @post_load
-    def post_load(self, data, **kwargs):
+    def post_loaded(self, data, **kwargs):
         if current_user.rang_id not in (1, 2) and data.get("approval") == 1:
             raise ValidationError("Вы не можете подтверждать служебки!")
+        if data.get("approval") == 1:
+            data['approver_id'] = current_user.id
+            data['approve_tst'] = dt.datetime.now()
+        return data
+
+    @post_dump
+    def load_author_and_approver(self, data, **kwargs):
+        if data.get('author_id'):
+            data['author'] = (
+                db_session
+                .query(User)
+                .filter_by(id=data["author_id"])
+                .first()
+                .name
+            )
+
+        if data.get('approver_id'):
+            data['approver'] = (
+                db_session
+                .query(User)
+                .filter_by(id=data["approver_id"])
+                .first()
+                .name
+            )
         return data
 
 

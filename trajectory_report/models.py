@@ -41,6 +41,10 @@ class Serves(Base):
     approval: Mapped[int]
     employee: Mapped["Employees"] = relationship("Employees", lazy="joined")
     object: Mapped["ObjectsSite"] = relationship("ObjectsSite", lazy="joined")
+    create_tst: Mapped[dt.datetime]
+    approve_tst: Mapped[dt.datetime]
+    author_id: Mapped[int]
+    approver_id: Mapped[int]
     __table_args__ = (
         Index("serves_site_date", "date"),
         Index("name_date" "name_id", "date"),

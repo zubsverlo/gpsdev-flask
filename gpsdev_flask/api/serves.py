@@ -10,6 +10,9 @@ from gpsdev_flask.api.error_responses import (validation_error_422,
 from trajectory_report.map import MapMovements
 from trajectory_report.exceptions import ReportException
 from gpsdev_flask.api import api_login_required
+from gpsdev_flask import main_logger
+from flask_login import current_user
+import datetime as dt
 
 
 serves = Blueprint('serves', __name__)
@@ -33,7 +36,7 @@ def route_main():
             ).first()
             if exists:
                 return validation_error_422("Служебная записка уже добавлена")
-            db_session.add(Serves(**serv))
+            db_session.add(Serves(author_id=current_user.id, **serv))
 
         db_session.commit()
         return jsonify(schema.dump(new_serves)), 201
@@ -60,7 +63,11 @@ def route_main():
                     name_id=serv['name_id'],
                     date=serv['date']
                 )
-                .values(approval=serv['approval'])
+                .values(
+                    approval=serv['approval'],
+                    approver_id=current_user.id,
+                    approve_tst=dt.datetime.now()
+                )
             )
         db_session.commit()
         return jsonify({}), 200
@@ -74,12 +81,15 @@ def serves_get():
     try:
         requested = schema.load(request.get_json())
     except ValidationError as e:
+        main_logger.info(e)
         return validation_error_422(e.messages)
     result = []
     for i in requested:
+        main_logger.info(i)
         result.append(
             db_session.query(Serves).filter_by(**i).first()
         )
+    main_logger.info(result)
     return jsonify(ServesSchema(many=True).dump(result))
 
 
@@ -133,6 +143,10 @@ def check_coordinates():
                               date=new_s['date'],
                               comment=new_s['comment'],
                               address=new_s['address'],
+                              approver_id=current_user.id,
+                              approve_tst=dt.datetime.now(),
+                              author_id=current_user.id,
+                              create_tst=dt.datetime.now(),
                               approval=1))
 
         db_session.commit()
