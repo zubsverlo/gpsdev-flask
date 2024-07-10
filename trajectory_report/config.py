@@ -46,7 +46,7 @@ CLUSTERS_MTS["cluster_radius_km"] = 0.3
 CLUSTERS_OWNTRACKS = dict()
 
 CLUSTERS_OWNTRACKS["minutes_for_a_stop"] = 2
-CLUSTERS_OWNTRACKS["no_data_for_minutes"] = 60
+CLUSTERS_OWNTRACKS["no_data_for_minutes"] = 360
 CLUSTERS_OWNTRACKS["spatial_radius_km"] = 0.10
 CLUSTERS_OWNTRACKS["cluster_radius_km"] = 0.10
 
