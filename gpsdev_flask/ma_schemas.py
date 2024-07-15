@@ -163,6 +163,13 @@ class ObjectSchema(Schema):
                 "Вы не можете использовать " "указанное подразделение"
             )
 
+    @validates("income")
+    def validate_income(self, value):
+        if value and current_user.rang_id > 2:
+            raise ValidationError(
+                "Вы не можете изменить параметр дохода"
+            )
+
     @validates_schema
     def validate_unique_name(self, data, **kwargs):
         existing_objects = None

@@ -337,7 +337,6 @@ function getTable(parameters) {
       document
         .getElementById("attendsTable")
         .addEventListener("keydown", tableKeyEvents);
-
     })
     .fail(function (xhr, status, error) {
       let json = xhr.responseJSON;
@@ -1737,6 +1736,10 @@ $("#attendsTable")[0].addEventListener("dblclick", editIncome);
 
 function editIncome(e) {
   let cellToChange = e.target;
+
+  if (localStorage.getItem("rang-id") > 2) {
+    return;
+  }
 
   if (cellToChange.dataset.x == incomeColumnIndex) {
     let modalTitle = document.getElementById("modalTitle");
@@ -3182,10 +3185,7 @@ function drawServes(data, servesToWatch) {
     left.className = "left-section";
 
     let employeeNameContainer = document.createElement("div");
-    employeeNameContainer.classList.add(
-      "serve-field-container",
-      "left-section-first"
-    );
+    employeeNameContainer.className = "serve-field-container";
     let employeeNameLabel = document.createElement("label");
     employeeNameLabel.innerText = "Сотрудник:";
     let employeeName = document.createElement("div");
@@ -3198,6 +3198,17 @@ function drawServes(data, servesToWatch) {
     let objectName = document.createElement("div");
     objectName.innerText = s.object;
 
+    let creatorNameContainer = document.createElement("div");
+    creatorNameContainer.classList.add(
+      "serve-field-container",
+      "serve-creator",
+      "serve-horisontal-sep"
+    );
+    let creatorNameLabel = document.createElement("label");
+    creatorNameLabel.innerText = "Создал(а):";
+    let creatorName = document.createElement("div");
+    creatorName.innerText = s.author ? s.author : "Нет данных";
+
     let middle = document.createElement("div");
     middle.className = "middle-section";
 
@@ -3207,6 +3218,17 @@ function drawServes(data, servesToWatch) {
     reasonLabel.innerText = "Комментарий:";
     let reason = document.createElement("div");
     reason.innerText = s.comment;
+
+    let createDateContainer = document.createElement("div");
+    createDateContainer.classList.add(
+      "serve-field-container",
+      "serve-create-date2",
+      "serve-horisontal-sep"
+    );
+    let createDateLabel = document.createElement("label");
+    createDateLabel.innerText = "Дата создания:";
+    let createDate = document.createElement("div");
+    createDate.innerText = s.create_tst ? s.create_tst : "Нет данных";
 
     let right = document.createElement("div");
     right.className = "right-section";
@@ -3226,7 +3248,7 @@ function drawServes(data, servesToWatch) {
     }
 
     let additionalFields = document.createElement("div");
-    additionalFields.className = "serve-additional-fields";
+    additionalFields.classList.add("serve-additional-fields");
 
     let dateContainer = document.createElement("div");
     dateContainer.className = "serve-field-container";
@@ -3248,15 +3270,60 @@ function drawServes(data, servesToWatch) {
 
     employeeNameContainer.append(employeeNameLabel, employeeName);
     objectNameContainer.append(objectNameLabel, objectName);
+    creatorNameContainer.append(creatorNameLabel, creatorName);
     reasonContainer.append(reasonLabel, reason);
+    createDateContainer.append(createDateLabel, createDate);
     dateContainer.append(dateLabel, date);
     statusContainer.append(statusLabel, status);
 
     additionalFields.append(dateContainer, statusContainer);
 
-    left.append(employeeNameContainer, objectNameContainer);
-    middle.append(reasonContainer);
+    left.append(
+      employeeNameContainer,
+      objectNameContainer,
+      creatorNameContainer
+    );
+
+    if (s.approval != 1) {
+      null;
+    } else {
+      let approverNameContainer = document.createElement("div");
+      approverNameContainer.className = "serve-field-container";
+      let approverNameLabel = document.createElement("label");
+      approverNameLabel.innerText = "Подтвердил(а):";
+      let approverName = document.createElement("div");
+      approverName.innerText = s.approver ? s.approver : "Нет данных";
+
+      approverNameContainer.append(approverNameLabel, approverName);
+      left.append(approverNameContainer);
+    }
+
+    middle.append(reasonContainer, createDateContainer);
+
+    if (s.approval != 1) {
+      null;
+    } else {
+      createDateContainer.classList.remove("serve-create-date2");
+      createDateContainer.classList.add("serve-create-date1");
+
+      let approveDateContainer = document.createElement("div");
+      approveDateContainer.className = "serve-field-container";
+      let approveDateLabel = document.createElement("label");
+      approveDateLabel.innerText = "Дата подтверждения:";
+      let approveDate = document.createElement("div");
+      approveDate.innerText = s.approve_tst ? s.approve_tst : "Нет данных";
+
+      approveDateContainer.append(approveDateLabel, approveDate);
+      middle.append(approveDateContainer);
+    }
+
     right.append(additionalFields);
+
+    if (!s.address) {
+      null;
+    } else {
+      additionalFields.classList.add("serve-horisontal-sep");
+    }
 
     serveContainer.append(left, middle, right);
 

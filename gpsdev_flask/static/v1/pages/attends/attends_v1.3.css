@@ -803,7 +803,7 @@
   }
 
   .left-section {
-    width: 250px;
+    width: 283px;
   }
 
   .middle-section {
@@ -815,15 +815,25 @@
   }
 
   .left-section .serve-field-container {
-    padding: 10px 0px 52px 0px;
+    padding: 10px 0px 10px 0px;
   }
 
-  .left-section-first {
-    border-bottom: 1px solid gray;
+  .serve-creator {
+    margin-top: 18px;
+  }
+  .serve-create-date1 {
+    margin-top: 81px;
+  }
+  .serve-create-date2 {
+    margin-top: 62px;
+  }
+
+  .serve-horisontal-sep {
+    border-top: 1px solid gray;
   }
 
   .serve-address {
-    border-bottom: 1px solid gray;
+    height: 124px;
   }
 
   .serve-additional-fields {
