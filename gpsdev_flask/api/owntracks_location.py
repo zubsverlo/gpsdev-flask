@@ -50,11 +50,14 @@ def post_location():
     insert_statement = insert(OwnTracksLocation)\
         .values(**obj, employee_id=auth.username)\
         .compile(compile_kwargs={"literal_binds": True})
-    if obj.get('created_at').date() < dt.date.today():
-        # переформировать кластеры, если локации пришли позже
-        redis_session.sadd(
-            "owntracks_cluster_dates", str(obj.get('created_at').date())
-        )
+    try:
+        if obj.get('created_at').date() < dt.date.today():
+            # переформировать кластеры, если локации пришли позже
+            redis_session.sadd(
+                "owntracks_cluster_dates", str(obj.get('created_at').date())
+            )
+    except AttributeError:
+        main_logger.info("AttributeError on created_at")
     main_logger.info(f"owntracks from {auth.username}: {obj}")
     redis_session.lpush('queue_sql', str(insert_statement))
     return jsonify(configuration_json)
