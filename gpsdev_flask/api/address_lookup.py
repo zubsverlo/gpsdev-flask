@@ -9,12 +9,13 @@ address_lookup = Blueprint('address_lookup', __name__)
 @address_lookup.route('/', methods=['GET'])
 @api_login_required
 def api_address_lookup():
+    headers = {"User-Agent": "gpsdev app"}
     address = request.args.get('q')
     url = 'https://nominatim.openstreetmap.org/search'
     params = {'format': 'json',
               'q': address,
               }
-    r = requests.get(url, params)
+    r = requests.get(url, params, headers=headers)
     r = r.json()
     r = [{
         'display_name': i['display_name'],
