@@ -1738,9 +1738,9 @@ function editIncome(e) {
   let cellToChange = e.target;
 
   if (localStorage.getItem("rang-id") > 2) {
-      if (!['10', '11'].includes(localStorage.getItem("id"))) {
-        return;
-      }
+    if (!["10", "11"].includes(localStorage.getItem("id"))) {
+      return;
+    }
   }
 
   if (cellToChange.dataset.x == incomeColumnIndex) {
@@ -3991,7 +3991,7 @@ function createForm() {
   phoneField.id = "phoneField";
   phoneField.cols = "49";
   phoneField.rows = "3";
-  phoneField.readOnly = true;
+  // phoneField.readOnly = true;
 
   let addressFieldContainer = document.createElement("div");
   addressFieldContainer.id = "addressFieldContainer";
@@ -4043,7 +4043,7 @@ function createForm() {
   let apartmentField = document.createElement("input");
   apartmentField.id = "apartmentField";
   apartmentField.type = "text";
-  apartmentField.readOnly = true;
+  // apartmentField.readOnly = true;
 
   let personalServiceFieldContainer = document.createElement("div");
   personalServiceFieldContainer.id = "personalServiceFieldContainer";
@@ -4068,6 +4068,12 @@ function createForm() {
   cancelBtn.innerText = "Закрыть";
   cancelBtn.onclick = hideModal;
 
+  let saveBtn = document.createElement("button");
+  saveBtn.id = "saveBtn";
+  saveBtn.type = "submit";
+  saveBtn.innerText = "Сохранить";
+  saveBtn.onclick = sendEditedObjectAttends;
+
   nameFieldContainer.append(nameFieldLabel, nameField);
   switchAddressLabel.append(switchAddressBtn, switchAddressSpan);
   switchAddressContainer.append(switchAddressLabelName, switchAddressLabel);
@@ -4090,7 +4096,7 @@ function createForm() {
   activeField.append(activeCheck, activeCheckLabel);
   noPaymentField.append(noPaymentCheck, noPaymentCheckLabel);
   dateFieldsContainer.append(startDateContainer, endDateContainer);
-  btnsContainer.append(cancelBtn);
+  btnsContainer.append(cancelBtn, saveBtn);
 
   allFieldsContainer.append(
     nameFieldContainer,
@@ -4140,6 +4146,63 @@ function fillFormWithData(data) {
   endDate.value = data.denial_date;
   apartment.value = data.apartment_number;
   personalService.value = data.personal_service_after_revision;
+}
+
+function sendEditedObjectAttends() {
+  let phone = document.getElementById("phoneField");
+  let apartment = document.getElementById("apartmentField");
+
+  let parameters = {
+    phone: phone.value,
+    apartment_number: apartment.value,
+  };
+
+  let objectId = document.getElementById("nameField").getAttribute("object-id");
+  fetch(`/api/objects/${objectId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parameters),
+  })
+    .then((response) => {
+      if (response.status === 200) {
+        return response.json();
+      }
+      return Promise.reject(response);
+    })
+    .then((data) => {
+      console.log(data);
+      hideModal();
+      alertsToggle("Подопечный изменен!", "success", 2500);
+    })
+    .catch((response) => {
+      if (response.status === 404) {
+        alertsToggle("Подопечный не найден!", "danger", 3000);
+      }
+      if (response.status === 422) {
+        response.json().then((json) => {
+          Object.values(json.detail).forEach((entry) => {
+            let splitEntry = entry.split(":");
+            let nameField = splitEntry[0];
+            let newNameField = dictionary[nameField]
+              ? dictionary[nameField]
+              : nameField;
+            let newEntry = newNameField + ": " + splitEntry[1];
+            alertsToggle(newEntry, "danger", 3000);
+          });
+        });
+      }
+      if (response.status === 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
+    });
 }
 
 function contextMenuStatementsPermit(object, x, y, e, state) {
