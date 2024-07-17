@@ -1738,7 +1738,9 @@ function editIncome(e) {
   let cellToChange = e.target;
 
   if (localStorage.getItem("rang-id") > 2) {
-    return;
+      if (!['10', '11'].includes(localStorage.getItem("id"))) {
+        return;
+      }
   }
 
   if (cellToChange.dataset.x == incomeColumnIndex) {

@@ -1,27 +1,28 @@
-from gpsdev_flask import bcrypt, main_logger
-from marshmallow import Schema, fields, ValidationError
 import datetime as dt
 import re
+
+from flask import g
 from flask_login import current_user, login_user
 from marshmallow import (
+    Schema,
+    ValidationError,
+    fields,
+    post_dump,
+    post_load,
+    pre_dump,
+    pre_load,
+    validate,
     validates,
     validates_schema,
-    validate,
-    post_load,
-    post_dump,
-    pre_load,
-    pre_dump,
 )
-from gpsdev_flask import db_session
-from gpsdev_flask.models import ObjectsSite, Employees, Division, User, Journal
-from flask import g
-from sqlalchemy import text, or_
+from sqlalchemy import or_, text
+
+from gpsdev_flask import bcrypt, db_session, main_logger
+from gpsdev_flask.models import Division, Employees, Journal, ObjectsSite, User
 
 fields.Field.default_error_messages["required"] = "Обязательное поле"
 fields.Field.default_error_messages["null"] = "Поле не может быть null"
-fields.Field.default_error_messages["validator_failed"] = (
-    "Некорретное значение"
-)
+fields.Field.default_error_messages["validator_failed"] = "Некорретное значение"
 
 
 class PhoneNumber(fields.Field):
@@ -166,9 +167,8 @@ class ObjectSchema(Schema):
     @validates("income")
     def validate_income(self, value):
         if value and current_user.rang_id > 2:
-            raise ValidationError(
-                "Вы не можете изменить параметр дохода"
-            )
+            if current_user.id not in (10, 11):
+                raise ValidationError("Вы не можете изменить параметр дохода")
 
     @validates_schema
     def validate_unique_name(self, data, **kwargs):
@@ -341,25 +341,23 @@ class ServesSchema(Schema):
         if current_user.rang_id not in (1, 2) and data.get("approval") == 1:
             raise ValidationError("Вы не можете подтверждать служебки!")
         if data.get("approval") == 1:
-            data['approver_id'] = current_user.id
-            data['approve_tst'] = dt.datetime.now()
+            data["approver_id"] = current_user.id
+            data["approve_tst"] = dt.datetime.now()
         return data
 
     @post_dump
     def load_author_and_approver(self, data, **kwargs):
-        if data.get('author_id'):
-            data['author'] = (
-                db_session
-                .query(User)
+        if data.get("author_id"):
+            data["author"] = (
+                db_session.query(User)
                 .filter_by(id=data["author_id"])
                 .first()
                 .name
             )
 
-        if data.get('approver_id'):
-            data['approver'] = (
-                db_session
-                .query(User)
+        if data.get("approver_id"):
+            data["approver"] = (
+                db_session.query(User)
                 .filter_by(id=data["approver_id"])
                 .first()
                 .name
@@ -559,13 +557,13 @@ class OwnTracksLocationSchema(Schema):
             data["created_at"] = dt.datetime.fromtimestamp(
                 data["created_at"], tz=timezone
             ).isoformat(timespec="seconds")
-            data["created_at"] = data["created_at"].split('+')[0]
+            data["created_at"] = data["created_at"].split("+")[0]
 
         if data.get("tst"):
             data["tst"] = dt.datetime.fromtimestamp(
                 data["tst"], tz=timezone
             ).isoformat(timespec="seconds")
-            data["tst"] = data["tst"].split('+')[0]
+            data["tst"] = data["tst"].split("+")[0]
         return data
 
 
