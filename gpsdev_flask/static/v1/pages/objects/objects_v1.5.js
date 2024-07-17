@@ -472,9 +472,34 @@ $("#objectTable").on("click", "button", function (e) {
     deleteBtn.innerText = "Удалить";
     deleteBtn.onclick = deleteObject;
 
+    let coords = document.createElement("div");
+    coords.id = "coords";
+
+    let latitude = document.createElement("input");
+    latitude.id = "latitude";
+    latitude.value = data.latitude;
+    latitude.title = "latitude";
+    latitude.addEventListener("change", () => {
+      let val = document.getElementById("latitude").value;
+      document.getElementById("addressField").setAttribute("lat", val);
+    });
+
+    let longitude = document.createElement("input");
+    longitude.id = "longitude";
+    longitude.value = data.longitude;
+    longitude.title = "longitude";
+    longitude.addEventListener("change", () => {
+      let val = document.getElementById("longitude").value;
+      document.getElementById("addressField").setAttribute("lon", val);
+    });
+
+    coords.append(latitude, longitude);
     document
       .getElementById("btnsContainer")
       .insertBefore(deleteBtn, document.getElementById("saveBtn"));
+    document
+      .getElementById("addressFieldContainer")
+      .insertBefore(coords, document.getElementById("switchAddressContainer"));
   }
 
   let name = document.getElementById("nameField");
