@@ -411,10 +411,23 @@ class Report:
         # Строки с самым большим кол-вом посещений всегда будут в начале.
         # Подтвержденная служебная записка приравнивается к выходу, поэтому
         # учитывается в дубликатах.
+        # upd: Нужно отображать абсолютно все выходы, кроме object_id 1.
+        # self.duplicated_attends = (
+        #     self.report.query("result != 'Н/Б'")
+        #     .query("object_id != 1")
+        #     .query("result != 'ПРОВ'")
+        #     .groupby(by=["object", "object_id", "date"])
+        #     .agg({"result": "count", "name": lambda x: ", ".join(list(x))})
+        #     .reset_index()
+        #     .query("result > 1")
+        #     .loc[:, ["object", "date", "result", "name"]]
+        #     .sort_values(
+        #         by=["result", "object", "date"], ascending=[False, True, True]
+        #     )
+        #     .rename(columns={"result": "duration"})
+        # )
         self.duplicated_attends = (
-            self.report.query("result != 'Н/Б'")
-            .query("object_id != 1")
-            .query("result != 'ПРОВ'")
+            self.report.query("object_id != 1")
             .groupby(by=["object", "object_id", "date"])
             .agg({"result": "count", "name": lambda x: ", ".join(list(x))})
             .reset_index()
