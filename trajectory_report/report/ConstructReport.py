@@ -142,6 +142,8 @@ class OwntracksMtsReportDataGetter:
         comment = pd.read_sql(cs.comment(self.division, self.name_ids), self.conn)
         # Частота посещений псу в таблице
         frequency = pd.read_sql(cs.frequency(self.division, self.name_ids), self.conn)
+        # Норма ПСУ в день
+        ward_rate = pd.read_sql(cs.ward_rate(self.division, self.name_ids), self.conn)
 
         self.objects = pd.read_sql(cs.objects(self.object_ids), self.conn)
 
@@ -191,6 +193,7 @@ class OwntracksMtsReportDataGetter:
         data["_staffers"] = staffers
         data["_holiday_attend_needed"] = holiday_attend_needed
         data["_coordinates"] = coords
+        data["_ward_rate"] = ward_rate
         return data
 
     def mts_empty_locations(self) -> list[int] | list:

@@ -336,6 +336,7 @@ class Report:
         self._comment = data.get("_comment")
         self._frequency = data.get("_frequency")
         self._staffers = data.get("_staffers")
+        self._ward_rate = data.get("_ward_rate")
         self._holiday_attend_needed = data.get("_holiday_attend_needed")
         # Эти параметры заполняются при выполнении метода _build_report
         self.duplicated_attends = None
@@ -746,7 +747,14 @@ class Report:
         document = io.BytesIO()
         writer = pd.ExcelWriter(document, engine="xlsxwriter")
         # writer = pd.ExcelWriter("/home/user/Desktop/get_xlsx.xlsx", engine='xlsxwriter')
-        res = self.horizontal_report.drop(columns=["name_id", "object_id"])
+        res = pd.merge(
+            self.horizontal_report,
+            self._ward_rate,
+            on='name_id',
+            how='left'
+        ).drop(columns=["name_id", "object_id"])\
+         .fillna("")
+        res.insert(1, "rate", res.pop("rate"))
         new_columns = []
         for i in res.columns:
             try:
@@ -773,6 +781,7 @@ class Report:
             return result
 
         l = index(res.name.tolist())
+        ward_rate_merge = index(res.rate.tolist())
         to_merge = []
         for i in l:
             to_merge.append(
@@ -782,15 +791,23 @@ class Report:
                     i[1] + 1,
                 )
             )
+            to_merge.append(
+                (
+                    xlsxwriter.utility.xl_range(i[0] + 1, 1, i[1] + 1, 1),
+                    i[3][0],
+                    i[1] + 1,
+                )
+            )
 
         res.columns = new_columns
         res.to_excel(writer, index=False)
         book = writer.book  # доступ к xlsx книге
         book.get_worksheet_by_name("Sheet1").freeze_panes(1, 3)
         book.get_worksheet_by_name("Sheet1").set_column("A:A", 30, None)
-        book.get_worksheet_by_name("Sheet1").set_column("B:B", 15, None)
-        book.get_worksheet_by_name("Sheet1").set_column("C:C", 30, None)
-        book.get_worksheet_by_name("Sheet1").set_column("D:D", 8, None)
+        book.get_worksheet_by_name("Sheet1").set_column("B:B", 4, None)
+        book.get_worksheet_by_name("Sheet1").set_column("C:C", 15, None)
+        book.get_worksheet_by_name("Sheet1").set_column("D:D", 30, None)
+        book.get_worksheet_by_name("Sheet1").set_column("E:E", 8, None)
         format_attend = book.add_format({"bg_color": "#cfe2f3"})
         format_absence = book.add_format({"bg_color": "#f88a8a"})
         format_na = book.add_format(
@@ -818,7 +835,7 @@ class Report:
             for t in a.itertuples():
                 item_format = no_payments if t.to_format else align_left
                 book.get_worksheet_by_name("Sheet1").write(
-                    t.Index + 1, 2, t.object, item_format
+                    t.Index + 1, 3, t.object, item_format
                 )
 
         staffers_format_set = set()
@@ -882,7 +899,7 @@ class Report:
         #                          'value': '"С"',
         #                          'format': format_serve})
         book.get_worksheet_by_name("Sheet1").conditional_format(
-            "B1:B1000",
+            "D1:D1000",
             {
                 "type": "text",
                 "criteria": "containing",
@@ -891,7 +908,7 @@ class Report:
             },
         )
         book.get_worksheet_by_name("Sheet1").conditional_format(
-            "B1:B1000",
+            "D1:D1000",
             {
                 "type": "text",
                 "criteria": "containing",
@@ -958,7 +975,7 @@ class Report:
                 i[0], i[1], merge_format_getter()
             )
 
-        book.get_worksheet_by_name("Sheet1").autofilter("A1:B1000")
+        book.get_worksheet_by_name("Sheet1").autofilter("A1:D1000")
 
         writer.save()
         document.seek(0)
@@ -977,6 +994,7 @@ class Report:
             "no_payments == True"
         ).object_id.tolist()
         staffers = self._employees.query("staffer == True").uid.tolist()
+        ward_rate = self._ward_rate.set_index('name_id')['rate'].to_dict()
         return {
             "horizontal_report": {
                 "columns": h_report_columns,
@@ -986,15 +1004,17 @@ class Report:
             "no_payments": no_payments,
             "staffers": staffers,
             "holiday_attend_needed": self._holiday_attend_needed,
+            "ward_rate": ward_rate,
         }
 
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    # r = Report("2024-05-01", "2024-06-30", "ПВТ1")
+    r = Report("2024-05-01", "2024-05-30", "Коньково")
+    r.xlsx()
     # o = OneEmployeeReport(1293, "2024-05-23", "Коньково")
     # o = OneEmployeeReport(898, "2024-02-02", "Коньково")
-    o = OneEmployeeReport(460, "2024-07-10", "ПНИ12,30")
+    # o = OneEmployeeReport(460, "2024-07-10", "ПНИ12,30")
     e = time.perf_counter()
     # a = r.as_json_dict
     print(e - s)

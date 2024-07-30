@@ -314,3 +314,19 @@ class LocationAnalysis(Base):
     __table_args__ = (
         Index("dateIndex", "date"),
     )
+
+
+class WardRate(Base):
+    __tablename__ = "ward_rate"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    division_id: Mapped[int]
+    name_id: Mapped[int]
+    rate: Mapped[str] = mapped_column(VARCHAR(length=10))
+    __table_args__ = (
+        Index("ward_rate_index", "division_id", "name_id"),
+        UniqueConstraint(
+            "division_id",
+            "name_id",
+            name="_ward_rate",
+        ),
+    )

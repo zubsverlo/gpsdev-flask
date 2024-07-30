@@ -570,3 +570,15 @@ class OwnTracksLocationSchema(Schema):
 class ObjectStatementPermit(Schema):
     allow = fields.Bool(required=True)
     date = fields.Date(required=True)
+
+
+class WardRateSchema(Schema):
+    division_id = fields.Integer(required=True)
+    name_id = fields.Integer(required=True)
+    rate = fields.String(
+        validate=validate.Length(
+            max=10, error="Длина для нормы ПСУ не более 3 символов!"
+        ),
+        required=True,
+        allow_none=True,
+    )
