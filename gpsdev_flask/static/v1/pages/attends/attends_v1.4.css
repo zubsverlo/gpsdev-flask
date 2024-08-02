@@ -434,13 +434,15 @@
   }
 
   #commentAreaContainer,
-  #frequencyAreaContainer {
+  #frequencyAreaContainer,
+  #wardRateAreaContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
-  #frequencyArea {
+  #frequencyArea,
+  #wardRateArea {
     margin: 10px 0px;
     width: 60px;
     height: 23px;
@@ -452,12 +454,18 @@
     text-align: center;
   }
 
-  #frequencyLabel {
+  #wardRateArea {
+    width: 100px;
+  }
+
+  #frequencyLabel,
+  #wardRateLabel {
     font-size: 14px;
     color: gray;
   }
 
-  #frequencyAreaContainer #btnsContainer {
+  #frequencyAreaContainer #btnsContainer,
+  #wardRateAreaContainer #btnsContainer {
     width: 114.5%;
   }
 

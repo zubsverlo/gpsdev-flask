@@ -245,6 +245,7 @@ const formatDict = {
 
 let duplicateData = null;
 let noPaymentsData = null;
+let wardRateData = null;
 let holidayAttendData = null;
 let staffersData = null;
 
@@ -262,6 +263,7 @@ function getTable(parameters) {
       console.log("data: ", data);
       duplicateData = data.duplicated_attends;
       noPaymentsData = data.no_payments;
+      wardRateData = data.ward_rate;
       holidayAttendData = data.holiday_attend_needed;
       staffersData = data.staffers;
       let columns = data.horizontal_report.columns;
@@ -1870,6 +1872,15 @@ $("#attendsTable")[0].addEventListener("mouseover", (e) => {
     currentCell.title = currentCell.innerText + "\n*Двойной клик для изменения";
   } else if (currentCell.dataset.x == frequencyColumnIndex) {
     currentCell.title = "Двойной клик для изменения";
+  } else if (currentCell.dataset.x == employeeNameColumnIndex) {
+    let x = currentCell.dataset.x;
+    let y = currentCell.dataset.y;
+    let idX = parseInt(x) + 1;
+    let nameId = attendsTable.getCellFromCoords(idX, y).innerText;
+
+    currentCell.title = wardRateData[nameId]
+      ? `Норма ПСУ: ${wardRateData[nameId]}`
+      : "Норма ПСУ не заполнена";
   }
 });
 
@@ -2000,6 +2011,17 @@ function createContextMenu(object, x, y, e) {
       onclick: () => {
         let lastRowOfEmployee = attendsTable.getSelectedRows(true).pop();
         contextMenuAddObject(object, x, y, e, lastRowOfEmployee);
+      },
+    };
+    contextMenuList.push(ctxmObject);
+  }
+
+  // добавление нормы псу сотруднику
+  if (x == employeeNameColumnIndex && y && oneCell) {
+    let ctxmObject = {
+      title: "Норма ПСУ",
+      onclick: () => {
+        contextMenuWardRate(object, x, y, e);
       },
     };
     contextMenuList.push(ctxmObject);
@@ -3518,6 +3540,114 @@ function approveServes(servesToApprove) {
             let newD = newNameField + ": " + splitD[1];
             alertsToggle(newD, "danger", 5000);
             console.log(newD);
+          });
+        });
+      }
+      if (response.status >= 500) {
+        alertsToggle(
+          "Ошибка сервера! Повторите попытку или свяжитесь с администратором.",
+          "danger",
+          6000
+        );
+      }
+      if (response.status == 403) {
+        let currentLocation = location.href.split("/").pop();
+        location.href = `/login?next=${currentLocation}`;
+      }
+    });
+}
+
+function contextMenuWardRate(object, x, y, e) {
+  let nameId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
+  let modalBody = document.getElementById("modalBody");
+  let modalTitle = document.getElementById("modalTitle");
+  modalBody.innerHTML = "";
+
+  modalTitle.innerText = `Норма ПСУ`;
+
+  showModalInTable();
+
+  let wardRateAreaContainer = document.createElement("div");
+  wardRateAreaContainer.id = "wardRateAreaContainer";
+
+  let wardRateLabel = document.createElement("label");
+  wardRateLabel.id = "wardRateLabel";
+  wardRateLabel.innerText = `Макс. 10 символов: "1", "1/2", "2-3" и т.д.`;
+
+  let wardRateArea = document.createElement("input");
+  wardRateArea.id = "wardRateArea";
+  wardRateArea.name = "wardRate";
+  wardRateArea.maxLength = 10;
+  wardRateArea.dataset.x = x;
+  wardRateArea.dataset.y = y;
+  wardRateArea.value = wardRateData[nameId] ? wardRateData[nameId] : "";
+
+  let btnsContainer = document.createElement("div");
+  btnsContainer.id = "btnsContainer";
+
+  let cancelBtn = document.createElement("button");
+  cancelBtn.id = "cancelBtn";
+  cancelBtn.type = "button";
+  cancelBtn.innerText = "Отменить";
+  cancelBtn.onclick = hideModal;
+
+  let saveBtn = document.createElement("button");
+  saveBtn.id = "saveBtn";
+  saveBtn.type = "submit";
+  saveBtn.innerText = "Сохранить";
+  saveBtn.onclick = getWardRate;
+
+  btnsContainer.append(cancelBtn, saveBtn);
+  wardRateAreaContainer.append(wardRateArea, wardRateLabel, btnsContainer);
+  modalBody.append(wardRateAreaContainer);
+
+  wardRateArea.focus();
+}
+
+function getWardRate() {
+  let wardRateArea = document.getElementById("wardRateArea");
+  let x = wardRateArea.dataset.x;
+  let y = wardRateArea.dataset.y;
+  // let divisionId = parseInt(localStorage.getItem("previous-selected-division"));
+  let divisionId = currentPageDivision;
+  let employeeId = parseInt(attendsTable.getCellFromCoords(1, y).innerText);
+
+  let parameters = {
+    rate: wardRateArea.value,
+    division_id: divisionId,
+    name_id: employeeId,
+  };
+  sendWardRate(parameters, x, y);
+}
+
+function sendWardRate(parameters, x, y) {
+  fetch("/api/ward-rate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(parameters),
+  })
+    .then((response) => {
+      if (response.ok) {
+        console.log("tut");
+        wardRateData[parameters.name_id] = parameters.rate;
+        console.log(wardRateData);
+        hideModal();
+        alertsToggle("Норма ПСУ обновлена!", "success", 2000);
+      }
+      return Promise.reject(response);
+    })
+    .catch((response) => {
+      if (response.status === 422) {
+        response.json().then((json) => {
+          Object.values(json.detail).forEach((d) => {
+            let splitD = d.split(":");
+            let nameField = splitD[0];
+            let newNameField = dictionary[nameField]
+              ? dictionary[nameField]
+              : nameField;
+            let newD = newNameField + ": " + splitD[1];
+            console.log(newD);
+            alertsToggle(newD, "danger", 5000);
           });
         });
       }

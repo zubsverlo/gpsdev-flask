@@ -577,7 +577,7 @@ class WardRateSchema(Schema):
     name_id = fields.Integer(required=True)
     rate = fields.String(
         validate=validate.Length(
-            max=10, error="Длина для нормы ПСУ не более 3 символов!"
+            max=10, error="Длина для нормы ПСУ не более 10 символов!"
         ),
         required=True,
         allow_none=True,
