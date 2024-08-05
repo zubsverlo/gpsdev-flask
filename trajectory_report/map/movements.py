@@ -162,7 +162,7 @@ class MapMovements(OneEmployeeReport, MapsBase):
     def _objects_points(self) -> pd.DataFrame:
         # Объекты
         objects = self._objects
-        objects = objects[pd.notna(objects['lat'])]
+        objects = objects[pd.notna(objects["lat"])]
         objects["icon"] = [
             folium.features.Icon(icon="user", prefix="fa", color="black")
             for _ in range(len(objects))
@@ -187,12 +187,18 @@ class MapMovements(OneEmployeeReport, MapsBase):
             for _ in range(len(clusters))
         ]
         if icons:
-            icons[0] = folium.features.Icon(icon="play", prefix="fa", color="green")
-            icons[-1] = folium.features.Icon(icon="stop", prefix="fa", color="red")
+            icons[0] = folium.features.Icon(
+                icon="play", prefix="fa", color="green"
+            )
+            icons[-1] = folium.features.Icon(
+                icon="stop", prefix="fa", color="red"
+            )
         # Добавление иконок к кластерам
         clusters["icon"] = icons
         # Информация о времени (при наведении курсора)
-        clusters["tooltip"] = clusters["datetime"].apply(lambda x: x.strftime("%H:%M"))
+        clusters["tooltip"] = clusters["datetime"].apply(
+            lambda x: x.strftime("%H:%M")
+        )
         # Подробная информация (при нажатии на точку)
         clusters["popup"] = clusters.apply(
             lambda x: (
@@ -203,7 +209,9 @@ class MapMovements(OneEmployeeReport, MapsBase):
             ),
             axis=1,
         )
-        clusters = clusters[["datetime", "lat", "lng", "icon", "popup", "tooltip"]]
+        clusters = clusters[
+            ["datetime", "lat", "lng", "icon", "popup", "tooltip"]
+        ]
         return clusters
 
     def _create_map(self):
@@ -214,6 +222,8 @@ class MapMovements(OneEmployeeReport, MapsBase):
 
         # Накидываем на карту все образовавшиеся точки.
 
+        search_group = folium.FeatureGroup(name="search")
+
         for row in self._points.itertuples():
             MarkerWithOnclick(
                 (row.lat, row.lng),
@@ -221,8 +231,20 @@ class MapMovements(OneEmployeeReport, MapsBase):
                 tooltip=row.tooltip,
                 icon=row.icon,
                 is_object=row.is_object,
+                name=row.tooltip,
                 object_radius=self.radius,
-            ).add_to(map)
+            ).add_to(search_group)
+
+        search_group.add_to(map)
+
+        Search(
+            search_group,
+            placeholder="Поиск по ПСУ",
+            search_zoom=15,
+            search_label="name",
+            collapsed=True,
+            auto_collapse=True,
+        ).add_to(map)
 
         # Antpath отображает маршрут через анимацию ползающих "муравьев"
         path = self.clusters.sort_values(by="datetime")
@@ -311,10 +333,16 @@ class MapMovements(OneEmployeeReport, MapsBase):
             report = report.rename(columns={"datetime": "time"})
             report = report.to_dict(orient="records")
         if self.offline_periods is not None:
-            analytics = self.offline_periods[["datetime", "shifted", "difference"]]
-            analytics["start"] = analytics["datetime"].apply(lambda x: str(x)[-8:])
+            analytics = self.offline_periods[
+                ["datetime", "shifted", "difference"]
+            ]
+            analytics["start"] = analytics["datetime"].apply(
+                lambda x: str(x)[-8:]
+            )
             analytics["end"] = analytics["shifted"].apply(lambda x: str(x)[-8:])
-            analytics["duration"] = analytics["difference"].apply(lambda x: str(x)[-8:])
+            analytics["duration"] = analytics["difference"].apply(
+                lambda x: str(x)[-8:]
+            )
             analytics = analytics[["start", "end", "duration"]]
             analytics = analytics.to_dict(orient="records")
 
@@ -332,9 +360,9 @@ class MapMovements(OneEmployeeReport, MapsBase):
         if self.end_time:
             resp["end_time"] = str(self.end_time)[-8:]
         if self.locations_frequency:
-            resp["locations_frequency"] = self.locations_frequency.__str__().split(".")[
-                0
-            ]
+            resp["locations_frequency"] = (
+                self.locations_frequency.__str__().split(".")[0]
+            )
         return resp
 
 
@@ -355,12 +383,25 @@ class MapBindings(Report, MapsBase):
         object_ids: Optional[List[int]] = None,
         **kwargs,
     ):
-        super().__init__(date_from, date_to, division, name_ids, object_ids, **kwargs)
+        super().__init__(
+            date_from, date_to, division, name_ids, object_ids, **kwargs
+        )
         self._stmts = self._stmts[self._stmts["object_id"] != 1]
-        self._stmts = pd.merge(self._stmts, self._objects, how="left", on="object_id")
-        self._stmts = pd.merge(self._stmts, self._employees, how="left", on="uid")
+        self._stmts = pd.merge(
+            self._stmts, self._objects, how="left", on="object_id"
+        )
+        self._stmts = pd.merge(
+            self._stmts, self._employees, how="left", on="uid"
+        )
         self._stmts = self._stmts[
-            ["object_id", "object_lat", "object_lng", "object", "name", "address"]
+            [
+                "object_id",
+                "object_lat",
+                "object_lng",
+                "object",
+                "name",
+                "address",
+            ]
         ]
         self._stmts = self._stmts.drop_duplicates()
         self.points = self._points_from_stmts()
