@@ -1,12 +1,13 @@
 import datetime as dt
 import math
+from secrets import choice
 from typing import List, Optional, Union
 
 import folium
 import pandas as pd
 import skmob
 from branca.element import Figure
-from folium.plugins import AntPath, Geocoder, Search
+from folium.plugins import AntPath, BeautifyIcon, Geocoder, Search
 from geopandas import GeoDataFrame, GeoSeries
 from jinja2 import Template
 from numpy import isnan, median
@@ -422,12 +423,24 @@ class MapBindings(Report, MapsBase):
         self.map.add_child(folium.map.LayerControl())
 
     def _make_layer(self, x):
+        color = "#" + "".join([choice("0123456789ABCDEF") for _ in range(6)])
+
         self.map.add_child(
             folium.plugins.MarkerCluster(
                 disableClusteringAtZoom=True,
                 show=False,
                 name=x.name,
                 locations=[i for i in zip(x.lat.tolist(), x.lng.tolist())],
+                icons=[
+                    BeautifyIcon(
+                        background_color=color,
+                        icon="user",
+                        iconShape="marker",
+                        iconSize=[27, 27],
+                        borderWidth=1,
+                    )
+                    for _ in range(x.shape[0])
+                ],
                 popups=x.popups.tolist(),
             )
         )
