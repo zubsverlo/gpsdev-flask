@@ -427,7 +427,7 @@ class MapBindings(Report, MapsBase):
                 "fillOpacity": 0,
             },
         ).add_to(self.map)
-        okrug_tooltip = folium.GeoJsonTooltip(['name'], labels=False).add_to(okrug)
+        okrug_tooltip = folium.GeoJsonPopup(['name'], labels=False).add_to(okrug)
         self.map.add_child(folium.map.LayerControl())
 
     def _make_layer(self, x):
@@ -536,7 +536,7 @@ class MapObjectsOnly(Report, MapsBase):
                 "fillOpacity": 0,
             },
         ).add_to(map)
-        okrug_tooltip = folium.GeoJsonTooltip(['name'], labels=False).add_to(okrug)
+        okrug_tooltip = folium.GeoJsonPopup(['name'], labels=False).add_to(okrug)
         object_layer = folium.GeoJson(
             self.geojson,
             show=False,
