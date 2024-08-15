@@ -420,6 +420,14 @@ class MapBindings(Report, MapsBase):
 
     def _create_map(self):
         self.points.groupby("name").apply(lambda x: self._make_layer(x))
+        Geocoder(placeholder="Найти адрес").add_to(self.map)
+        okrug = folium.GeoJson(
+            GeoDataFrame.from_file("json_distincts.geojson"),
+            style_function=lambda feature: {
+                "fillOpacity": 0,
+            },
+        ).add_to(self.map)
+        okrug_tooltip = folium.GeoJsonTooltip(['name'], labels=False).add_to(okrug)
         self.map.add_child(folium.map.LayerControl())
 
     def _make_layer(self, x):
@@ -522,6 +530,13 @@ class MapObjectsOnly(Report, MapsBase):
         e.add_child(map)
         icon = folium.features.Icon(icon="user", prefix="fa", color="black")
         Geocoder(placeholder="Найти адрес").add_to(map)
+        okrug = folium.GeoJson(
+            GeoDataFrame.from_file("json_distincts.geojson"),
+            style_function=lambda feature: {
+                "fillOpacity": 0,
+            },
+        ).add_to(map)
+        okrug_tooltip = folium.GeoJsonTooltip(['name'], labels=False).add_to(okrug)
         object_layer = folium.GeoJson(
             self.geojson,
             show=False,
