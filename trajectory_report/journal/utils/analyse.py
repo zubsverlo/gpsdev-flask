@@ -41,11 +41,18 @@ def delete_quit_date(df, session) -> None:
 def set_quit_date(df, session) -> None:
     """проставить quit_date, если последний день
     выходов сотрудника содержит 'У'"""
+    # TODO: Дополнить скрипт так, чтобы при несоотв. даты
+    # увольнения и даты "У" дата увольнения обновлялась.
     set_quit_date_mask = (pd.isna(df["quit_date"])) & (
         df["contains_fired_stmt"] == True
     )
-    logger.info(f"set_quit_date len: {len(df.loc[set_quit_date_mask])}")
-    for row in df.loc[set_quit_date_mask].itertuples():
+    update_quit_date_mask = (
+        (df["contains_fired_stmt"] == True) &
+        (df["quit_date"] != df["last_stmt_date"])
+    )
+    final_mask = (set_quit_date_mask | update_quit_date_mask)
+    logger.info(f"set_quit_date len: {len(df.loc[final_mask])}")
+    for row in df.loc[final_mask].itertuples():
         upd = (
             update(Employees)
             .where(Employees.name_id == row.name_id)

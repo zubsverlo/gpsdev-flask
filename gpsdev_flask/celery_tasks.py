@@ -10,6 +10,7 @@ from trajectory_report.gather.journal import update_journal
 from celery.schedules import crontab
 # from trajectory_report.notificators.telegram import empty_locations_notify
 from trajectory_report.gather.coordinates_analysis import analyze_coordinates
+from trajectory_report.journal.utils.clear_fire_statements import clear_statements
 
 
 @app_celery.task
@@ -60,6 +61,11 @@ def coordinates_analysis():
     analyze_coordinates()
 
 
+@app_celery.task(name="clear_statements")
+def clear_duplicated_statements():
+    clear_statements()
+
+
 app_celery.conf.beat_schedule = {
     "fetch-coords-every-2-mins": {
         "task": "update_coordinates",
@@ -88,5 +94,9 @@ app_celery.conf.beat_schedule = {
     "analyze-coordinates-every-three-hours": {
         "task": "coordinates_analysis",
         "schedule": crontab(minute="30", hour="*/3"),
+    },
+    "clear-statements-from-duplicates": {
+        "task": "clear_statements",
+        "schedule": crontab(minute="43", hour="*/4"),
     },
 }
