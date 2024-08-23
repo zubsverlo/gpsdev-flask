@@ -50,19 +50,19 @@ def statements_main():
     forbid_notify = False
     forbid_date_start = dt.date(2024, 8, 1)
     forbid_date_end = dt.date(2024, 8, 23)
-    forbid_user_exception_ids = tuple((1, ))
+    forbid_user_exception_ids = (1, 52)
     forbid_division_ids = (1, 2, 7, 8, 12)
 
     for stmt in stmts:
         # Здесь прописан запрет проставлять выходы
-        # if (
-        #     stmt["division"] in forbid_division_ids
-        #     and stmt["date"] <= forbid_date_end
-        #     and stmt["date"] >= forbid_date_start
-        #     and current_user.id not in forbid_user_exception_ids
-        # ):
-        #     forbid_notify = True
-        #     continue
+        if (
+            stmt["division"] in forbid_division_ids
+            and stmt["date"] <= forbid_date_end
+            and stmt["date"] >= forbid_date_start
+            and current_user.id not in forbid_user_exception_ids
+        ):
+            forbid_notify = True
+            continue
         if stmt.get("value"):
             line = (
                 f"replace into statements_site"
