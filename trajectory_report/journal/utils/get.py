@@ -1,8 +1,8 @@
-from trajectory_report.api.mts import get_subscribers
-from trajectory_report.models import Employees, Statements, Journal, Division
-from sqlalchemy import select, and_, Connection
 import pandas as pd
-from sqlalchemy import func, distinct
+from sqlalchemy import Connection, and_, distinct, func, select
+
+from trajectory_report.api.mts import get_subscribers
+from trajectory_report.models import Division, Employees, Journal, Statements
 
 
 def get_analysis_table(conn: Connection) -> pd.DataFrame:
@@ -96,11 +96,22 @@ def get_last_day_statements(conn: Connection) -> pd.DataFrame:
     contains_fired_stmt = df.groupby(["name_id"]).apply(
         lambda x: "У" in list(x.statement)
     )
+    contains_working_stmt = df.groupby(["name_id"]).apply(
+        lambda x: "В" in list(x.statement)
+    )
     df = df.set_index("name_id")
     df["contains_fired_stmt"] = contains_fired_stmt
+    df["contains_working_stmt"] = contains_working_stmt
     df = df.reset_index()
     df = df.drop_duplicates(subset="name_id")
-    return df[["name_id", "last_stmt_date", "contains_fired_stmt"]]
+    return df[
+        [
+            "name_id",
+            "last_stmt_date",
+            "contains_fired_stmt",
+            "contains_working_stmt",
+        ]
+    ]
 
 
 def get_not_existing_in_statements(conn: Connection) -> pd.DataFrame:

@@ -1,8 +1,11 @@
-from trajectory_report.database import DB_ENGINE
 import datetime as dt
-from sqlalchemy.orm import Session
+
 import pandas as pd
-from trajectory_report.journal.utils import get_analysis_table, analyse
+from sqlalchemy.orm import Session
+
+from gpsdev_flask import main_logger
+from trajectory_report.database import DB_ENGINE
+from trajectory_report.journal.utils import analyse, get_analysis_table
 
 
 class JournalManager:
@@ -131,6 +134,7 @@ class JournalManager:
                 "no_statements",
                 "phone",
                 "last_stmt_date",
+                "contains_working_stmt",
             ]
         ]
         df = df.sort_values(["division_name", "hire_date"])
@@ -161,13 +165,20 @@ class JournalManager:
         no_statements = no_statements.to_dict(orient="records")
 
         to_connect = self.suggest_to_connect
-        to_connect.loc[:, ["hire_date", "last_stmt_date"]] = to_connect.loc[
-            :, ["hire_date", "last_stmt_date"]
-        ].astype(str)
+        to_connect.loc[
+            :, ["hire_date", "last_stmt_date", "contains_working_stmt"]
+        ] = to_connect.loc[
+            :, ["hire_date", "last_stmt_date", "contains_working_stmt"]
+        ].astype(
+            str
+        )
 
         to_connect["last_stmt_date"] = to_connect["last_stmt_date"].replace(
             "nan", "нет выходов"
         )
+        to_connect["contains_working_stmt"] = to_connect[
+            "contains_working_stmt"
+        ].replace("nan", "True")
 
         to_connect = to_connect.to_dict(orient="records")
 

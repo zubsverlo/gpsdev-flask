@@ -82,6 +82,7 @@ https://play.google.com/store/apps/details?id=ru.mts.android.apps.coordinator
         { data: "division_name" },
         { data: "hire_date" },
         { data: "last_stmt_date" },
+        { data: "contains_working_stmt" },
         {
           // add column with Уволить buttons to all rows in table
           data: null,
