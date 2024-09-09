@@ -45,10 +45,19 @@ services:
       - TZ=Europe/Moscow
     volumes:
       - .:/app
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
     ports:
       - 80:80
+      - 443:443
     depends_on:
       - flask
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
 
   celery:
     build:
