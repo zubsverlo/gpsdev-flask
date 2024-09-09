@@ -17,6 +17,7 @@ aiohttp==3.8.4
 python-dotenv
 folium==0.12.1.post1
 aiomysql==0.2.0
+numpy==1.26.4
 werkzeug==2.3.3
 python-jose[cryptography]
 # -e ../trajectoryReport
