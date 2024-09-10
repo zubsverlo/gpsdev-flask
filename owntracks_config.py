@@ -32,5 +32,5 @@ OWNTRACKS_CONFIG = {
     "reverseGeocodeProvider": "Device",
     "showRegionsOnMap": False,
     "tid": "na",
-    "url": "http://gpsdev.ru/api/owntracks-location",
+    "url": "https://gpsdev.ru/api/owntracks-location",
 }

@@ -71,6 +71,7 @@ def post_location():
         main_logger.info("AttributeError on created_at")
     main_logger.info(f"owntracks from {auth.username}: {obj}")
     redis_session.lpush('queue_sql', str(insert_statement))
+    main_logger.info(request.url)
     if obj.get('m', None) != 1:
         return jsonify(configuration_json)
     return jsonify({})
