@@ -14,6 +14,7 @@ from gpsdev_flask import config
 from gpsdev_flask import main_logger
 from sqlalchemy.sql import insert
 from owntracks_config import OWNTRACKS_CONFIG
+import os
 
 
 owntracks_location = Blueprint("owntracks_location", __name__)
@@ -71,7 +72,8 @@ def post_location():
         main_logger.info("AttributeError on created_at")
     main_logger.info(f"owntracks from {auth.username}: {obj}")
     redis_session.lpush('queue_sql', str(insert_statement))
-    main_logger.info(request.url)
-    if obj.get('m', None) != 1:
+    tls_connection = request.headers.get('X-Forwarded-Proto') == 'https'
+    main_logger.info(f"tls_connection: {tls_connection}")
+    if obj.get('m', None) != 1 or not tls_connection:
         return jsonify(configuration_json)
     return jsonify({})
