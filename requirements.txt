@@ -6,7 +6,8 @@ flask-bcrypt==1.0.1
 marshmallow==3.19.0
 pytest==7.3.2
 celery==5.3.1
-redis==4.5.4
+# redis==4.5.4
+redis==5.0.8
 gunicorn==20.1.0
 flask-swagger-ui
 mysql-connector-python==8.0.33

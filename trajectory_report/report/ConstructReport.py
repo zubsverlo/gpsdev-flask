@@ -194,6 +194,7 @@ class OwntracksMtsReportDataGetter:
         data["_holiday_attend_needed"] = holiday_attend_needed
         data["_coordinates"] = coords
         data["_ward_rate"] = ward_rate
+        data["_coords"] = coords
         return data
 
     def mts_empty_locations(self) -> list[int] | list:

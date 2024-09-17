@@ -124,6 +124,7 @@ function getTable(s) {
             },
           },
           { data: "phone" },
+          { data: "status" },
         ],
         initComplete: function () {
           this.api()

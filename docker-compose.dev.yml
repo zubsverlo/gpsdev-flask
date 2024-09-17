@@ -13,7 +13,7 @@ services:
       - TZ=Europe/Moscow
 
   redis_dev:
-    image: redis
+    image: redis:7.4-alpine
     restart: always
     environment:
       - TZ=Europe/Moscow

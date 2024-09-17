@@ -14,7 +14,7 @@ services:
       - TZ=Europe/Moscow
 
   redis:
-    image: redis
+    image: redis:7.4-alpine
     restart: always
     environment:
       - TZ=Europe/Moscow

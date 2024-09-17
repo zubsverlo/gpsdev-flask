@@ -338,6 +338,7 @@ class Report:
         self._staffers = data.get("_staffers")
         self._ward_rate = data.get("_ward_rate")
         self._holiday_attend_needed = data.get("_holiday_attend_needed")
+        self._coords = data.get("_coords")
         # Эти параметры заполняются при выполнении метода _build_report
         self.duplicated_attends = None
         self.report = None
@@ -1010,8 +1011,7 @@ class Report:
 
 if __name__ == "__main__":
     s = time.perf_counter()
-    r = Report("2024-05-01", "2024-05-30", "Коньково")
-    r.xlsx()
+    r = Report("2024-08-01", "2024-08-31", "ПВТ1")
     # o = OneEmployeeReport(1293, "2024-05-23", "Коньково")
     # o = OneEmployeeReport(898, "2024-02-02", "Коньково")
     # o = OneEmployeeReport(460, "2024-07-10", "ПНИ12,30")

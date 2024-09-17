@@ -8,7 +8,7 @@ from sqlalchemy import distinct, func, select
 from trajectory_report.coordinates_analysis_report import get_report
 from trajectory_report.exceptions import ReportException
 
-from gpsdev_flask import db_session
+from gpsdev_flask import db_session, main_logger, redis_session
 from gpsdev_flask.api import api_login_required
 from gpsdev_flask.api.error_responses import (
     report_error_422,
@@ -85,6 +85,13 @@ def get_last_coordinates():
     )
     df.loc[df["works_today"] == False, "problem"] = False
     df = df.sort_values(
-            ["problem", "division", "datetime"], ascending=[False, True, True]
+        ["problem", "division", "datetime"], ascending=[False, True, True]
     )
+    status = redis_session.hgetall("status")
+    status = {int(k): v.decode("utf-8") for k, v in status.items()}
+    status = pd.Series(status)
+    df = df.set_index("name_id")
+    df["status"] = status
+    df = df.reset_index().fillna("Н/Д")
+
     return jsonify(df.to_dict(orient="records"))

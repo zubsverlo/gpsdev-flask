@@ -97,6 +97,6 @@ app_celery.conf.beat_schedule = {
     },
     "clear-statements-from-duplicates": {
         "task": "clear_statements",
-        "schedule": crontab(minute="43", hour="*/4"),
+        "schedule": crontab(minute="43", hour="*/2"),
     },
 }
