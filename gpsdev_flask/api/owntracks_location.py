@@ -12,7 +12,7 @@ from gpsdev_flask.ma_schemas import OwnTracksLocationSchema
 from gpsdev_flask.models import OwnTracksLocation
 
 owntracks_location = Blueprint("owntracks_location", __name__)
-STATUS_EXPIRE_SECONDS = 4 * 60 * 60
+STATUS_EXPIRE_SECONDS = 8 * 60 * 60
 
 
 @owntracks_location.route("/", methods=["POST"])
@@ -39,14 +39,16 @@ def post_location():
     #     "action": "setConfiguration",
     #     "configuration": exceptional_user_config
     # }
-    employee_ids_with_status: list[str] = redis_session.hkeys("status")
+    employees_bad_status = set(redis_session.hkeys("bad_status"))
+    employee_ids_with_status = set(redis_session.hkeys("status"))
+    employee_ids_with_status = employee_ids_with_status - employees_bad_status
+
     main_logger.info(request.get_json())
 
     if request.get_json().get("_type") == "status":
         status_result = None
         bo = request.get_json().get("android").get("bo") == 0
         loc = request.get_json().get("android").get("loc") == 0
-        main_logger.info((bo, loc))
         match (bo, loc):
             case [True, True]:
                 status_result = "ok"
@@ -58,6 +60,13 @@ def post_location():
                 status_result = "batt, loc"
         redis_session.hset("status", auth.username, status_result)
         redis_session.hexpire("status", STATUS_EXPIRE_SECONDS, auth.username)
+        if status_result != "ok":
+            redis_session.hset("bad_status", auth.username, status_result)
+            redis_session.hexpire(
+                "bad_status", STATUS_EXPIRE_SECONDS, auth.username
+            )
+        elif status_result == "ok":
+            redis_session.hpexpire("bad_status", 1, auth.username)
         return jsonify({})
 
     try:
