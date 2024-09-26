@@ -8,6 +8,8 @@ import pandas as pd
 import skmob
 from branca.element import Figure
 from folium.plugins import AntPath, BeautifyIcon, Geocoder, Search
+from folium.plugins.treelayercontrol import TreeLayerControl
+
 from geopandas import GeoDataFrame, GeoSeries
 from jinja2 import Template
 from numpy import isnan, median
@@ -217,7 +219,12 @@ class MapMovements(OneEmployeeReport, MapsBase):
 
     def _create_map(self):
         # СОЗДАНИЕ КАРТЫ
-        map = folium.Map(self._median_coordinates, zoom_start=11)
+        map = folium.Map(
+            self._median_coordinates,
+            zoom_start=11,
+            attributionControl=0,
+            font_size='1.25rem',
+        )
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(map)
 
@@ -406,10 +413,13 @@ class MapBindings(Report, MapsBase):
         ]
         self._stmts = self._stmts.drop_duplicates()
         self.points = self._points_from_stmts()
+        self.layers = list()
 
         self.map = folium.Map(
             location=[55.75160, 37.61802],
             zoom_start=11,
+            attributionControl=0,
+            font_size='1.25rem',
         )
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(self.map)
@@ -420,6 +430,11 @@ class MapBindings(Report, MapsBase):
 
     def _create_map(self):
         self.points.groupby("name").apply(lambda x: self._make_layer(x))
+        overlay_tree = {
+            "label": "Сотрудники",
+            "select_all_checkbox": "Выделить всех",
+            "children": self.layers
+        }
         Geocoder(placeholder="Найти адрес").add_to(self.map)
         okrug = folium.GeoJson(
             GeoDataFrame.from_file("json_distincts.geojson"),
@@ -427,31 +442,36 @@ class MapBindings(Report, MapsBase):
                 "fillOpacity": 0,
             },
         ).add_to(self.map)
-        okrug_tooltip = folium.GeoJsonPopup(['name'], labels=False).add_to(okrug)
-        self.map.add_child(folium.map.LayerControl())
+        TreeLayerControl(overlay_tree=overlay_tree).add_to(self.map)
+        okrug_tooltip = folium.GeoJsonPopup(["name"], labels=False).add_to(
+            okrug
+        )
+        # self.map.add_child(folium.map.LayerControl())
 
     def _make_layer(self, x):
         color = "#" + "".join([choice("0123456789ABCDEF") for _ in range(6)])
 
-        self.map.add_child(
-            folium.plugins.MarkerCluster(
-                disableClusteringAtZoom=True,
-                show=False,
-                name=x.name,
-                locations=[i for i in zip(x.lat.tolist(), x.lng.tolist())],
-                icons=[
-                    BeautifyIcon(
-                        background_color=color,
-                        icon="user",
-                        iconShape="marker",
-                        iconSize=[27, 27],
-                        borderWidth=1,
-                    )
-                    for _ in range(x.shape[0])
-                ],
-                popups=x.popups.tolist(),
-            )
+        layer = folium.plugins.MarkerCluster(
+            disableClusteringAtZoom=True,
+            show=False,
+            name=x.name,
+            locations=[i for i in zip(x.lat.tolist(), x.lng.tolist())],
+            icons=[
+                BeautifyIcon(
+                    background_color=color,
+                    icon="user",
+                    iconShape="marker",
+                    iconSize=[27, 27],
+                    borderWidth=1,
+                )
+                for _ in range(x.shape[0])
+            ],
+            popups=x.popups.tolist(),
         )
+        self.layers.append(
+            {"label": x.name, "layer": layer.add_to(self.map)}
+        )
+        # self.map.add_child(layer)
 
     def _points_from_stmts(self):
         """Из stmts нужно образуем таблицу с привязками сотрудников к
@@ -525,7 +545,12 @@ class MapObjectsOnly(Report, MapsBase):
 
     def _create_map(self):
         # СОЗДАНИЕ КАРТЫ
-        map = folium.Map(self._median_coordinates, zoom_start=11)
+        map = folium.Map(
+            self._median_coordinates,
+            zoom_start=11,
+            attributionControl=0,
+            font_size='1.25rem',
+        )
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(map)
         icon = folium.features.Icon(icon="user", prefix="fa", color="black")
@@ -536,7 +561,9 @@ class MapObjectsOnly(Report, MapsBase):
                 "fillOpacity": 0,
             },
         ).add_to(map)
-        okrug_tooltip = folium.GeoJsonPopup(['name'], labels=False).add_to(okrug)
+        okrug_tooltip = folium.GeoJsonPopup(["name"], labels=False).add_to(
+            okrug
+        )
         object_layer = folium.GeoJson(
             self.geojson,
             show=False,
