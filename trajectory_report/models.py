@@ -70,6 +70,7 @@ class Statements(Base):
     __table_args__ = (
         Index("StmtsNameDate", "division", "object_id", "date", "name_id"),
         Index("statements_date", "date"),
+        Index("stmts_nameid_date", "name_id", "date"),
         UniqueConstraint(
             "division",
             "object_id",
