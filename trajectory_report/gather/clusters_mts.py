@@ -41,9 +41,10 @@ def get_coordinates(date: dt.date) -> pd.DataFrame:
     return pd.read_sql(sel, DB_ENGINE.connect())
 
 
-def make_clusters_mts():
+def make_clusters_mts(dates: list[dt.Date] = None):
     # Получить список дат для формирования кластеров
-    dates = get_dates_range()
+    if not dates:
+        dates = get_dates_range()
     print(dates)
     for date in dates:
         # Получить координаты
