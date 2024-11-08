@@ -1,13 +1,13 @@
 from trajectory_report.models import Clusters, Coordinates
-from sqlalchemy import select, func
-from trajectory_report.database import DB_ENGINE
+from sqlalchemy import select, func, delete
+from trajectory_report.database import DB_ENGINE, REDIS_CONN
 import datetime as dt
 from typing import List
 import pandas as pd
 from trajectory_report.report.ClusterGenerator import prepare_clusters
-from trajectory_report.config import (
-        CLUSTERS_MTS, CLUSTERS_MTS
-)
+from trajectory_report.config import CLUSTERS_MTS
+from sqlalchemy.exc import OperationalError
+
 
 def get_dates_range() -> List[dt.date]:
     """Получить список дат, по которым нужно произвести кластеры.
@@ -68,5 +68,31 @@ def make_clusters_mts():
         print(f"Clusters for {date} have been uploaded.")
 
 
+def remake_clusters_mts():
+    """Удаление кластеров за определенный день и формирование заново
+    В случае, если локации по сотруднику пришли с запозданием, дата локации
+    попадает в Redis для того, чтобы переформировать созданные кластеры.
+    Фукнция удаляет кластеры по каждой из дат в этом списке и формирует заново
+    """
+    dates = []
+    while True:
+        date = REDIS_CONN.spop("mts_cluster_dates")
+        print(date)
+        if not date:
+            break
+        date = dt.date.fromisoformat(date.decode())
+        stmt = delete(Clusters).where(Clusters.date == date)
+        try:
+            with DB_ENGINE.connect() as conn:
+                conn.execute(stmt)
+                conn.commit()
+            dates.append(date)
+        except OperationalError:
+            REDIS_CONN.sadd("mts_cluster_dates", str(date))
+    if dates:
+        make_clusters_mts(dates)
+
+
 if __name__ == "__main__":
     make_clusters_mts()
+    remake_clusters_mts()

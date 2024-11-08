@@ -4,7 +4,7 @@ import aiohttp
 from trajectory_report.api.mts import get_subs_by_token, apiHttp, apiGetLocs
 import datetime as dt
 from trajectory_report.models import Coordinates
-from trajectory_report.database import DB_ENGINE
+from trajectory_report.database import DB_ENGINE, REDIS_CONN
 from sqlalchemy import func, insert, select
 from sqlalchemy.orm import sessionmaker, Session
 from collections import defaultdict
@@ -235,12 +235,19 @@ async def fetch_all(tokens):
             # чтобы не записывать ложные локации, когда есть только последнее
             # известн. местопол., я удаляю координаты из локаций
             # с кодом 4 (последнее известное)
+            today_isoformat = dt.date.today().isoformat()
             for locs in resp_no_exceptions:
                 for loc in locs:
                     if loc['state'] == 4:
                         del loc['longitude']
                         del loc['latitude']
                         del loc['locationDate']
+
+                    if loc["requestDate"] < today_isoformat:
+                        # переформировать кластеры, если локации запоздалые
+                        REDIS_CONN.sadd(
+                           "mts_cluster_dates", loc.get("requestDate")[:10]
+                        )
             append_coordinates(resp_no_exceptions)
 
 

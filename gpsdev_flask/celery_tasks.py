@@ -1,16 +1,23 @@
-from gpsdev_flask.celery_app import app_celery
-from gpsdev_flask import redis_session
-from trajectory_report.gather.coordinates import fetch_coordinates
-from trajectory_report.gather.clusters_mts import make_clusters_mts
-from trajectory_report.gather.clusters_owntracks import (
-    remake_clusters,
-    make_clusters_owntracks,
-)
-from trajectory_report.gather.journal import update_journal
 from celery.schedules import crontab
+from trajectory_report.gather.clusters_mts import (
+    make_clusters_mts,
+    remake_clusters_mts,
+)
+from trajectory_report.gather.clusters_owntracks import (
+    make_clusters_owntracks,
+    remake_clusters,
+)
+from trajectory_report.gather.coordinates import fetch_coordinates
+
 # from trajectory_report.notificators.telegram import empty_locations_notify
 from trajectory_report.gather.coordinates_analysis import analyze_coordinates
-from trajectory_report.journal.utils.clear_fire_statements import clear_statements
+from trajectory_report.gather.journal import update_journal
+from trajectory_report.journal.utils.clear_fire_statements import (
+    clear_statements,
+)
+
+from gpsdev_flask import redis_session
+from gpsdev_flask.celery_app import app_celery
 
 
 @app_celery.task
@@ -43,6 +50,11 @@ def clusters_owntracks():
 @app_celery.task(name="remake_clusters_owntracks")
 def remake_clusters_owntracks():
     remake_clusters()
+
+
+@app_celery.task(name="remake_clusters_mts")
+def remake_clusters_mts_task():
+    remake_clusters_mts()
 
 
 @app_celery.task(name="journal")
@@ -82,6 +94,10 @@ app_celery.conf.beat_schedule = {
     "remake-clusters-owntracks-every-four-hours": {
         "task": "remake_clusters_owntracks",
         "schedule": crontab(minute="50", hour="*/4"),
+    },
+    "remake-clusters-mts-every-four-hours": {
+        "task": "remake_clusters_mts",
+        "schedule": crontab(minute="55", hour="*/4"),
     },
     "update-journal-every-10-mins": {
         "task": "journal",
