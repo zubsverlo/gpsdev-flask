@@ -38,6 +38,21 @@ class MarkerWithOnclick(folium.Marker):
     _template = Template(click_template)
 
 
+class GeocoderFixedUnpkg(Geocoder):
+    default_js = [
+        (
+            "Control.Geocoder.js",
+            "https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js",
+        )
+    ]
+    default_css = [
+        (
+            "Control.Geocoder.css",
+            "https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css",
+        )
+    ]
+
+
 class MapsBase:
     """
     Базовый класс для формирования карты. Метод _tie_clusters позволяет
@@ -283,7 +298,8 @@ class MapMovements(OneEmployeeReport, MapsBase):
         #         # popup="{} meters".format(150),
         #         tooltip=f"Радиус {self.radius} метров",
         #     ).add_to(map)
-        Geocoder(placeholder="Найти адрес", position="bottomright").add_to(map)
+        # Geocoder(placeholder="Найти адрес", position="bottomright").add_to(map)
+        GeocoderFixedUnpkg(placeholder="Найти адрес", position="bottomright").add_to(map)
 
         # Modify Marker template to include the onClick event
         # click_template = """{% macro script(this, kwargs) %}
@@ -435,7 +451,8 @@ class MapBindings(Report, MapsBase):
             "select_all_checkbox": "Выделить всех",
             "children": self.layers
         }
-        Geocoder(placeholder="Найти адрес").add_to(self.map)
+        # Geocoder(placeholder="Найти адрес").add_to(self.map)
+        GeocoderFixedUnpkg(placeholder="Найти адрес").add_to(self.map)
         okrug = folium.GeoJson(
             GeoDataFrame.from_file("json_distincts.geojson"),
             style_function=lambda feature: {
@@ -554,7 +571,8 @@ class MapObjectsOnly(Report, MapsBase):
         e = Figure(height="100%")  # todo: поменять на "100%"
         e.add_child(map)
         icon = folium.features.Icon(icon="user", prefix="fa", color="black")
-        Geocoder(placeholder="Найти адрес").add_to(map)
+        # Geocoder(placeholder="Найти адрес").add_to(map)
+        GeocoderFixedUnpkg(placeholder="Найти адрес").add_to(map)
         okrug = folium.GeoJson(
             GeoDataFrame.from_file("json_distincts.geojson"),
             style_function=lambda feature: {
