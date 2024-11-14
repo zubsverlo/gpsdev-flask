@@ -8,6 +8,7 @@ from trajectory_report.database import DB_ENGINE, REDIS_CONN
 from sqlalchemy import func, insert, select
 from sqlalchemy.orm import sessionmaker, Session
 from collections import defaultdict
+from gpsdev_flask import main_logger
 
 
 """
@@ -124,6 +125,13 @@ def get_dates_list(last_d):
                 ((last_d + dt.timedelta(days=i)).isoformat(timespec='minutes'),
                  (last_d + dt.timedelta(days=o)).isoformat(timespec='minutes'))
             )
+        # Добавляю ещё последние сутки в список дат
+        dates_list.append(
+            (
+                (dt.datetime.now()-dt.timedelta(days=1)).isoformat(timespec='minutes'),
+                dt.datetime.now().isoformat(timespec='minutes')
+             )
+        )
         return dates_list
     elif last_date_days == 0:  # если входная дата сегодняшняя
         dates_list.append(
@@ -199,8 +207,7 @@ async def fetch_all(tokens):
                     for date in dates:
                         params = [("dateFrom", date[0]),
                                   ("dateTo", date[1]),
-                                  ("subscriberIDs", id),
-                                  ("count", 1000)]
+                                  ("subscriberIDs", id)]
                         tasks.append(fetch(session,
                                            apiHttp+apiGetLocs,
                                            params))
