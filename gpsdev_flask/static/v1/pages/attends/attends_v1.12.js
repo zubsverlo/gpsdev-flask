@@ -3319,7 +3319,7 @@ function drawServes(data, servesToWatch) {
       approverName.innerText = s.approver ? s.approver : "Нет данных";
 
       approverNameContainer.append(approverNameLabel, approverName);
-      left.append(approverNameContainer);
+      //left.append(approverNameContainer);
     }
 
     middle.append(reasonContainer, createDateContainer);
