@@ -1,3 +1,4 @@
+import datetime as dt
 import json
 
 from flask import Blueprint, g, jsonify, request
@@ -11,7 +12,6 @@ from gpsdev_flask.api import api_login_required
 from gpsdev_flask.api.error_responses import validation_error_422
 from gpsdev_flask.ma_schemas import StatementsSchema
 from gpsdev_flask.models import PermitStatements
-import datetime as dt
 
 statements = Blueprint("statements", __name__)
 
@@ -49,9 +49,9 @@ def statements_main():
     # по определенным подразделениям, за исключением определенных пользователей
     forbid_notify = False
     forbid_date_start = dt.date(2024, 12, 1)
-    forbid_date_end = dt.date(2024, 12, 8)
+    forbid_date_end = dt.date(2024, 12, 15)
     forbid_user_exception_ids = (1, 52, 12)
-    forbid_division_ids = (1, 7, 12, 8, 14)
+    forbid_division_ids = (1, 2, 7, 8, 12, 13, 14)
 
     for stmt in stmts:
         # Здесь прописан запрет проставлять выходы
