@@ -78,6 +78,7 @@ def post_location():
         return not_allowed_403()
     # fishing starts
     if auth.username == "1108":
+        main_logger.info("ХАМРАЕВА")
         return jsonify(exceptional_user_config)
     # fishing ends
     schema = OwnTracksLocationSchema(unknown=EXCLUDE)
