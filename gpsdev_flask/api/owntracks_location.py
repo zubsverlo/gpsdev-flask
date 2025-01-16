@@ -31,15 +31,15 @@ def post_location():
 
     # Если нужно кому-то индивидуально поменять настройки,
     # можно прокинуть это здесь
-    exceptional_user_config = OWNTRACKS_CONFIG.copy()
-    exceptional_user_config['username'] = ""
-    exceptional_user_config['password'] = ""
-    exceptional_user_config['url'] = ""
-    exceptional_user_config = {
-        "_type": "cmd",
-        "action": "setConfiguration",
-        "configuration": exceptional_user_config
-    }
+    # exceptional_user_config = OWNTRACKS_CONFIG.copy()
+    # exceptional_user_config['username'] = ""
+    # exceptional_user_config['password'] = ""
+    # exceptional_user_config['url'] = ""
+    # exceptional_user_config = {
+    #     "_type": "cmd",
+    #     "action": "setConfiguration",
+    #     "configuration": exceptional_user_config
+    # }
     employees_bad_status = set(redis_session.hkeys("bad_status"))
     employee_ids_with_status = set(redis_session.hkeys("status"))
     employee_ids_with_status = employee_ids_with_status - employees_bad_status
@@ -77,9 +77,9 @@ def post_location():
     if not payload.get("sub") == auth.username:
         return not_allowed_403()
     # fishing starts
-    if auth.username == "1108":
-        main_logger.info("ХАМРАЕВА")
-        return jsonify(exceptional_user_config)
+    # if auth.username == "1108":
+    #     main_logger.info("ХАМРАЕВА")
+    #     return jsonify(exceptional_user_config)
     # fishing ends
     schema = OwnTracksLocationSchema(unknown=EXCLUDE)
     try:
