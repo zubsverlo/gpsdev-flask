@@ -48,10 +48,10 @@ def statements_main():
     # Запрет проставлять выходы до определенной даты,
     # по определенным подразделениям, за исключением определенных пользователей
     forbid_notify = False
-    forbid_date_start = dt.date(2025, 1, 1)
-    forbid_date_end = dt.date(2025, 1, 8)
+    forbid_date_start = dt.date(2024, 12, 1)
+    forbid_date_end = dt.date(2025, 1, 12)
     forbid_user_exception_ids = (1, 52, 12)
-    forbid_division_ids = (1, 2, 7, 8, 12, 14)
+    forbid_division_ids = (1, 2, 7, 8, 12, 13, 14)
 
     for stmt in stmts:
         # Здесь прописан запрет проставлять выходы
