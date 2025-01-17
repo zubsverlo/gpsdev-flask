@@ -167,8 +167,7 @@ class ObjectSchema(Schema):
     @validates("income")
     def validate_income(self, value):
         if value and current_user.rang_id > 2:
-            if current_user.id not in (10, 11):
-                raise ValidationError("Вы не можете изменить параметр дохода")
+            raise ValidationError("Вы не можете изменить параметр дохода")
 
     @validates_schema
     def validate_unique_name(self, data, **kwargs):
