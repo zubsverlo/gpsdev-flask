@@ -166,9 +166,9 @@ function createForm() {
   let switchAddressBtn = document.createElement("input");
   switchAddressBtn.id = "switchAddressBtn";
   switchAddressBtn.type = "checkbox";
-  if (localStorage.getItem("address-sorce") === "1") {
+  if (localStorage.getItem("address-source") === "1") {
     switchAddressBtn.checked = false;
-  } else if (localStorage.getItem("address-sorce") === "2") {
+  } else if (localStorage.getItem("address-source") === "2") {
     switchAddressBtn.checked = true;
   } else {
     switchAddressBtn.checked = true;
@@ -569,9 +569,9 @@ function showHideColumns(e) {
 function switchAddress() {
   let checkbox = document.getElementById("switchAddressBtn");
   if (!checkbox.checked) {
-    localStorage.setItem("address-sorce", "2");
+    localStorage.setItem("address-source", "2");
   } else if (checkbox.checked) {
-    localStorage.setItem("address-sorce", "1");
+    localStorage.setItem("address-source", "1");
   }
 }
 
@@ -610,7 +610,7 @@ function getAddressList() {
   let url;
 
   url =
-    localStorage.getItem("address-sorce") === "1"
+    localStorage.getItem("address-source") === "1"
       ? `api/address-lookup/google?q=${adValue}`
       : `api/address-lookup/?q=${adValue}`;
   fetch(url, {
