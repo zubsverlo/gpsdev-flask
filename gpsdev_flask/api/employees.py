@@ -201,6 +201,7 @@ def owntracks_connect(name_id: int):
                 name_id=name_id,
                 owntracks=True,
                 period_init=dt.date.today(),
+                mts_app=False,
             )
         )
         db_session.commit()
@@ -222,6 +223,7 @@ def owntracks_connect(name_id: int):
                 name_id=name_id,
                 owntracks=True,
                 period_init=dt.date.today(),
+                mts_app=False,
             )
         )
         db_session.commit()

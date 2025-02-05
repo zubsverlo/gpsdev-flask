@@ -1,9 +1,11 @@
-import pandas as pd
 import datetime as dt
-from sqlalchemy import update, insert
-from sqlalchemy.orm import Session
-from trajectory_report.models import Employees, Journal
 import logging
+
+import pandas as pd
+from sqlalchemy import insert, update
+from sqlalchemy.orm import Session
+
+from trajectory_report.models import Employees, Journal
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -46,11 +48,10 @@ def set_quit_date(df, session) -> None:
     set_quit_date_mask = (pd.isna(df["quit_date"])) & (
         df["contains_fired_stmt"] == True
     )
-    update_quit_date_mask = (
-        (df["contains_fired_stmt"] == True) &
-        (df["quit_date"] != df["last_stmt_date"])
+    update_quit_date_mask = (df["contains_fired_stmt"] == True) & (
+        df["quit_date"] != df["last_stmt_date"]
     )
-    final_mask = (set_quit_date_mask | update_quit_date_mask)
+    final_mask = set_quit_date_mask | update_quit_date_mask
     logger.info(f"set_quit_date len: {len(df.loc[final_mask])}")
     for row in df.loc[final_mask].itertuples():
         upd = (
@@ -103,6 +104,7 @@ def open_journal_mts(df, session) -> None:
             name_id=record.name_id,
             subscriberID=record.subscriberID_mts,
             period_init=dt.date.today(),
+            mts_app=True,
         )
         session.execute(ins)
     session.commit()
@@ -177,6 +179,7 @@ def change_journal_from_owntracks_to_mts(df, session) -> None:
             name_id=row.name_id,
             subscriberID=row.subscriberID_mts,
             period_init=dt.date.today(),
+            mts_app=True,
         )
 
         session.execute(upd)

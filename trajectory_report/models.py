@@ -151,6 +151,7 @@ class Journal(Base):
     owntracks: Mapped[bool]
     period_init: Mapped[dt.date]
     period_end: Mapped[dt.date]
+    mts_app: Mapped[bool]
     name: Mapped["Employees"] = relationship("Employees", lazy="joined")
     __table_args__ = (
         Index("journal_site_index", "name_id", "subscriberID"),
