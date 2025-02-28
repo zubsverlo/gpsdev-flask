@@ -49,7 +49,7 @@ def statements_main():
     # по определенным подразделениям, за исключением определенных пользователей
     forbid_notify = False
     forbid_date_start = dt.date(2024, 12, 1)
-    forbid_date_end = dt.date(2025, 2, 23)
+    forbid_date_end = dt.date(2025, 2, 28)
     forbid_user_exception_ids = (1, 52, 12)
     forbid_division_ids = (1, 2, 7, 8, 12, 13, 14)
 
