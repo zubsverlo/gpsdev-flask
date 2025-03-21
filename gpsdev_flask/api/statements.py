@@ -51,7 +51,8 @@ def statements_main():
     forbid_date_start = dt.date(2024, 12, 1)
     forbid_date_end = dt.date(2025, 3, 9)
     forbid_user_exception_ids = (1, 52, 12)
-    forbid_division_ids = (1, 2, 7, 8, 12, 13, 14)
+    # Убрал ПВТ9,Пни25: 1
+    forbid_division_ids = (2, 7, 8, 12, 13, 14)
 
     for stmt in stmts:
         # Здесь прописан запрет проставлять выходы
